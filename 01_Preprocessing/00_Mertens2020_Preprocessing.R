@@ -1,8 +1,11 @@
 #---
-# title: "Mertens 2020 Reanalysis Revised - Preprocessing & Data Cleaning" 
-# date: "2023-04-17"
-# last update: "2024-04-03"
+# title: "Computational Mechanisms of Attribute Translations" 
+# author: Barbara Oberbauer (barbara.oberbauer@uni-hamburg.de)
+# last update: "2025-01-15"
+# produced under R version: 2024.09.0
 #---
+
+# Preprocessing was largley adapted from Mertens et al. (2020): https://osf.io/jdep3 
 
 # Load packages and read data ------------
 
@@ -17,7 +20,8 @@ if(!is.null(dev.list())) dev.off()
 
 # List of packages to check and install if necessary
 packages <- c("tidyverse",
-              "psych"
+              "psych",
+              "dplyr"
               )
 
 # Function to check if a package is installed
@@ -36,6 +40,7 @@ for (package in packages) {
 # Load required libraries
 library(tidyverse)
 library(psych)
+library(dplyr)
 
 
 rm(package, packages, is_package_installed)
@@ -43,7 +48,9 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-df <- read_csv("data/mhb_dfx_data_exp2.csv", 
+# Data are available here: https://osf.io/fqdra/ (Study 2)
+
+df <- read_csv("00_Data/mhb_dfx_data_exp2.csv", 
                col_types = (cols('id' = col_character(), 
                                  'submitted' = col_datetime(),
                                  'session' = col_factor(levels = c('1', '2')),
@@ -86,9 +93,15 @@ df <- read_csv("data/mhb_dfx_data_exp2.csv",
 
 ### Code Book ---------
 # id = participant id
-# condition 7 =  environmental friendliness rating (price translation absent)
-# condition 8 = environmental friendliness rating (price translation present)
-# condition NA = subject only completed first session
+# condition:  1 = control condition (price translation absent)
+#             2 = control condition (price translation present)
+#             3 = operating costs (price translation absent)
+#             4 = operating costs (price translation present)
+#             5 = carbon emissions (price translation absent)
+#             6 = carbon emissions (price translation present)
+#             7 = environmental friendliness rating (price translation absent)
+#             8 = environmental friendliness rating (price translation present)
+#             NA = subject only completed first session
 # task = choice problem 1-15
 # f ~ acquisition frequency
 # t ~ acquisition duration/dwell time
@@ -100,8 +113,18 @@ sample <- df[!duplicated(df$id),]
 length(sample$id)
 prop.table(table(sample$gender))
 describe(sample$age)
-remove(sample)
 
+# check sample characteristics for each condition separately 
+sample %>%
+  group_by(condition) %>%
+  do(describe(.$age))
+
+# check sample characteristics for final sample
+sample_final <- sample %>% filter(!is.na(condition))
+prop.table(table(sample_final$gender))
+describe(sample_final$age)
+
+remove(sample, sample_final)
 
 # Computation of Information Acquisition Variables ---------
 
@@ -137,18 +160,18 @@ remove(tmp)
 
 # Data Cleaning ---------
 
-# Article as well as comments suggest that participants were excluded from data
-# sets while I would suggest that it is actually only trials that are being
-# removed [BO]
+# Exclude participants who only completed session 1.
+df <- df %>%
+  filter(!is.na(condition))
 
-# Remove unengaged participants based on overall decision time and acquisition frequency in session 1.
+# Remove trials based on overall decision time and acquisition frequency in session 1.
 df_1 <- df %>%
   filter(session == 1) %>%
   mutate(mad = median(t_decision) + 3*(mad(t_decision, center = median(t_decision), constant = 1.4826, na.rm = FALSE, low = FALSE, high = FALSE))) %>%
   filter(t_decision >= 400 & t_decision <= mad) %>%
   filter(maxcount >= 2)
 
-# Remove unengaged participants based on overall decision time and acquisition frequency in session 2.
+# Remove trials based on overall decision time and acquisition frequency in session 2.
 df_2 <- df %>%
   filter(session == 2) %>%
   group_by(condition) %>%
@@ -156,15 +179,12 @@ df_2 <- df %>%
   filter(t_decision >= 400 & t_decision <= mad) %>%
   filter(maxcount >= 2)
 
-# Exclude participants who only completed session 1.
-df_1 <- df_1[df_1$id %in% df_2$id, ]
-
 # Merge cleaned dataframes.
 df <- bind_rows(df_1, df_2)
 remove(df_1, df_2)
 
-# Select relevant choice problems.
-# Energy & water consumption were of equal amount in those choice problems
+
+# Select relevant choice problems --> energy & water consumption were of equal amount in choice problems 5, 8, and 10
 
 #data frame with all trials
 dfAllTrials <- df
@@ -175,5 +195,5 @@ df <- filter(df, task != 5 & task != 8 & task != 10)
 
 # Save data ----------
 
-saveRDS(df, file = "df.rds")
-saveRDS(dfAllTrials, file = "dfAllTrials.rds")
+saveRDS(df, file = "00_Data/df.rds")
+saveRDS(dfAllTrials, file = "00_Data/dfAllTrials.rds")
