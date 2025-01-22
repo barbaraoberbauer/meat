@@ -164,6 +164,9 @@ remove(tmp)
 df <- df %>%
   filter(!is.na(condition))
 
+# Count trials before data cleaning
+n_trials_before <- nrow(df)
+
 # Remove trials based on overall decision time and acquisition frequency in session 1.
 df_1 <- df %>%
   filter(session == 1) %>%
@@ -186,6 +189,8 @@ remove(df_1, df_2)
 # Remove trials in which participants never inspect any attribute (diff_t_options == NaN)
 df <- df %>%
   filter(!is.na(diff_t_options))
+
+n_trials_after <- nrow(df)
 
 # Select relevant choice problems --> energy & water consumption were of equal amount in choice problems 5, 8, and 10
 
