@@ -57,7 +57,7 @@ df <- readRDS("00_Data/df.rds")
 ### Load color paletts ----------
 
 color_choice <- c("#9fc8c8", "#1f6f6f") # non-eco, eco choice
-color_session <- c("#97a6c4", "#FFC6AC") # session 1, session 2
+color_session <- c("#ced4da", "#8e9aaf") # session 1, session 2
 
 
 ### Extend ggplot2's GeomViolin ----------
@@ -248,7 +248,7 @@ dt_options <- dt_options %>%
 # Plot diff_t_options -------
 
 
-#dt_options_plot <- 
+dt_options_plot <- 
   dt_options %>%
   ggplot(mapping = aes(x = consumption_translation, y = diff_t, fill = session)) +
   
@@ -298,5 +298,120 @@ dt_options <- dt_options %>%
   )
 
 
+# Calculate relative dwell times for attributes -------
 
+# calculate as (t_price_1 - t_price_0) / (t_price_1 + t_price_0)
+
+df$diff_t_price <- (rowSums(df[, c("t_price1", "t_price_translation1")], na.rm = TRUE) -
+                      rowSums(df[, c("t_price0", "t_price_translation0")], na.rm = TRUE)) /
+  (rowSums(df[, c("t_price1", "t_price_translation1")], na.rm = TRUE) +
+     rowSums(df[, c("t_price0", "t_price_translation0")], na.rm = TRUE))
+
+df$diff_t_consumption <- (rowSums(df[, c("t_consumption1", "t_consumption_translation1")], na.rm = TRUE) -
+                      rowSums(df[, c("t_consumption0", "t_consumption_translation0")], na.rm = TRUE)) /
+  (rowSums(df[, c("t_consumption1", "t_consumption_translation1")], na.rm = TRUE) +
+     rowSums(df[, c("t_consumption0", "t_consumption_translation0")], na.rm = TRUE))
+
+df$diff_t_popularity <- (rowSums(df[, c("t_popularity1")], na.rm = TRUE) -
+                           rowSums(df[, c("t_popularity0")], na.rm = TRUE)) /
+  (rowSums(df[, c("t_popularity1")], na.rm = TRUE) +
+     rowSums(df[, c("t_popularity0")], na.rm = TRUE))
+
+# NaNs result when participants do not inspect an attribute on a trial
+
+
+# extract relevant data and create new data frame
+
+dt_attributes <- df %>%
+  select(id, 
+         session, 
+         consumption_translation, 
+         diff_t_price, 
+         diff_t_consumption, 
+         diff_t_popularity)
+
+### convert to long format
+
+dt_attributes <- dt_attributes %>%
+  pivot_longer(cols = c(diff_t_price:diff_t_popularity),
+               names_to = "attribute",
+               names_prefix = "diff_t_",
+               values_to = "diff_t")
+
+### check structure of data frame
+
+str(dt_attributes)
+
+dt_attributes <- dt_attributes %>%
+  mutate(consumption_translation = factor(consumption_translation, levels = c("control", 
+                                          "emissions", 
+                                          "operating_costs",
+                                          "environmental_friendliness")))
+
+dt_attributes <- dt_attributes %>%
+  mutate(attribute = factor(attribute, levels = c("price", 
+                                                  "consumption",
+                                                  "popularity")))
+
+
+
+# Plot relative dwell times for attributes -------
+
+group_labels <- as_labeller(c("control" = "Control",
+                              "emissions" = "Carbon Emissions",
+                              "operating_costs" = "Operating Costs",
+                              "environmental_friendliness" = "Rating"))
+
+dt_attribute_plot <- 
+  dt_attributes %>%
+  ggplot(mapping = aes(x = attribute, y = diff_t, fill = session)) +
+  
+  # violin blot
+  geom_split_violin() +
+  
+  # box plot
+  geom_boxplot(width = 0.1, position = position_dodge(0.2), show.legend = FALSE) +
+  
+  # layout
+  facet_grid(rows = vars(consumption_translation),
+             labeller = group_labels) +
+  
+  # color
+  scale_fill_manual(values = color_session,
+                    labels = c("1" = "1",
+                               "2" = "2")) +
+  
+  # axes and titles
+  coord_cartesian(ylim = c(-1, 1)) +
+  labs(
+    title = "Differential Dwell Time - Attributes",
+    x = "Attribute",
+    y = "Differential Dwell Time",
+    fill = "Session"
+  ) +
+  scale_x_discrete(labels = c("control" = "Control",
+                              "operating_costs" = "Operating Costs",
+                              "emissions" = "Carbon Emissions",
+                              "environmental_friendliness" = "Rating")) +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 14, 
+                                  face = "bold", 
+                                  hjust = 0.5,
+                                  margin = margin(t = 0, r = 0, b = 10, l = 0)),
+        axis.title.x = element_text(size = 12,
+                                    margin = margin(t = 15, r = 0, b = 0 ,l = 0)),
+        axis.title.y = element_text(size = 12,
+                                    margin = margin(t = 0, r = 15, b = 0, l = 0)),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 8),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 8),
+        legend.key.size = unit(0.5, "cm"),
+        legend.position = "top",
+        plot.margin = margin(t = 15,
+                             r = 15,
+                             b = 15,
+                             l = 15),
+        panel.spacing = unit(0.7, "lines")
+  )
 
