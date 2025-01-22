@@ -183,6 +183,9 @@ df_2 <- df %>%
 df <- bind_rows(df_1, df_2)
 remove(df_1, df_2)
 
+# Remove trials in which participants never inspect any attribute (diff_t_options == NaN)
+df <- df %>%
+  filter(!is.na(diff_t_options))
 
 # Select relevant choice problems --> energy & water consumption were of equal amount in choice problems 5, 8, and 10
 
