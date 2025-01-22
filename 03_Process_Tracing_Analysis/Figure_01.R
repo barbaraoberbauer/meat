@@ -398,7 +398,7 @@ grid.arrange(cp_plot, dt_plot,
 ### add labels to combined plot
 
 figure_1 <- as_ggplot(combined_plot) +
-  draw_plot_label(label = c("a", "b", "c"), size = 12,
+  draw_plot_label(label = c("a", "b", "c"), size = 20,
                   x = c(0, 0.5, 0), y = c(1, 1, 0.5))
 
 # save plot
