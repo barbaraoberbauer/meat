@@ -90,6 +90,9 @@ df <- read_csv("data/mhb_dfx_data_exp2.csv",
                                  'gender' = col_factor(NULL),
                                  'age' = col_integer())))
 
+choiceProblems <- readRDS("data/choiceProblems.rds")
+# choice problems were extracted from appendix B of publication https://doi.org/10.1017/S1930297500006896 
+
 
 ### Code Book ---------
 # id = participant id
@@ -192,7 +195,97 @@ df <- df %>%
 
 n_trials_after <- nrow(df)
 
-# Select relevant choice problems --> energy & water consumption were of equal amount in choice problems 5, 8, and 10
+rm(n_trials_before, n_trials_after)
+
+# Add choice problem (task) values to df -----
+
+### Re-code task variables from _A/_B to Eco/Non-Eco -----
+
+# assignment of task values to acquisition time of attributes is not ideal
+# Task values (Price, Consumption, Popularity) is coded with A and B, 
+# the attributes and final choice with 0 and 1 (0 = non-eco, 1 = eco)
+
+taskVariables <- choiceProblems[, c("task",
+                                    "Price_A",
+                                    "Energy_A",
+                                    "Popularity_A",
+                                    "Price_B",
+                                    "Energy_B",
+                                    "Popularity_B")]
+
+taskVariablesEco <- data.frame(task = rep(NA, nrow(taskVariables)),
+                               priceEco = rep(NA, nrow(taskVariables)),
+                               energyEco = rep(NA, nrow(taskVariables)),
+                               popularityEco = rep(NA, nrow(taskVariables)),
+                               priceNonEco = rep(NA, nrow(taskVariables)),
+                               energyNonEco = rep(NA, nrow(taskVariables)),
+                               popularityNonEco = rep(NA, nrow(taskVariables))
+) 
+
+# create mask to indicate whether Option B was eco (true) or Option A was eco (false)
+mask <- taskVariables$Energy_A > taskVariables$Energy_B
+
+
+# fill new data frame taskVariablesEco
+
+for (i in 1:nrow(taskVariables)){
+  # fill task variable with respective task number (1-15)
+  taskVariablesEco$task[i] <- i
+  
+  # fill task values in correct order, depending on whether Option A or B was the EcoOption
+  if (mask[i] == T) {
+    
+    # if Option B is eco, the elements of B from taskVariables need to be copied to the Eco-Option of taskVariablesEco and vice-versa for A
+    taskVariablesEco[i, 2:4] <- taskVariables[i, 5:7]
+    taskVariablesEco[i, 5:7] <- taskVariables[i, 2:4]
+    
+  } else {
+    
+    # if Option A is eco, the elements from taskVariables (row i, column 2:end) can just be copied
+    taskVariablesEco[i, 2:ncol(taskVariables)] <- taskVariables[i, 2:ncol(taskVariables)]
+    
+  }
+  
+}
+
+rm(i, mask)
+
+### Normalize task values -----
+
+# Rescale attribute values to equal ranges 
+# [1] Berkowitsch et al., 2015: https://bpspsychub.onlinelibrary.wiley.com/doi/10.1111/bmsp.12048 
+
+#function for normalization 
+normalizeValue <- function(v_old, min_old, max_old, min_new, max_new){
+  
+  v_new <- min_new + (v_old - min_old)*(max_new - min_new)/(max_old - min_old)
+  return(v_new)
+  
+}
+
+# note: since the smallest price, energy consumption or popularity score is the best, set 10 to minimal value and 1 to maximum
+taskVariablesNormalized <- as.data.frame(apply(taskVariablesEco, 2, function(x) {
+  min_x <- min(x)
+  max_x <- max(x)
+  normalized_column <- sapply(x, function(value) {
+    normalizeValue(value, min_x, max_x, 10, 1)  # Normalize to [1, 10]
+  })
+  return(normalized_column)
+}))
+
+# since first column (task-number) was also normalized, set this back to the original task numbers
+taskVariablesNormalized$task <- 1:15
+
+
+### Merge normalized task variables with data frame ------
+
+df <- merge(df, taskVariablesNormalized, by = "task", all.x=T)
+
+saveRDS(taskVariablesNormalized, file = "data/taskVariablesNormalized.rds")
+
+
+### Select relevant choice problems 
+# --> energy & water consumption were of equal amount in choice problems 5, 8, and 10
 
 #data frame with all trials
 dfAllTrials <- df
