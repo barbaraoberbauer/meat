@@ -56,16 +56,24 @@ rm(package, packages, is_package_installed)
 
 df <- readRDS("data/df.rds")
 
+### Specify subset of data ----
+
+group_of_interest <- "environmental_friendliness"
+# groups: "control", "emissions", "operating_costs", "environmental_friendliness"
+
+df_subset <- df %>%
+  filter(consumption_translation == group_of_interest)
+
 # assign new ids that are starting from 1 and increment by 1
-df <- df %>%
+df_subset <- df_subset %>%
   mutate(id_new = dense_rank(id))
 
 # sort data frame according to id_new (starting from 1 to last participant)
-df <- df[order(df$id_new),]
+df_subset <- df_subset[order(df_subset$id_new),]
 
 # create data frame for minRT
-min_rt <- df %>%
-  group_by(id_new, session, consumption_translation) %>%
+min_rt <- df_subset %>%
+  group_by(id_new, session) %>%
   summarize(minRT = min(t_decision)/1000)
 
 
@@ -80,7 +88,7 @@ min_rt <- df %>%
 # choice = selection of energy-efficient option (0 = no, 1 = yes)
 # lower boundary will code selection of less energy_efficient option (former 0)
 
-df <- df %>%
+df_subset <- df_subset %>%
   mutate(t_decision = case_when(choice == 0 ~ t_decision * -1/1000,
                                 choice == 1 ~ t_decision * 1/1000))
 
@@ -88,20 +96,20 @@ df <- df %>%
 ### Calculate fixation proportions (fixprops) ------
 
 # fixProps -> acquistion time for each attribute proportional to the total duration of the trial (vector containing six elements in our case)
-fixProps <- data.frame(price0 = rep(NA, nrow(df)),
-                       consumption0 = rep(NA, nrow(df)),
-                       popularity0 = rep(NA, nrow(df)),
-                       price1 = rep(NA, nrow(df)),
-                       consumption1 = rep(NA, nrow(df)),
-                       popularity1 = rep(NA, nrow(df))) 
+fixProps <- data.frame(price0 = rep(NA, nrow(df_subset)),
+                       consumption0 = rep(NA, nrow(df_subset)),
+                       popularity0 = rep(NA, nrow(df_subset)),
+                       price1 = rep(NA, nrow(df_subset)),
+                       consumption1 = rep(NA, nrow(df_subset)),
+                       popularity1 = rep(NA, nrow(df_subset))) 
 
 # attributes and their translation are treated as one attribute for simplicity
-fixProps$price0 <- rowSums(df[, c("t_price0", "t_price_translation0")], na.rm = TRUE)/1000
-fixProps$consumption0 <- rowSums(df[, c("t_consumption0", "t_consumption_translation0")], na.rm = TRUE)/1000
-fixProps$popularity0 <- df$t_popularity0/1000
-fixProps$price1 <- rowSums(df[, c("t_price1", "t_price_translation1")], na.rm = TRUE)/1000
-fixProps$consumption1 <- rowSums(df[, c("t_consumption1", "t_consumption_translation1")], na.rm = TRUE)/1000
-fixProps$popularity1 <- df$t_popularity1/1000
+fixProps$price0 <- rowSums(df_subset[, c("t_price0", "t_price_translation0")], na.rm = TRUE)/1000
+fixProps$consumption0 <- rowSums(df_subset[, c("t_consumption0", "t_consumption_translation0")], na.rm = TRUE)/1000
+fixProps$popularity0 <- df_subset$t_popularity0/1000
+fixProps$price1 <- rowSums(df_subset[, c("t_price1", "t_price_translation1")], na.rm = TRUE)/1000
+fixProps$consumption1 <- rowSums(df_subset[, c("t_consumption1", "t_consumption_translation1")], na.rm = TRUE)/1000
+fixProps$popularity1 <- df_subset$t_popularity1/1000
 
 # divide by total duration of the trial
 fixProps <- fixProps/abs(df$t_decision) #take absolute value instead of +/- coded RT
@@ -110,17 +118,7 @@ fixProps <- fixProps/abs(df$t_decision) #take absolute value instead of +/- code
 fixProps <- fixProps/rowSums(fixProps) 
 
 # sample size
-SampleSize <- length(unique(df$id_new))
-
-
-### Specify subset of data -------
-
-group_of_interest <- "environmental_friendliness"
-# groups: "control", "emissions", "operating_costs", "environmental_friendliness"
-
-df_subset <- df %>%
-  filter(consumption_translation == group_of_interest)
-
+SampleSize <- length(unique(df_subset$id_new))
 
 # Specify model ------
 
