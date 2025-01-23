@@ -51,7 +51,7 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-df <- readRDS("00_Data/df.rds")
+df <- readRDS("data/df.rds")
 
 
 ### Load color paletts ----------
