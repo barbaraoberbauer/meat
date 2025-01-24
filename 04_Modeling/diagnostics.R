@@ -42,6 +42,11 @@ library(dplyr)
 library(rjags)
 library(runjags)
 
+# Load function written by John Kruschke for diagnostics
+# https://github.com/boboppie/kruschke-doing_bayesian_data_analysis/blob/master/2e/DBDA2E-utilities.R
+source("functions/DBDA2E-utilities.R")
+
+
 
 rm(package, packages, is_package_installed)
 
@@ -56,6 +61,8 @@ group_of_interest <- "environmental_friendliness"
 filename <- paste0("data/runJagsOut_", group_of_interest, ".rds")
 
 runJagsOut <- readRDS(filename)
+
+mcmcfin <- as.mcmc.list(runJagsOut)
 
 rm(filename)
 
@@ -92,6 +99,62 @@ MCSE <- summary_statistics$mcse
 
 ESS <- MCSE$sseff
 
+# Visual Inspection (following Kruschke, 2014) ------
+
+### Boundary -----
+
+diagMCMC(codaObject = mcmcfin, parName = "mu_dalpha")
+
+openGraph(height=5, width=7)
+plotPost(mcmcfin[, "mu_dalpha"], main="mu_dalpha", xlab=bquote(mu_dalpha))
+
+
+###### Scaling ----
+
+diagMCMC(codaObject = mcmcfin, parName = "mu_dscaling")
+
+openGraph(height=5, width=7)
+plotPost(mcmcfin[, "mu_dscaling"], main="mu_dscaling", xlab=bquote(mu_dscaling))
+
+
+###### Tau -----
+
+diagMCMC(codaObject = mcmcfin, parName = "mu_dtau")
+
+openGraph(height=5, width=7)
+plotPost(mcmcfin[, "mu_dtau"], main="mu_dtau", xlab=bquote(mu_dtau))
+
+
+###### Theta -----
+
+diagMCMC(codaObject = mcmcfin, parName = "mu_dtheta")
+
+openGraph(height=5, width=7)
+plotPost(mcmcfin[, "mu_dtheta"], main="mu_dtheta", xlab=bquote(mu_dtheta))
+
+
+###### Phi -----
+
+diagMCMC(codaObject = mcmcfin, parName = "mu_dphi")
+
+openGraph(height=5, width=7)
+plotPost(mcmcfin[, "mu_dphi"], main="mu_dphi", xlab=bquote(mu_dphi))
+
+
+###### Weight Price ----
+
+diagMCMC(codaObject = mcmcfin, parName = "mu_dw1")
+
+openGraph(height=5, width=7)
+plotPost(mcmcfin[, "mu_dw1"], main="mu_dw1", xlab=bquote(mu_dw1))
+
+
+###### Weight Energy ----
+
+diagMCMC(codaObject = mcmcfin, parName = "mu_dw2")
+
+openGraph(height=5, width=7)
+plotPost(mcmcfin[, "mu_dw2"], main="mu_dw2", xlab=bquote(mu_dw2))
 
 
 
