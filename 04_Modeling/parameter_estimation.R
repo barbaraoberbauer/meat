@@ -239,7 +239,7 @@ model_specifications <- list(
   nchains = nchains,
   nAdaptSteps = nAdaptSteps,
   nBurninSteps = nBurninSteps,
-  nUseSteps = nchains * 4000, # total number of used steps
+  nUseSteps = nchains * 5000, # total number of used steps
   nThinSteps = nThinSteps
 )
 
