@@ -20,9 +20,11 @@ maaDDM <- function(dat, monitor, model_file, model_specifications) {
                          module = "wiener",
                          data = dat,
                          n.chains = model_specifications$nchains,
+                         #inits = inits,
                          adapt = model_specifications$nAdaptSteps,
                          burnin = model_specifications$nBurninSteps,
                          sample = ceiling(model_specifications$nUseSteps/model_specifications$nchains),
+                         thin = nThinSteps,
                          summarise = TRUE,
                          plots = FALSE)
   
