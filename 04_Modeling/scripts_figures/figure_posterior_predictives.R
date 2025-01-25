@@ -1,0 +1,134 @@
+#---
+# title: "Computational Mechanisms of Attribute Translations" 
+# author: Barbara Oberbauer (barbara.oberbauer@uni-hamburg.de)
+# last update: "2025-01-23"
+# produced under R version: 2024.09.0
+#---
+
+# Load packages and read data ------
+
+### Clear environment -------
+
+#clear working environment
+rm(list=ls())
+
+#clear all plots
+if(!is.null(dev.list())) dev.off()
+
+### Install packages -------
+
+# List of packages to check and install if necessary
+packages <- c("tidyverse",
+              "dplyr",
+              "ggplot2")
+
+# Function to check if a package is installed
+is_package_installed <- function(package_name) {
+  is.element(package_name, installed.packages()[, "Package"])
+}
+
+# Iterate through the list of packages
+for (package in packages) {
+  if (!is_package_installed(package)) {
+    # Install the package
+    install.packages(package)
+  }
+}
+
+# Load required libraries
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+
+
+rm(package, packages, is_package_installed)
+
+
+### Load data ------
+
+# specify subset of data 
+
+group_of_interest <- "environmental_friendliness"
+# groups: "control", "emissions", "operating_costs", "environmental_friendliness"
+
+filename <- paste0("data/simResults_", group_of_interest, ".rds")
+
+simResults <- readRDS(filename)
+
+rm(filename)
+
+df <- readRDS("data/df.rds")
+
+df_subset <- df %>%
+  filter(consumption_translation == group_of_interest)
+
+
+# Calculate Bayesian Credibility Intervals for each Bin of Plot ----------
+
+### Preparations
+
+# calculate max empirical response time to determine bins
+maxRT <- max(df_subset$t_decision) + 1 #extend max response time so that max RT is also in bin
+
+
+# determine binwidth
+binwidth <- 1.4
+
+# create breaks
+breaks <- seq(0, 
+              maxRT, 
+              by = binwidth)
+
+
+# calculate frequencies
+frequency <- df_subset %>%
+  mutate(bins = cut(t_decision/1000, breaks = breaks, include.lowest = TRUE)) %>%
+  group_by(session, choice, bins) %>%
+  summarize(count = n(), .groups = 'drop') %>%
+  ungroup() %>%
+  complete(session, choice, bins, fill = list(count = 0))
+
+# add mid of bins to frequency
+# calculate mid bins
+mid_bins <- seq(binwidth/2, length.out = length(breaks)-1, by = binwidth)
+frequency$mid_bins <- rep(mid_bins, 4)
+
+# set up data frame to store frequencies from simulation runs
+frequencies_sim <- frequency %>%
+  select("session", "choice", "bins", "mid_bins")
+
+
+### Calculate Frequencies for Simulated Data -----
+
+# loop through all runs
+
+for (run in 1:ncol(simResults)) {
+  
+  # add choice and session info
+  subset_sim <- as.data.frame(simResults[,run])
+  names(subset_sim)[1] <- "t_decision"
+  subset_sim$choice <- ifelse(subset_sim$t_decision > 0, 1, 0)
+  subset_sim$t_decision <- abs(subset_sim$t_decision)
+  subset_sim$session <- df_subset$session
+  
+  # calculate frequencies
+  subset_frequency_sim <- subset_sim %>%
+    mutate(bins = cut(abs(t_decision), breaks = breaks, include.lowest = TRUE)) %>%
+    group_by(session, choice, bins) %>%
+    summarize(count = n(), .groups = 'drop') %>%
+    ungroup() %>%
+    complete(session, choice, bins, fill = list(count = 0))
+  
+  # add to frequencies_sim data frame
+  frequencies_sim <- frequencies_sim %>%
+    left_join(subset_frequency_sim,
+              by = c("session", "choice", "bins"))
+  
+  # rename column
+  colnames(frequencies_sim)[ncol(frequencies_sim)] <- paste0("sim_", run)
+  
+}
+
+# continue here, new data frame did not fit old simulation results
+
+
