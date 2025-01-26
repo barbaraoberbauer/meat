@@ -22,7 +22,8 @@ packages <- c("tidyverse",
               "dplyr",
               "ggplot2",
               "rjags",
-              "cowplot")
+              "cowplot",
+              "runjags")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -43,6 +44,7 @@ library(dplyr)
 library(ggplot2)
 library(rjags)
 library(cowplot)
+library(runjags)
 
 # Load required functions
 source("functions/fun_plot_posterior_distributions.R")
