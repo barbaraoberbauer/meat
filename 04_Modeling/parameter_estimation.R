@@ -45,10 +45,6 @@ library(parallel)
 # Load required modules
 load.runjagsmodule("wiener")
 
-# Load required functions
-source("functions/fun_maaDDM.R")
-
-
 rm(package, packages, is_package_installed)
 
 
@@ -72,9 +68,9 @@ df_subset <- df_subset %>%
 df_subset <- df_subset[order(df_subset$id_new),]
 
 # create data frame for minRT
-min_rt <- df_subset %>%
-  group_by(id_new, session) %>%
-  summarize(minRT = min(t_decision)/1000)
+# min_rt <- df_subset %>%
+#   group_by(id_new, session) %>%
+#   summarize(minRT = min(t_decision)/1000)
 
 
 # Prepare data for modelling ------
@@ -231,7 +227,7 @@ model_specifications <- list(
   nchains = nchains,
   nAdaptSteps = nAdaptSteps,
   nBurninSteps = nBurninSteps,
-  nUseSteps = nchains * 5000, # total number of used steps
+  nUseSteps = nchains * 4000, # total number of used steps
   nThinSteps = nThinSteps
 )
 
@@ -242,7 +238,25 @@ model_file <- "04_Modeling/bayes_models/hierarchical_bayesian_maaDDM_nobounds.tx
 
 # Run model ------
 
-runJagsOut <- maaDDM(dat, monitor, model_file, model_specifications)
+# set up cluster manually and make sure module is loaded before running the model
+# https://sourceforge.net/p/runjags/forum/general/thread/e34ce49c3c/ 
+cl <- makePSOCKcluster(nchains)
+clusterCall(cl, function(x) require("wiener"))
+
+runJagsOut <- run.jags(method = "parallel",
+                       model = model_file,
+                       monitor = monitor,
+                       module = "wiener",
+                       data = dat,
+                       n.chains = model_specifications$nchains,
+                       #inits = inits,
+                       adapt = model_specifications$nAdaptSteps,
+                       burnin = model_specifications$nBurninSteps,
+                       sample = ceiling(model_specifications$nUseSteps/model_specifications$nchains),
+                       thin = nThinSteps,
+                       summarise = TRUE,
+                       plots = FALSE)
+
 
 ### Save model output ------
 
