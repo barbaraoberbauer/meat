@@ -105,7 +105,7 @@ fixProps$consumption1 <- rowSums(df_subset[, c("t_consumption1", "t_consumption_
 fixProps$popularity1 <- df_subset$t_popularity1/1000
 
 # divide by total duration of the trial
-fixProps <- fixProps/abs(df$t_decision) #take absolute value instead of +/- coded RT
+fixProps <- fixProps/abs(df_subset$t_decision) #take absolute value instead of +/- coded RT
 
 # normalize each trial to 1
 fixProps <- fixProps/rowSums(fixProps)
