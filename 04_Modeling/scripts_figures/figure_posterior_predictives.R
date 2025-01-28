@@ -20,7 +20,8 @@ if(!is.null(dev.list())) dev.off()
 # List of packages to check and install if necessary
 packages <- c("tidyverse",
               "dplyr",
-              "ggplot2")
+              "ggplot2",
+              "cowplot")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -39,6 +40,10 @@ for (package in packages) {
 library(tidyverse)
 library(dplyr)
 library(ggplot2)
+library(cowplot)
+
+# Load required functions
+source("functions/fun_plot_posterior_predictives.R")
 
 
 rm(package, packages, is_package_installed)
@@ -68,11 +73,11 @@ df_subset <- df %>%
 ### Preparations
 
 # calculate max empirical response time to determine bins
-maxRT <- max(df_subset$t_decision) + 1 #extend max response time so that max RT is also in bin
+maxRT <- (max(df_subset$t_decision)/1000) + 1 #extend max response time so that max RT is also in bin
 
 
 # determine binwidth
-binwidth <- 1.4
+binwidth <- 1.2
 
 # create breaks
 breaks <- seq(0, 
@@ -129,6 +134,57 @@ for (run in 1:ncol(simResults)) {
   
 }
 
-# continue here, new data frame did not fit old simulation results
+### Calculate BCIs ---------
+
+# Define the boundaries for quantiles
+lower_boundary <- 0.025
+upper_boundary <- 0.975
+
+# calculate bcis for each row
+frequencies_sim$lower_bci <- apply(frequencies_sim[,5:ncol(frequencies_sim)],
+                                   1,
+                                   function(row) quantile(row, lower_boundary, na.rm = FALSE))
+
+frequencies_sim$upper_bci <- apply(frequencies_sim[,5:ncol(frequencies_sim)],
+                                   1,
+                                   function(row) quantile(row, upper_boundary, na.rm = FALSE))
+
+# add lower and upper bci to empirical data (frequency)
+frequency <- frequency %>%
+  left_join(frequencies_sim %>%
+              select(session, choice, bins, lower_bci, upper_bci), 
+            by = c("session", "choice", "bins"))
+
+rm(binwidth, breaks, lower_boundary, upper_boundary, maxRT, run)
 
 
+# Plot Frequencies of Empirical and Simulated Data ------
+
+### Set Prerequisites -----
+
+# set colors
+color_choice <- c("#CBCBD4", "#556F44") # non-eco, eco choice
+color_error <- '#cb181d'
+
+# rename count column
+names(frequency)[4] <- "count_emp"
+
+### Plot Sim and Emp Data for both Sessions ------
+
+post_pred_session_1 <- plot_posterior_predictives(1, "Baseline Session")
+
+post_pred_session_2 <- plot_posterior_predictives(2, "Manipulation Session")
+
+### Arrange Plots in Grid
+posterior_predictives <- plot_grid(# plots
+  post_pred_session_1,
+  post_pred_session_2,
+  
+  # settings
+  ncol = 2,
+  labels = c("a", "b")
+)
+
+# save plot
+filename <- paste0("figures/posterior_predictives_", group_of_interest, ".png")
+ggsave(filename, posterior_predictives, width = 12, height = 5)

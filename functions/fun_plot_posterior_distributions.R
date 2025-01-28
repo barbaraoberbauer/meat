@@ -21,14 +21,14 @@ plot_posterior_dist <- function(combined_mcmcfin, parameter1, parameter2, bins, 
     labs(x = x_title, y = "Posterior Density", title = '') + 
     #coord_cartesian(ylim = c(0, 4500)) +
     theme_classic() +
-    theme(axis.text.x=element_text(size=13),
+    theme(axis.text.x=element_text(size=12),
           axis.text.y=element_blank(),
           axis.ticks.y=element_blank(),
           plot.margin = margin(t = 10,
                                r = 10,
                                b = 10,
                                l = 30),
-          axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 15),
-          axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 20))
+          axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 12),
+          axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 12))
   
 }
