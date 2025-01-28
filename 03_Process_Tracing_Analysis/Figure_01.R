@@ -56,7 +56,7 @@ df <- readRDS("data/df.rds")
 
 ### Load color paletts ----------
 
-color_choice <- c("#9fc8c8", "#1f6f6f") # non-eco, eco choice
+color_choice <- c("#CBCBD4", "#556F44") # non-eco, eco choice
 color_session <- c("#8cc5e3", "#2066a8") # session 1, session 2
 
 
