@@ -221,7 +221,7 @@ monitor <- c(
 nchains <- 6
 nAdaptSteps <- 5000
 nBurninSteps <- 25000
-nUseSteps = nchains * 4000, # total number of used steps
+nUseSteps = nchains * 4000 # total number of used steps
 nThinSteps <- 22
 
 ### Select model (text file) -----
