@@ -221,15 +221,8 @@ monitor <- c(
 nchains <- 6
 nAdaptSteps <- 5000
 nBurninSteps <- 25000
+nUseSteps = nchains * 4000, # total number of used steps
 nThinSteps <- 22
-
-model_specifications <- list(
-  nchains = nchains,
-  nAdaptSteps = nAdaptSteps,
-  nBurninSteps = nBurninSteps,
-  nUseSteps = nchains * 4000, # total number of used steps
-  nThinSteps = nThinSteps
-)
 
 ### Select model (text file) -----
 
@@ -248,11 +241,11 @@ runJagsOut <- run.jags(method = "parallel",
                        monitor = monitor,
                        module = "wiener",
                        data = dat,
-                       n.chains = model_specifications$nchains,
+                       n.chains = nchains,
                        #inits = inits,
-                       adapt = model_specifications$nAdaptSteps,
-                       burnin = model_specifications$nBurninSteps,
-                       sample = ceiling(model_specifications$nUseSteps/model_specifications$nchains),
+                       adapt = nAdaptSteps,
+                       burnin = nBurninSteps,
+                       sample = ceiling(nUseSteps/nchains),
                        thin = nThinSteps,
                        summarise = TRUE,
                        plots = FALSE)
