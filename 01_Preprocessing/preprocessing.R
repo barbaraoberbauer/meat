@@ -189,9 +189,22 @@ df_2 <- df %>%
 df <- bind_rows(df_1, df_2)
 remove(df_1, df_2)
 
-# Remove trials in which participants never inspect any attribute (diff_t_options == NaN)
+# Remove trials in which participants did not inspect at least two attributes (n = 399)
 df <- df %>%
-  filter(!is.na(diff_t_options))
+  filter(rowSums(select(., f_price0, 
+                          f_price1,
+                        f_consumption0,
+                        f_consumption1,
+                        f_popularity0,
+                        f_popularity1,
+                        f_consumption_translation0,
+                        f_consumption_translation1,
+                        f_price_translation0,
+                        f_price_translation1), na.rm = TRUE) > 2)
+
+# Remove trials for which total dwell time > total decision time (n = 279)
+df <- df %>%
+  filter(t_total < t_decision)
 
 n_trials_after <- nrow(df)
 
