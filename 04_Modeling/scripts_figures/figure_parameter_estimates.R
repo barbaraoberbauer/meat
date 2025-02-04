@@ -57,7 +57,7 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-group_of_interest <- "environmental_friendliness"
+group_of_interest <- "operating_costs"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
 filename <- paste0("data/runJagsOut_", group_of_interest, ".rds")

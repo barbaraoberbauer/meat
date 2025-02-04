@@ -54,7 +54,7 @@ df <- readRDS("data/df.rds")
 
 ### Specify subset of data ----
 
-group_of_interest <- "environmental_friendliness"
+group_of_interest <- "operating_costs"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
 df_subset <- df %>%
@@ -221,8 +221,8 @@ monitor <- c(
 nchains <- 6
 nAdaptSteps <- 5000
 nBurninSteps <- 25000
-nUseSteps = nchains * 4000 # total number of used steps
-nThinSteps <- 22
+nUseSteps = nchains * 6000 # total number of used steps
+nThinSteps <- 25
 
 ### Select model (text file) -----
 
