@@ -24,7 +24,9 @@ packages <- c("tidyverse",
               "lme4",
               "car",
               "dplyr",
-              "lmerTest")
+              "lmerTest",
+              "emmeans",
+              "afex")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -46,6 +48,8 @@ library(lme4)
 library(car)
 library(dplyr)
 library(lmerTest)
+library(emmeans)
+library(afex)
 
 
 rm(package, packages, is_package_installed)
@@ -63,7 +67,7 @@ desc_choice <- df %>%
 
 # Effects on Product Choice -----
 
-# Assess choice consistency in Session 1 between conditions
+### Choice Consistency in Session 1 between Conditions ------
 # Subset the data for session 1
 df_session1 <- subset(df, session == 1)
 
@@ -77,18 +81,14 @@ choice_model_session1 <- glmer(choice ~ condition + (1 | id) + (1 | task),
 Anova(choice_model_session1)
 
 
+### Check for Significant Fixed Effects
+afex::mixed(choice ~ (session | id) + (1 | task) + session * consumption_translation * price_translation, 
+            data = df, 
+            family = binomial(link = "logit"), 
+            control = glmerControl(optimizer="bobyqa", 
+                                   optCtrl = list(maxfun=2e5)),
+            method = 'LRT')
 
-# Consistency in product choice in control condition.
-choice_base <- glmer(choice ~ (session | id) + (1 | task) + session * condition, 
-                     data = df, 
-                     family = binomial(link = "logit"), 
-                     control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun=2e5)))
-Anova(choice_base)
-summary(choice_base)
-exp(cbind(est = fixef(choice_base)[1:2],
-          confint(choice_base,
-                  parm = "beta_", 
-                  level = 0.95))) # Odds ratios and confidence intervals.
 
 
 ### Control ----
@@ -101,14 +101,24 @@ choice_cntrl <- glmer(choice ~ (session | id) + (1 | task) + session * consumpti
                       family = binomial(link = "logit"), 
                       control = glmerControl(optimizer="bobyqa", 
                                              optCtrl = list(maxfun=2e5)))
-Anova(choice_cntrl)
+
+summary(choice_cntrl)
+
+
+emm <- emmeans(choice_cntrl, ~ consumption_translation * session | price_translation)
+
+# Then you can also get contrasts to see the difference between sessions
+pairwise_comparisons <- pairs(emm)
+
+summary(pairwise_comparisons)
+
 
 ### Operating Costs ------
 
 # Effect of translation of energy and water consumption (operating costs) on product choice in absence and presence of a price translation.
 contrasts(df$consumption_translation) <- 
   contr.treatment(levels(df$consumption_translation), base = 2)
-choice_csts <- glmer(choice ~ (session | id) + (1 | task) + session * consumption_translation * price_translation, 
+choice_csts <- glmer(choice ~ (session | id) + (1 | task) + session * consumption_translation, 
                      data = df, 
                      family = binomial(link = "logit"), 
                      control = glmerControl(optimizer="bobyqa", 
@@ -124,7 +134,7 @@ exp(cbind(est = fixef(choice_csts), confint(choice_csts,
 # Effect of translation of energy and water consumption (carbon emissions) on product choice in absence and presence of a price translation.
 contrasts(df$consumption_translation) <- 
   contr.treatment(levels(df$consumption_translation), base = 3)
-choice_crbn <- glmer(choice ~ (session | id) + (1 | task) + session * consumption_translation * price_translation, 
+choice_crbn <- glmer(choice ~ (session | id) + (1 | task) + session * consumption_translation, 
                      data = df, 
                      family = binomial(link = "logit"), 
                      control = glmerControl(optimizer="bobyqa", 
@@ -139,7 +149,7 @@ exp(cbind(est = fixef(choice_crbn), confint(choice_crbn,
 
 # Effect of translation of energy and water consumption (environmental friendliness rating) on product choice in absence and presence of a price translation. 
 contrasts(df$consumption_translation) <- contr.treatment(levels(df$consumption_translation), base = 4)
-choice_rtng <- glmer(choice ~ (session | id) + (1 | task) + session * consumption_translation * price_translation, 
+choice_rtng <- glmer(choice ~ (session | id) + (1 | task) + session * consumption_translation, 
                      data = df, 
                      family = binomial(link = "logit"), 
                      control = glmerControl(optimizer="bobyqa", 
