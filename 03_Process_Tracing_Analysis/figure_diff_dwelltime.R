@@ -173,7 +173,7 @@ dt_options_plot <-
 
 
 # Save plot
-ggsave("figures/figure_prop_dwellTime.png", dt_options_plot, width = 8, height = 5, bg = "white")
+ggsave("figures/diff_dwellTime.png", dt_options_plot, width = 8, height = 5, bg = "white")
 
 
 
