@@ -99,6 +99,7 @@ df_agg_id %>%
        y = "Probability of Choosing More Ecological Option", 
        title = '',
        fill = "Session") + 
+  theme_bw() +
   theme(axis.text.x=element_text(size=10),
         plot.margin = margin(t = 10,
                              r = 10,
@@ -109,7 +110,11 @@ df_agg_id %>%
         legend.title = element_text(size = 10),
         legend.text = element_text(size = 8),
         legend.key.size = unit(0.5, "cm"),
-        legend.position = "top") 
+        legend.position = "top",
+        strip.text = element_text(size = 10),
+        strip.background = element_rect(fill="#DAD2D8")
+  )
+
 
 # Save plot
 ggsave("figures/choice_probability.png", fig_choice_prob, width = 10, height = 6)
