@@ -20,7 +20,7 @@ plot_posterior_predictives <- function(session_value, title){
     
     # Shaded area for error bounds for choice == 1
     geom_ribbon(data = subset(frequency, choice == 1 & session == session_value),
-                aes(ymin = lower_bci, ymax = upper_bci),
+                aes(ymin = lower_CI, ymax = upper_CI),
                 fill = color_error,
                 alpha = 0.3) + # Adjust transparency as needed
     
@@ -34,7 +34,7 @@ plot_posterior_predictives <- function(session_value, title){
     
     # Shaded area for error bounds for choice == 1
     geom_ribbon(data = subset(frequency, choice == 0 & session == session_value),
-                aes(ymin = -lower_bci, ymax = -upper_bci),
+                aes(ymin = -lower_CI, ymax = -upper_CI),
                 fill = color_error,
                 alpha = 0.3) + # Adjust transparency as needed
     
