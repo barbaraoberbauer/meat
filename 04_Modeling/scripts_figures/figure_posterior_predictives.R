@@ -21,7 +21,8 @@ if(!is.null(dev.list())) dev.off()
 packages <- c("tidyverse",
               "dplyr",
               "ggplot2",
-              "cowplot")
+              "cowplot",
+              "bayestestR")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -41,6 +42,7 @@ library(tidyverse)
 library(dplyr)
 library(ggplot2)
 library(cowplot)
+library(bayestestR)
 
 # Load required functions
 source("functions/fun_plot_posterior_predictives.R")
@@ -136,26 +138,50 @@ for (run in 1:ncol(simResults)) {
 
 ### Calculate BCIs ---------
 
+###### Equal-tail BCIs ------
+
 # Define the boundaries for quantiles
-lower_boundary <- 0.025
-upper_boundary <- 0.975
+# lower_boundary <- 0.025
+# upper_boundary <- 0.975
+# 
+# # calculate bcis for each row
+# frequencies_sim$lower_bci <- apply(frequencies_sim[,5:ncol(frequencies_sim)],
+#                                    1,
+#                                    function(row) quantile(row, lower_boundary, na.rm = FALSE))
+# 
+# frequencies_sim$upper_bci <- apply(frequencies_sim[,5:ncol(frequencies_sim)],
+#                                    1,
+#                                    function(row) quantile(row, upper_boundary, na.rm = FALSE))
+# 
+# # add lower and upper bci to empirical data (frequency)
+# frequency <- frequency %>%
+#   left_join(frequencies_sim %>%
+#               select(session, choice, bins, lower_bci, upper_bci), 
+#             by = c("session", "choice", "bins"))
+# 
+# rm(binwidth, breaks, lower_boundary, upper_boundary, maxRT, run)
 
-# calculate bcis for each row
-frequencies_sim$lower_bci <- apply(frequencies_sim[,5:ncol(frequencies_sim)],
-                                   1,
-                                   function(row) quantile(row, lower_boundary, na.rm = FALSE))
+###### HDIs --------
 
-frequencies_sim$upper_bci <- apply(frequencies_sim[,5:ncol(frequencies_sim)],
+# convert to numeric matrix
+frequencies_sim[, 5:ncol(frequencies_sim)] <- sapply(frequencies_sim[, 5:ncol(frequencies_sim)], as.numeric)
+
+
+HDIs <- apply(frequencies_sim[,5:ncol(frequencies_sim)],
                                    1,
-                                   function(row) quantile(row, upper_boundary, na.rm = FALSE))
+                                   FUN = function(row) bayestestR::hdi(row, verbose = FALSE))
+
+lower_CI <- unlist(sapply(HDIs, function(x) x["CI_low"]))
+upper_CI <- unlist(sapply(HDIs, function(x) x["CI_high"]))
+
+frequencies_sim$lower_CI <- lower_CI
+frequencies_sim$upper_CI <- upper_CI
 
 # add lower and upper bci to empirical data (frequency)
 frequency <- frequency %>%
   left_join(frequencies_sim %>%
-              select(session, choice, bins, lower_bci, upper_bci), 
+              select(session, choice, bins, lower_CI, upper_CI), 
             by = c("session", "choice", "bins"))
-
-rm(binwidth, breaks, lower_boundary, upper_boundary, maxRT, run)
 
 
 # Plot Frequencies of Empirical and Simulated Data ------
