@@ -75,6 +75,10 @@ df_subset <- df_subset[order(df_subset$id_new),]
 
 # Prepare data for modelling ------
 
+### Bounded or Unbounded Attentional Parameters? ------
+
+bounded <- TRUE # set to TRUE for bounded model, set to FALSE for unbounded model
+
 ### Transform Response Times -----
 
 # Choice response time data should be coded in such a way that lower boundary
@@ -226,7 +230,17 @@ nThinSteps <- 25
 
 ### Select model (text file) -----
 
-model_file <- "04_Modeling/bayes_models/hierarchical_bayesian_maaDDM_nobounds.txt"
+if (bounded == TRUE) {
+ 
+  model_file <- "04_Modeling/bayes_models/hierarchical_bayesian_maaDDM_bounds.txt"
+  file_extension <- "_bounds"
+  
+} else if (bounded == FALSE) {
+  
+  model_file <- "04_Modeling/bayes_models/hierarchical_bayesian_maaDDM_nobounds.txt"
+  file_extension <- "_nobounds"
+  
+}
 
 
 # Run model ------
@@ -253,5 +267,5 @@ runJagsOut <- run.jags(method = "parallel",
 
 ### Save model output ------
 
-filename <- paste0("data/runJagsOut_", group_of_interest, ".rds")
+filename <- paste0("data/runJagsOut_", group_of_interest, file_extension, ".rds")
 saveRDS(runJagsOut, file = filename)
