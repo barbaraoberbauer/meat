@@ -68,6 +68,7 @@ desc_choice <- df %>%
 # Effects on Product Choice -----
 
 ### Choice Consistency in Session 1 between Conditions ------
+
 # Subset the data for session 1
 df_session1 <- subset(df, session == 1)
 
@@ -81,164 +82,87 @@ choice_model_session1 <- glmer(choice ~ condition + (1 | id) + (1 | task),
 Anova(choice_model_session1)
 
 
-### Check for Significant Fixed Effects
-afex::mixed(choice ~ (session | id) + (1 | task) + session * consumption_translation * price_translation, 
-            data = df, 
-            family = binomial(link = "logit"), 
-            control = glmerControl(optimizer="bobyqa", 
-                                   optCtrl = list(maxfun=2e5)),
-            method = 'LRT')
+### Check for Significant Fixed Effects -------
+fixed_effects_choice <- afex::mixed(choice ~ (session | id) + (1 | task) + session * consumption_translation * price_translation, 
+                    data = df, 
+                    family = binomial(link = "logit"), 
+                    control = glmerControl(optimizer="bobyqa", 
+                                           optCtrl = list(maxfun=2e5)),
+                    method = 'LRT')
 
 
 
-### Control ----
+### Set up model ----
 
 # Effect of translation of energy and water consumption (no translation/control) on product choice in absence and presence of a price translation. 
 contrasts(df$consumption_translation) <- 
   contr.treatment(levels(df$consumption_translation), base = 1)
-choice_cntrl <- glmer(choice ~ (session | id) + (1 | task) + session * consumption_translation * price_translation, 
+choice_model <- glmer(choice ~ (session | id) + (1 | task) + session * consumption_translation * price_translation, 
                       data = df, 
                       family = binomial(link = "logit"), 
                       control = glmerControl(optimizer="bobyqa", 
                                              optCtrl = list(maxfun=2e5)))
 
-summary(choice_cntrl)
+summary(choice_model)
 
 
-emm <- emmeans(choice_cntrl, ~ consumption_translation * session | price_translation)
+### EMM Comparison -------
 
-# Then you can also get contrasts to see the difference between sessions
-pairwise_comparisons <- pairs(emm)
+EMM <- emmeans(choice_model, 
+               ~ consumption_translation * session * price_translation, 
+               type = "response")
 
-summary(pairwise_comparisons)
+emm_session <- pairs(EMM, simple = "session")
 
+emm_session_confint <- confint(emm_session)
 
-### Operating Costs ------
-
-# Effect of translation of energy and water consumption (operating costs) on product choice in absence and presence of a price translation.
-contrasts(df$consumption_translation) <- 
-  contr.treatment(levels(df$consumption_translation), base = 2)
-choice_csts <- glmer(choice ~ (session | id) + (1 | task) + session * consumption_translation, 
-                     data = df, 
-                     family = binomial(link = "logit"), 
-                     control = glmerControl(optimizer="bobyqa", 
-                                            optCtrl = list(maxfun=2e5)))
-summary(choice_csts)
-exp(cbind(est = fixef(choice_csts), confint(choice_csts, 
-                                            parm = "beta_", 
-                                            level = 0.95))) # Odds ratios and confidence intervals.
-
-
-### Carbon Emissions -----
-
-# Effect of translation of energy and water consumption (carbon emissions) on product choice in absence and presence of a price translation.
-contrasts(df$consumption_translation) <- 
-  contr.treatment(levels(df$consumption_translation), base = 3)
-choice_crbn <- glmer(choice ~ (session | id) + (1 | task) + session * consumption_translation, 
-                     data = df, 
-                     family = binomial(link = "logit"), 
-                     control = glmerControl(optimizer="bobyqa", 
-                                            optCtrl = list(maxfun=2e5)))
-summary(choice_crbn)
-exp(cbind(est = fixef(choice_crbn), confint(choice_crbn, 
-                                            parm = "beta_", 
-                                            level = 0.95))) # Odds ratios and confidence intervals.
-
-
-### Rating -----
-
-# Effect of translation of energy and water consumption (environmental friendliness rating) on product choice in absence and presence of a price translation. 
-contrasts(df$consumption_translation) <- contr.treatment(levels(df$consumption_translation), base = 4)
-choice_rtng <- glmer(choice ~ (session | id) + (1 | task) + session * consumption_translation, 
-                     data = df, 
-                     family = binomial(link = "logit"), 
-                     control = glmerControl(optimizer="bobyqa", 
-                                            optCtrl = list(maxfun=2e5)))
-summary(choice_rtng)
-exp(cbind(est = fixef(choice_rtng), confint(choice_rtng, 
-                                            parm = "beta_", 
-                                            level = 0.95))) # Odds ratios and confidence intervals.
 
 
 # Effects on Attention -----
 
-# original random effects structure is not supported for our data (due to singularity)
-attention_base <- lmer(diff_t_options ~ (session | id) + (1| task) + session * condition, 
-                       data = df, 
-                       REML = FALSE, 
-                       control = lmerControl(optimizer="bobyqa", 
-                                             optCtrl = list(maxfun=2e5)))
-
-anova(attention_base)
-summary(attention_base)
-
-# reduced model
-attention_red <- lmer(diff_t_options ~ session * condition + (1 | id) + (1| task), 
-                       data = df, 
-                       REML = FALSE, 
-                       control = lmerControl(optimizer="bobyqa", 
-                                             optCtrl = list(maxfun=2e5)))
-Anova(attention_red)
-summary(attention_red)
-
-contr <- diag(length(fixef(attention_red)))[11:16,]
-contest(attention_red, L = contr)
-
-
-# Assess choice consistency in Session 1 between conditions
+### Attention Consistency in Session 1 between Conditions ------
 
 # Fit a model without the session interaction
-attention_session1 <- lmer(diff_t_options ~ condition + (1 | id) + (1 | task), 
+att_model_session1 <- lmer(diff_t_options ~ condition + (1 | id) + (1 | task), 
                                data = df_session1, 
                                REML = FALSE,
                                control = lmerControl(optimizer="bobyqa", 
                                                      optCtrl = list(maxfun=2e5)))
 
 # Perform an ANOVA to see if condition has a significant effect
-Anova(attention_session1)
+Anova(att_model_session1)
 
-### Control -------
+
+### Check for Significant Fixed Effects -------
+fixed_effects_att <- afex::mixed(diff_t_options ~ (1 | id) + (1 | task) + session * consumption_translation * price_translation, 
+                             data = df, 
+                             REML = FALSE, 
+                             control = lmerControl(optimizer="bobyqa", 
+                                                    optCtrl = list(maxfun=2e5)),
+                             method = 'LRT')
+
+
+### Set up model -------
 
 contrasts(df$consumption_translation) <- 
   contr.treatment(levels(df$consumption_translation), base = 1)
-attention_cntrl <- lmer(diff_t_options ~ (1 | id) + (1| task) + session * consumption_translation * price_translation, 
+attention_model <- lmer(diff_t_options ~ (1 | id) + (1| task) + session * consumption_translation * price_translation, 
                         data = df, 
                         REML = FALSE, 
                         control = lmerControl(optimizer="bobyqa", optCtrl = list(maxfun=2e5)))
-Anova(attention_cntrl)
-summary(attention_cntrl)
 
-### Operating Costs -------
+summary(attention_model)
 
-contrasts(df$consumption_translation) <- 
-  contr.treatment(levels(df$consumption_translation), base = 2)
-attention_csts <- lmer(diff_t_options ~ (1 | id) + (1| task) + session * consumption_translation , 
-                       data = df, 
-                       REML = FALSE, 
-                       control = lmerControl(optimizer="bobyqa", optCtrl = list(maxfun=2e5)))
-summary(attention_csts)
-confint(attention_csts, parm = "beta_", level = 0.95) # Confidence intervals.
 
-### Carbon emissions ------
+### EMM Comparison -------
 
-contrasts(df$consumption_translation) <- 
-  contr.treatment(levels(df$consumption_translation), base = 3)
-attention_crbn <- lmer(diff_t_options ~ (1 | id) + (1| task) + session * consumption_translation , 
-                       data = df, 
-                       REML = FALSE, 
-                       control = lmerControl(optimizer="bobyqa", 
-                                             optCtrl = list(maxfun=2e5)))
-summary(attention_crbn)
-confint(attention_crbn, parm = "beta_", level = 0.95) # Confidence intervals.
+EMM_att <- emmeans(attention_model, 
+               ~ consumption_translation * session * price_translation, 
+               type = "response")
 
-### Rating ------
+emm_session_att <- pairs(EMM_att, simple = "session")
 
-contrasts(df$consumption_translation) <- 
-  contr.treatment(levels(df$consumption_translation), base = 4)
-attention_rtng <- lmer(diff_t_options ~ (1 | id) + (1| task) + session * consumption_translation * price_translation, 
-                       data = df, 
-                       REML = FALSE, 
-                       control = lmerControl(optimizer="bobyqa", 
-                                             optCtrl = list(maxfun=2e5)))
-summary(attention_rtng)
-confint(attention_rtng, parm = "beta_", level = 0.95) # Confidence intervals.
+emm_session_att_confint <- confint(emm_session_att)
+
+
+
