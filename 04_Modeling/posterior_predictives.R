@@ -233,7 +233,7 @@ for (sim in 1:simRuns) {
 
 ### Save simulated data
 
-filename <- paste0("data/simResults_", group_of_interest, ".rds")
+filename <- paste0("data/simResults_", group_of_interest, file_extension, ".rds")
 saveRDS(sim_results, file = filename)
 
 
