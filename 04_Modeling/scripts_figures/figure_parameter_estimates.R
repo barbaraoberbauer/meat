@@ -57,10 +57,24 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-group_of_interest <- "operating_costs"
+group_of_interest <- "environmental_friendliness"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
-filename <- paste0("data/runJagsOut_", group_of_interest, ".rds")
+# bounded or unbounded attentional parameters? 
+
+bounded <- TRUE # set to TRUE for bounded model, set to FALSE for unbounded model
+
+if (bounded == TRUE) {
+  
+  file_extension <- "_bounds"
+  
+} else if (bounded == FALSE) {
+  
+  file_extension <- "_nobounds"
+  
+}
+
+filename <- paste0("data/runJagsOut_", group_of_interest, file_extension, ".rds")
 
 runJagsOut <- readRDS(filename)
 
@@ -107,22 +121,53 @@ ptau <- plot_posterior_dist(combined_mcmcfin,
 
 ### Theta ------
 
-# unbounded parameters
-ptheta <- plot_posterior_dist(combined_mcmcfin,
-                              combined_mcmcfin$mu_theta,
-                              (combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta),
-                              Nbins,
-                              "Discounting Unattended Option")
+if (bounded == TRUE) {
+  
+  # bounded parameter
+  ptheta <- plot_posterior_dist(combined_mcmcfin,
+                      pnorm(combined_mcmcfin$mu_theta),
+                      pnorm(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta),
+                      Nbins,
+                      "Discounting Unattended Option")
+  
+} else if (bounded == FALSE) {
+  
+  # unbounded parameter
+  ptheta <- plot_posterior_dist(combined_mcmcfin,
+                                combined_mcmcfin$mu_theta,
+                                (combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta),
+                                Nbins,
+                                "Discounting Unattended Option")
+  
+}
 
 
 ### Phi ------
 
-# unbounded parameters
-pphi <- plot_posterior_dist(combined_mcmcfin,
-                            combined_mcmcfin$mu_phi,
-                            (combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi),
-                            Nbins,
-                            "Discounting Unattended Attribute")
+if (bounded == TRUE) {
+  
+  # bounded parameter
+  pphi <- plot_posterior_dist(combined_mcmcfin,
+                      pnorm(combined_mcmcfin$mu_phi),
+                      pnorm(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi),
+                      Nbins,
+                      "Discounting Unattended Attribute")
+
+} else if (bounded == FALSE) {
+  
+  # unbounded parameters
+  pphi <- plot_posterior_dist(combined_mcmcfin,
+                              combined_mcmcfin$mu_phi,
+                              (combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi),
+                              Nbins,
+                              "Discounting Unattended Attribute")
+  
+}
+
+
+
+
+
 
 
 ### Weight Price ------
@@ -277,7 +322,7 @@ group_param_estimates <- plot_grid(# plots
 
 
 # save plot
-filename <- paste0("figures/group_param_estimates_", group_of_interest, ".png")
+filename <- paste0("figures/group_param_estimates_", group_of_interest, file_extension, ".png")
 ggsave(filename, group_param_estimates, width = 16, height = 12)
 
 
