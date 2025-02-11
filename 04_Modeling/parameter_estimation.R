@@ -54,7 +54,7 @@ df <- readRDS("data/df.rds")
 
 ### Specify subset of data ----
 
-group_of_interest <- "operating_costs"
+group_of_interest <- "environmental_friendliness"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
 df_subset <- df %>%
