@@ -56,7 +56,21 @@ rm(package, packages, is_package_installed)
 group_of_interest <- "environmental_friendliness"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
-filename <- paste0("data/runJagsOut_", group_of_interest, ".rds")
+# bounded or unbounded attentional parameters? 
+
+bounded <- TRUE # set to TRUE for bounded model, set to FALSE for unbounded model
+
+if (bounded == TRUE) {
+  
+  file_extension <- "_bounds"
+  
+} else if (bounded == FALSE) {
+  
+  file_extension <- "_nobounds"
+  
+}
+
+filename <- paste0("data/runJagsOut_", group_of_interest, file_extension, ".rds")
 
 runJagsOut <- readRDS(filename)
 
@@ -123,6 +137,8 @@ witch <- function(parameter_name){
 # initiate matrix to store simulation results
 sim_results <- matrix(nrow = nrow(df_subset), ncol = simRuns)
 
+# select model file
+model_file <- "04_Modeling/bayes_models/simulation_maaDDM.txt"
 
 
 # Simulate Data --------
@@ -196,19 +212,17 @@ for (sim in 1:simRuns) {
   
   # simulate data using JAGS
   
-  myj_sim <- jags.model("04_Modeling/bayes_models/simulation_maaDDM_nobounds.txt",
-                        dat_sim,
-                        n.chains = 1,
-                        quiet = T) # suppress messages during compilation
+  results <- run.jags(model = model_file,
+                      monitor = monitor_sim,
+                      module = "wiener",
+                      data = dat_sim,
+                      n.chains = 1,
+                      sample = 1,
+                      burnin = 0,
+                      adapt = 0,
+                      silent.jags = TRUE)
   
-  
-  ### MCMC sampling -----
-  
-  results <- coda.samples(myj_sim,
-                          monitor_sim, 
-                          n.iter = 1) # number of iterations to monitor
-  
-  sim_results[,sim] <- unlist(results)
+  sim_results[,sim] <- unlist(results$mcmc)
   
   # Print progress to console
   flush.console()
