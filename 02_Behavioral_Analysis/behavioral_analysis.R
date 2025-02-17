@@ -59,13 +59,27 @@ rm(package, packages, is_package_installed)
 
 df <- readRDS("data/df.rds")
 
-# Descriptives of Product Choice ---------
-desc_choice <- df %>%
-  group_by(session, condition) %>%
-  summarise(mean = mean(choice, na.rm = TRUE), sd = sd(choice, na.rm = TRUE)) %>%
+
+# Product Choice -----
+
+### Descriptives  ---------
+
+# aggregate data on subject level
+choice_prob_id <- df %>%
+  group_by(session, condition, id) %>%
+  summarise(mean_choice_id = mean(choice, na.rm = TRUE), 
+            se_choice_id = sd(choice, na.rm = TRUE)/sqrt(sum(!is.na(choice)))
+            ) %>%
   arrange(condition)
 
-# Effects on Product Choice -----
+# aggregate data on group level
+choice_prob_group <- choice_prob_id %>%
+  group_by(session, condition) %>%
+  summarise(mean_choice = mean(mean_choice_id, na.rm = TRUE), 
+            se_choice = sd(mean_choice_id, na.rm = TRUE)/sqrt(sum(!is.na(mean_choice_id)))
+            ) %>%
+  arrange(condition)
+
 
 ### Choice Consistency in Session 1 between Conditions ------
 
@@ -118,7 +132,25 @@ emm_session_confint <- confint(emm_session)
 
 
 
-# Effects on Attention -----
+# Attention -----
+
+### Descriptives  ---------
+
+# aggregate data on subject level
+att_prob_id <- df %>%
+  group_by(session, condition, id) %>%
+  summarise(mean_diff_dt_id = mean(diff_t_options, na.rm = TRUE), 
+            se_diff_dt_id = sd(diff_t_options, na.rm = TRUE)/sqrt(sum(!is.na(diff_t_options)))
+  ) %>%
+  arrange(condition)
+
+# aggregate data on group level
+att_prob_group <- att_prob_id %>%
+  group_by(session, condition) %>%
+  summarise(mean_diff_dt = mean(mean_diff_dt_id, na.rm = TRUE), 
+            se_diff_dt = sd(mean_diff_dt_id, na.rm = TRUE)/sqrt(sum(!is.na(mean_diff_dt_id)))
+  ) %>%
+  arrange(condition)
 
 ### Attention Consistency in Session 1 between Conditions ------
 
@@ -165,4 +197,139 @@ emm_session_att <- pairs(EMM_att, simple = "session")
 emm_session_att_confint <- confint(emm_session_att)
 
 
+# extract estimates
+results_att <- as.data.frame(summary(emm_session_att_confint))[c('consumption_translation',
+                                                                  'price_translation',
+                                                                  'estimate', 
+                                                                  'SE',
+                                                                 'asymp.LCL',
+                                                                 'asymp.UCL')]
 
+# round to four decimals
+results_att[,c('estimate', 
+               'SE',
+               'asymp.LCL',
+               'asymp.UCL')] <- round(results_att[,c('estimate', 
+                                               'SE',
+                                               'asymp.LCL',
+                                               'asymp.UCL')], 4)
+
+# change contrasts from session 1 - session 2 to session 2 - session 1
+results_att[,c('estimate', 
+               'asymp.LCL',
+               'asymp.UCL')] <- results_att[,c('estimate', 
+                                                     'asymp.LCL',
+                                                     'asymp.UCL')] * - 1
+
+# flip labels for upper and lower CI
+results_att <- results_att %>%
+  rename(
+    lower_ci = asymp.UCL,
+    upper_ci = asymp.LCL
+  )
+
+
+
+# Response Times ----
+
+### Descriptives  ---------
+
+# aggregate data on subject level
+rt_prob_id <- df %>%
+  group_by(session, condition, id) %>%
+  summarise(mean_rt_id = mean(t_decision/1000, na.rm = TRUE), 
+            se_rt_id = sd(t_decision/1000, na.rm = TRUE)/sqrt(sum(!is.na(t_decision/1000)))
+  ) %>%
+  arrange(condition)
+
+# aggregate data on group level
+rt_prob_group <- rt_prob_id %>%
+  group_by(session, condition) %>%
+  summarise(mean_rt = mean(mean_rt_id, na.rm = TRUE), 
+            se_rt = sd(mean_rt_id, na.rm = TRUE)/sqrt(sum(!is.na(mean_rt_id)))
+  ) %>%
+  arrange(condition)
+
+
+### RT Consistency in Session 1 between Conditions ------
+
+# Fit a model without the session interaction
+rt_model_session1 <- glmer(t_decision/1000 ~ condition + (1 | id) + (1 | task), 
+                               data = df_session1, 
+                               family = "inverse.gaussian"(link='identity'),
+                               control = glmerControl(optimizer="bobyqa", 
+                                                      optCtrl = list(maxfun=2e5)))
+
+# Perform an ANOVA to see if condition has a significant effect
+Anova(rt_model_session1)
+
+
+### Check for Significant Fixed Effects -------
+fixed_effects_rt <- afex::mixed(t_decision/1000 ~ (session | id) + (1 | task) + session * consumption_translation * price_translation, 
+                                    data = df, 
+                                    family = "Gamma"(link='identity'), 
+                                    control = glmerControl(optimizer="bobyqa", 
+                                                           optCtrl = list(maxfun=2e5)),
+                                    method = 'LRT')
+
+
+### Set up model ----
+
+# Effect of translation of energy and water consumption (no translation/control) on product choice in absence and presence of a price translation. 
+contrasts(df$consumption_translation) <- 
+  contr.treatment(levels(df$consumption_translation), base = 1)
+rt_model <- glmer(t_decision/1000 ~ (session | id) + (1 | task) + session * consumption_translation * price_translation, 
+                      data = df, 
+                  family = "Gamma"(link='identity'), 
+                      control = glmerControl(optimizer="bobyqa", 
+                                             optCtrl = list(maxfun=2e5)))
+
+summary(rt_model)
+
+
+### EMM Comparison -------
+
+EMM_rt <- emmeans(rt_model, 
+               ~ consumption_translation * session * price_translation, 
+               type = "response")
+
+emm_session_rt <- pairs(EMM_rt, simple = "session")
+
+emm_session_rt_confint <- confint(emm_session_rt)
+
+
+# extract estimates
+results_rt <- as.data.frame(summary(emm_session_rt_confint))[c('consumption_translation',
+                                                                 'price_translation',
+                                                                 'estimate', 
+                                                                 'SE',
+                                                                 'asymp.LCL',
+                                                                 'asymp.UCL')]
+
+# round to four decimals
+results_rt[,c('estimate', 
+               'SE',
+               'asymp.LCL',
+               'asymp.UCL')] <- round(results_rt[,c('estimate', 
+                                                     'SE',
+                                                     'asymp.LCL',
+                                                     'asymp.UCL')], 4)
+
+# change contrasts from session 1 - session 2 to session 2 - session 1
+results_rt[,c('estimate', 
+               'asymp.LCL',
+               'asymp.UCL')] <- results_rt[,c('estimate', 
+                                               'asymp.LCL',
+                                               'asymp.UCL')] * - 1
+
+# flip labels for upper and lower CI
+results_rt <- results_rt %>%
+  rename(
+    lower_ci = asymp.UCL,
+    upper_ci = asymp.LCL
+  )
+
+# Save results ------
+
+saveRDS(results_att, file = "data/results_att.rds")
+saveRDS(results_rt, file = "data/results_rt.rds")
