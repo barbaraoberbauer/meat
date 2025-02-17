@@ -58,7 +58,7 @@ group_of_interest <- "environmental_friendliness"
 
 # bounded or unbounded attentional parameters? 
 
-bounded <- TRUE # set to TRUE for bounded model, set to FALSE for unbounded model
+bounded <- FALSE # set to TRUE for bounded model, set to FALSE for unbounded model
 
 if (bounded == TRUE) {
   
@@ -119,7 +119,7 @@ fixProps$consumption1 <- rowSums(df_subset[, c("t_consumption1", "t_consumption_
 fixProps$popularity1 <- df_subset$t_popularity1/1000
 
 # divide by total duration of the trial
-fixProps <- fixProps/abs(df_subset$t_decision) #take absolute value instead of +/- coded RT
+fixProps <- fixProps/abs(df_subset$t_decision/1000) #take absolute value instead of +/- coded RT
 
 # normalize each trial to 1
 fixProps <- fixProps/rowSums(fixProps)
@@ -218,8 +218,6 @@ for (sim in 1:simRuns) {
                       data = dat_sim,
                       n.chains = 1,
                       sample = 1,
-                      burnin = 0,
-                      adapt = 0,
                       silent.jags = TRUE)
   
   sim_results[,sim] <- unlist(results$mcmc)

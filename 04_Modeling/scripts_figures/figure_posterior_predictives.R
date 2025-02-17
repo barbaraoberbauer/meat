@@ -58,7 +58,21 @@ rm(package, packages, is_package_installed)
 group_of_interest <- "environmental_friendliness"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
-filename <- paste0("data/simResults_", group_of_interest, ".rds")
+# bounded or unbounded attentional parameters? 
+
+bounded <- FALSE # set to TRUE for bounded model, set to FALSE for unbounded model
+
+if (bounded == TRUE) {
+  
+  file_extension <- "_bounds"
+  
+} else if (bounded == FALSE) {
+  
+  file_extension <- "_nobounds"
+  
+}
+
+filename <- paste0("data/simResults_", group_of_interest, file_extension, ".rds")
 
 simResults <- readRDS(filename)
 
@@ -79,7 +93,7 @@ maxRT <- (max(df_subset$t_decision)/1000) + 1 #extend max response time so that 
 
 
 # determine binwidth
-binwidth <- 1.2
+binwidth <- 1.4
 
 # create breaks
 breaks <- seq(0, 
@@ -212,5 +226,5 @@ posterior_predictives <- plot_grid(# plots
 )
 
 # save plot
-filename <- paste0("figures/posterior_predictives_", group_of_interest, ".png")
+filename <- paste0("figures/posterior_predictives_", group_of_interest, file_extension, ".png")
 ggsave(filename, posterior_predictives, width = 12, height = 5)
