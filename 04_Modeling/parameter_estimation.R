@@ -21,7 +21,8 @@ if(!is.null(dev.list())) dev.off()
 packages <- c("tidyverse",
               "runjags",
               "dplyr",
-              "parallel")
+              "parallel",
+              "bayestestR")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -41,6 +42,7 @@ library(tidyverse)
 library(runjags)
 library(dplyr)
 library(parallel)
+library(bayestestR)
 
 # Load required modules
 load.runjagsmodule("wiener")
@@ -77,7 +79,7 @@ df_subset <- df_subset[order(df_subset$id_new),]
 
 ### Bounded or Unbounded Attentional Parameters? ------
 
-bounded <- TRUE # set to TRUE for bounded model, set to FALSE for unbounded model
+bounded <- FALSE # set to TRUE for bounded model, set to FALSE for unbounded model
 
 ### Transform Response Times -----
 
@@ -269,3 +271,86 @@ runJagsOut <- run.jags(method = "parallel",
 
 filename <- paste0("data/runJagsOut_", group_of_interest, file_extension, ".rds")
 saveRDS(runJagsOut, file = filename)
+
+
+# Check results ------
+
+### HDIs other parameters -------
+
+summary_statistics <- add.summary(runJagsOut,
+                                  vars = c("mu_alpha",
+                                           "mu_dalpha", # boundary separation
+                                           "mu_scaling",
+                                           "mu_dscaling",  # scaling
+                                           "mu_tau",
+                                           "mu_dtau",      # non-decision time
+                                           "mu_sp",
+                                           "mu_dsp"))      # starting point bias
+
+# 95% highest posterior densities
+hpd <- as.data.frame(summary_statistics$HPD)
+
+### HDIs weights -------
+
+# store as mcmc object
+mcmcfin = as.mcmc.list(runJagsOut)
+
+# combine chains
+combined_mcmcfin <- as.data.frame(do.call(rbind, mcmcfin))
+
+###### price -------
+
+dprice <- pnorm(combined_mcmcfin$mu_w1 + combined_mcmcfin$mu_dw1) -
+  pnorm(combined_mcmcfin$mu_w1)
+
+hdi(dprice)
+
+###### sustainability -------
+
+denergy <- pnorm(combined_mcmcfin$mu_w2 + combined_mcmcfin$mu_dw2) -
+  pnorm(combined_mcmcfin$mu_w2)
+
+hdi(denergy)
+
+###### popularity -------
+
+combined_mcmcfin$mu_w3 <- 1 - pnorm(combined_mcmcfin$mu_w1) - pnorm(combined_mcmcfin$mu_w2)
+combined_mcmcfin$mu_w3_AT <- 1 - 
+  pnorm(combined_mcmcfin$mu_w1 + combined_mcmcfin$mu_dw1) - 
+  pnorm(combined_mcmcfin$mu_w2 + combined_mcmcfin$mu_dw2)
+
+dpopularity <- combined_mcmcfin$mu_w3_AT - combined_mcmcfin$mu_w3
+
+hdi(dpopularity)
+
+
+### HDIs attentional parameters ----
+
+if (bounded == TRUE) {
+  
+  dtheta <- pnorm(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta) -
+    pnorm(combined_mcmcfin$mu_theta)
+  
+  hdi(dtheta)
+  
+  dphi <- pnorm(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_phi) -
+    pnorm(combined_mcmcfin$mu_phi)
+  
+  hdi(dphi)
+  
+
+} else if (bounded == FALSE) {
+  
+  summary_stats_att <- add.summary(runJagsOut,
+                                    vars = c("mu_theta",
+                                             "mu_dtheta",    # theta
+                                             "mu_phi",
+                                             "mu_dphi"      # phi
+                                             ))      
+  
+  # 95% highest posterior densities
+  hpd_att <- as.data.frame(summary_stats_att$HPD)
+  
+}
+
+
