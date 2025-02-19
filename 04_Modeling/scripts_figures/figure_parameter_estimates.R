@@ -236,18 +236,44 @@ pdTau <- plot_change_param(combined_mcmcfin,
 
 ### Theta ------
 
-# unbounded
-pdTheta <- plot_change_param(combined_mcmcfin,
-                             combined_mcmcfin$mu_dtheta,
-                             Nbins)
+if (bounded == TRUE) {
+  
+  # bounded parameter
+  pdTheta <- plot_change_param(combined_mcmcfin,
+                               pnorm(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta) -
+                                 pnorm(combined_mcmcfin$mu_theta),
+                               Nbins)
+  
+} else if (bounded == FALSE) {
+  
+  # unbounded parameter
+  pdTheta <- plot_change_param(combined_mcmcfin,
+                               combined_mcmcfin$mu_dtheta,
+                               Nbins)
+  
+}
 
 
 ### Phi ------
 
-# unbounded
-pdPhi <- plot_change_param(combined_mcmcfin,
-                           combined_mcmcfin$mu_dphi,
-                           Nbins)
+
+if (bounded == TRUE) {
+  
+  # bounded parameter
+  pdPhi <- plot_change_param(combined_mcmcfin,
+                               pnorm(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi) -
+                                 pnorm(combined_mcmcfin$mu_phi),
+                               Nbins)
+  
+} else if (bounded == FALSE) {
+  
+  # unbounded parameter
+  pdPhi <- plot_change_param(combined_mcmcfin,
+                             combined_mcmcfin$mu_dphi,
+                             Nbins)
+  
+}
+
 
 
 ### Weight Price ------
