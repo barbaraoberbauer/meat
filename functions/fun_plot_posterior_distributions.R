@@ -29,6 +29,6 @@ plot_posterior_dist <- function(combined_mcmcfin, parameter1, parameter2, bins, 
                                b = 10,
                                l = 30),
           axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0), size = 12),
-          axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 12))
+          axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 16))
   
 }

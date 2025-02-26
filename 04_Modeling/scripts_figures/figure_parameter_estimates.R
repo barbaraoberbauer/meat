@@ -57,12 +57,12 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-group_of_interest <- "environmental_friendliness"
+group_of_interest <- "operating_costs"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
 # bounded or unbounded attentional parameters? 
 
-bounded <- TRUE # set to TRUE for bounded model, set to FALSE for unbounded model
+bounded <- FALSE # set to TRUE for bounded model, set to FALSE for unbounded model
 
 if (bounded == TRUE) {
   
@@ -92,7 +92,7 @@ combined_mcmcfin <- as.data.frame(do.call(rbind, mcmcfin))
 
 # Plot Posterior Distributions ------
 
-Nbins <- 60
+Nbins <- 35
 
 ### Boundary ------
 
@@ -128,7 +128,7 @@ if (bounded == TRUE) {
                       pnorm(combined_mcmcfin$mu_theta),
                       pnorm(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta),
                       Nbins,
-                      "Discounting Unattended Option")
+                      "Discounting\nUnattended Option")
   
 } else if (bounded == FALSE) {
   
@@ -137,7 +137,7 @@ if (bounded == TRUE) {
                                 combined_mcmcfin$mu_theta,
                                 (combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta),
                                 Nbins,
-                                "Discounting Unattended Option")
+                                "Discounting\nUnattended Option")
   
 }
 
@@ -151,7 +151,7 @@ if (bounded == TRUE) {
                       pnorm(combined_mcmcfin$mu_phi),
                       pnorm(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi),
                       Nbins,
-                      "Discounting Unattended Attribute")
+                      "Discounting\nUnattended Attribute")
 
 } else if (bounded == FALSE) {
   
@@ -160,7 +160,7 @@ if (bounded == TRUE) {
                               combined_mcmcfin$mu_phi,
                               (combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi),
                               Nbins,
-                              "Discounting Unattended Attribute")
+                              "Discounting\nUnattended Attribute")
   
 }
 
