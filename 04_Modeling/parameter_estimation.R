@@ -44,6 +44,11 @@ library(dplyr)
 library(parallel)
 library(bayestestR)
 
+
+# Load functions written by John Kruschke
+# https://github.com/boboppie/kruschke-doing_bayesian_data_analysis/blob/master/2e/DBDA2E-utilities.R
+source("functions/DBDA2E-utilities.R")
+
 # Load required modules
 load.runjagsmodule("wiener")
 
@@ -275,42 +280,32 @@ saveRDS(runJagsOut, file = filename)
 
 # Check results ------
 
-### HDIs other parameters -------
-
-summary_statistics <- add.summary(runJagsOut,
-                                  vars = c("mu_alpha",
-                                           "mu_dalpha", # boundary separation
-                                           "mu_scaling",
-                                           "mu_dscaling",  # scaling
-                                           "mu_tau",
-                                           "mu_dtau",      # non-decision time
-                                           "mu_sp",
-                                           "mu_dsp"))      # starting point bias
-
-# 95% highest posterior densities
-hpd <- as.data.frame(summary_statistics$HPD)
-
-### HDIs weights -------
-
 # store as mcmc object
 mcmcfin = as.mcmc.list(runJagsOut)
 
 # combine chains
 combined_mcmcfin <- as.data.frame(do.call(rbind, mcmcfin))
 
+# set up data frame to store hdis
+hdi <- list()
+
+### HDIs weights -------
+
 ###### price -------
 
-dprice <- pnorm(combined_mcmcfin$mu_w1 + combined_mcmcfin$mu_dw1) -
-  pnorm(combined_mcmcfin$mu_w1)
+hdi$w_price <- list(hdi_baseline = HDIofMCMC(pnorm(combined_mcmcfin$mu_w1)),
+                    hdi_manipulation = HDIofMCMC(pnorm(combined_mcmcfin$mu_w1 + combined_mcmcfin$mu_dw1)),
+                    hdi_change = HDIofMCMC(pnorm(combined_mcmcfin$mu_w1 + combined_mcmcfin$mu_dw1) -
+                                             pnorm(combined_mcmcfin$mu_w1)))
 
-hdi(dprice)
 
-###### sustainability -------
+###### consumption -------
 
-denergy <- pnorm(combined_mcmcfin$mu_w2 + combined_mcmcfin$mu_dw2) -
-  pnorm(combined_mcmcfin$mu_w2)
+hdi$w_consumption <- list(hdi_baseline = HDIofMCMC(pnorm(combined_mcmcfin$mu_w2)),
+                    hdi_manipulation = HDIofMCMC(pnorm(combined_mcmcfin$mu_w2 + combined_mcmcfin$mu_dw2)),
+                    hdi_change = HDIofMCMC(pnorm(combined_mcmcfin$mu_w2 + combined_mcmcfin$mu_dw2) -
+                                             pnorm(combined_mcmcfin$mu_w2)))
 
-hdi(denergy)
 
 ###### popularity -------
 
@@ -319,38 +314,66 @@ combined_mcmcfin$mu_w3_AT <- 1 -
   pnorm(combined_mcmcfin$mu_w1 + combined_mcmcfin$mu_dw1) - 
   pnorm(combined_mcmcfin$mu_w2 + combined_mcmcfin$mu_dw2)
 
-dpopularity <- combined_mcmcfin$mu_w3_AT - combined_mcmcfin$mu_w3
+hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(pnorm(combined_mcmcfin$mu_w3)),
+                          hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_w3_AT),
+                          hdi_change = HDIofMCMC(combined_mcmcfin$mu_w3_AT - combined_mcmcfin$mu_w3))
 
-hdi(dpopularity)
 
-
-### HDIs attentional parameters ----
+### HDIs attentional parameters -------
 
 if (bounded == TRUE) {
   
-  dtheta <- pnorm(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta) -
-    pnorm(combined_mcmcfin$mu_theta)
+  hdi$theta <- list(hdi_baseline = HDIofMCMC(pnorm(combined_mcmcfin$mu_theta)),
+                            hdi_manipulation = HDIofMCMC(pnorm(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta)),
+                            hdi_change = HDIofMCMC(pnorm(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta) -
+                                                     pnorm(combined_mcmcfin$mu_theta)))
   
-  hdi(dtheta)
+  hdi$phi <- list(hdi_baseline = HDIofMCMC(pnorm(combined_mcmcfin$mu_phi)),
+                    hdi_manipulation = HDIofMCMC(pnorm(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi)),
+                    hdi_change = HDIofMCMC(pnorm(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi) -
+                                             pnorm(combined_mcmcfin$mu_phi)))
   
-  dphi <- pnorm(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_phi) -
-    pnorm(combined_mcmcfin$mu_phi)
   
-  hdi(dphi)
-  
-
 } else if (bounded == FALSE) {
   
-  summary_stats_att <- add.summary(runJagsOut,
-                                    vars = c("mu_theta",
-                                             "mu_dtheta",    # theta
-                                             "mu_phi",
-                                             "mu_dphi"      # phi
-                                             ))      
+  hdi$theta <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_theta),
+                    hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta),
+                    hdi_change = HDIofMCMC(combined_mcmcfin$mu_dtheta))
   
-  # 95% highest posterior densities
-  hpd_att <- as.data.frame(summary_stats_att$HPD)
+  hdi$phi <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_phi),
+                    hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi),
+                    hdi_change = HDIofMCMC(combined_mcmcfin$mu_dphi))
   
 }
 
+
+
+### HDIs other parameters -------
+
+###### boundary separation ----------
+
+hdi$alpha <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_alpha),
+                hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_alpha + combined_mcmcfin$mu_dalpha),
+                hdi_change = HDIofMCMC(combined_mcmcfin$mu_dalpha))
+
+
+###### scaling  ----------
+
+hdi$scaling <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_scaling),
+                  hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_scaling + combined_mcmcfin$mu_dscaling),
+                  hdi_change = HDIofMCMC(combined_mcmcfin$mu_dscaling))
+
+
+###### non-decision time  ----------
+
+hdi$tau <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_tau),
+                    hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_tau + combined_mcmcfin$mu_dtau),
+                    hdi_change = HDIofMCMC(combined_mcmcfin$mu_dtau))
+
+
+###### starting point bias  ----------
+
+hdi$sp <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_sp),
+                    hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_sp + combined_mcmcfin$mu_dsp),
+                    hdi_change = HDIofMCMC(combined_mcmcfin$mu_dsp))
 
