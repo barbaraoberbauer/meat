@@ -126,7 +126,7 @@ EMM <- emmeans(choice_model,
                ~ consumption_translation * session * price_translation, 
                type = "response")
 
-emm_session <- pairs(EMM, simple = "session")
+emm_session <- pairs(EMM, reverse = TRUE, simple = "session")
 
 emm_session_confint <- confint(emm_session)
 
@@ -192,7 +192,7 @@ EMM_att <- emmeans(attention_model,
                ~ consumption_translation * session * price_translation, 
                type = "response")
 
-emm_session_att <- pairs(EMM_att, simple = "session")
+emm_session_att <- pairs(EMM_att, reverse = TRUE, simple = "session")
 
 emm_session_att_confint <- confint(emm_session_att)
 
@@ -213,21 +213,6 @@ results_att[,c('estimate',
                                                'SE',
                                                'asymp.LCL',
                                                'asymp.UCL')], 4)
-
-# change contrasts from session 1 - session 2 to session 2 - session 1
-results_att[,c('estimate', 
-               'asymp.LCL',
-               'asymp.UCL')] <- results_att[,c('estimate', 
-                                                     'asymp.LCL',
-                                                     'asymp.UCL')] * - 1
-
-# flip labels for upper and lower CI
-results_att <- results_att %>%
-  rename(
-    lower_ci = asymp.UCL,
-    upper_ci = asymp.LCL
-  )
-
 
 
 # Response Times ----
@@ -293,7 +278,7 @@ EMM_rt <- emmeans(rt_model,
                ~ consumption_translation * session * price_translation, 
                type = "response")
 
-emm_session_rt <- pairs(EMM_rt, simple = "session")
+emm_session_rt <- pairs(EMM_rt, reverse = TRUE, simple = "session")
 
 emm_session_rt_confint <- confint(emm_session_rt)
 
@@ -315,19 +300,7 @@ results_rt[,c('estimate',
                                                      'asymp.LCL',
                                                      'asymp.UCL')], 4)
 
-# change contrasts from session 1 - session 2 to session 2 - session 1
-results_rt[,c('estimate', 
-               'asymp.LCL',
-               'asymp.UCL')] <- results_rt[,c('estimate', 
-                                               'asymp.LCL',
-                                               'asymp.UCL')] * - 1
 
-# flip labels for upper and lower CI
-results_rt <- results_rt %>%
-  rename(
-    lower_ci = asymp.UCL,
-    upper_ci = asymp.LCL
-  )
 
 # Save results ------
 
