@@ -1,0 +1,1 @@
+- explain that bounded version of the model might be fitted, plotted and also used for simulating data
