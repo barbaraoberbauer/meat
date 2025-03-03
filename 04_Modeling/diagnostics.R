@@ -58,7 +58,22 @@ rm(package, packages, is_package_installed)
 group_of_interest <- "environmental_friendliness"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
-filename <- paste0("data/runJagsOut_", group_of_interest, ".rds")
+
+# bounded or unbounded attentional parameters? 
+
+bounded <- FALSE # set to TRUE for bounded model, set to FALSE for unbounded model
+
+if (bounded == TRUE) {
+  
+  file_extension <- "_bounds"
+  
+} else if (bounded == FALSE) {
+  
+  file_extension <- "_nobounds"
+  
+}
+
+filename <- paste0("data/runJagsOut_", group_of_interest, file_extension, ".rds")
 
 runJagsOut <- readRDS(filename)
 
