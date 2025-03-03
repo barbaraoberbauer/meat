@@ -127,7 +127,7 @@ fixProps <- fixProps/rowSums(fixProps)
 
 # Prepare Data Simulation ------
 
-simRuns <- 1000 # specify number of simulations
+simRuns <- 500 # specify number of simulations
 
 # write function that determines the index of the parameter
 witch <- function(parameter_name){
@@ -212,15 +212,35 @@ for (sim in 1:simRuns) {
   
   # simulate data using JAGS
   
-  results <- run.jags(model = model_file,
-                      monitor = monitor_sim,
-                      module = "wiener",
-                      data = dat_sim,
-                      n.chains = 1,
-                      sample = 1,
-                      silent.jags = TRUE)
+  # results <- run.jags(model = model_file,
+  #                     monitor = monitor_sim,
+  #                     module = "wiener",
+  #                     data = dat_sim,
+  #                     n.chains = 1,
+  #                     sample = 1,
+  #                     silent.jags = TRUE)
+  # 
+  # sim_results[,sim] <- unlist(results$mcmc)
   
-  sim_results[,sim] <- unlist(results$mcmc)
+  # simulate data using JAGS
+  
+  myj_sim <- jags.model(model_file,
+                        dat_sim,
+                        #myinits,
+                        n.chains = 1,
+                        quiet = T) # suppress messages during compilation
+  
+  
+  ### MCMC sampling -----
+  
+  results <- coda.samples(myj_sim,
+                          monitor_sim, 
+                          n.iter = 1) # number of iterations to monitor
+  
+  sim_results[,sim] <- unlist(results)
+  
+  
+  
   
   # Print progress to console
   flush.console()
