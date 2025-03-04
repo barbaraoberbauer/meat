@@ -124,7 +124,7 @@ fixProps <- fixProps/rowSums(fixProps)
 
 # Prepare Data Simulation ------
 
-simRuns <- 10 # specify number of simulations
+simRuns <- 100 # specify number of simulations
 
 # write function that determines the index of the parameter
 witch <- function(parameter_name){
@@ -143,9 +143,7 @@ Energy_NonEco <- df_subset$energyNonEco
 Popularity_NonEco <- df_subset$popularityNonEco
 
 # define data frame to store results
-sim_results <- data.frame(matrix(nrow=0,
-                                     ncol = 2))
-colnames(sim_results) <- c("rt", "sim")
+sim_results <- as.data.frame(matrix(nrow = N, ncol = simRuns))
 
 # Simulate Data -------
 
@@ -205,11 +203,8 @@ for (sim in 1:simRuns) {
                        sp,
                        sp_AT)
   
-  ### add information about run
-  result$sim <- sim
-  
   ### store results in data frame
-  sim_results <- rbind(sim_results, result)
+  sim_results[,sim] <- result
   
   ### print progress to console
   flush.console()
