@@ -131,14 +131,30 @@ witch <- function(parameter_name){
   which(colnames(mcmcfin[[1]]) == parameter_name)
 }
 
+# define static inputs for function
+N <- nrow(df_subset)
+Subject <- df_subset$id_new
+Session <- df_subset$session
+Price_Eco <- df_subset$priceEco
+Energy_Eco <- df_subset$energyEco
+Popularity_Eco <- df_subset$popularityEco
+Price_NonEco <- df_subset$priceNonEco
+Energy_NonEco <- df_subset$energyNonEco
+Popularity_NonEco <- df_subset$popularityNonEco
+
+# define data frame to store results
+sim_results <- data.frame(matrix(nrow=0,
+                                     ncol = 2))
+colnames(sim_results) <- c("rt", "sim")
+
 # Simulate Data -------
 
 for (sim in 1:simRuns) {
   
-  # draw random number from 1 to nRow(combined_mcmcfin) -> parameters from that iteration will be used to simulate data
+  ### draw random number from 1 to nRow(combined_mcmcfin) -> parameters from that iteration will be used to simulate data
   idx <- sample(1:nrow(combined_mcmcfin), 1)
   
-  # retrieve parameters
+  ### inputs for function
   w1T <- unname(unlist(combined_mcmcfin[idx, witch("w1T[1]") : (witch("w1T[1]") + (SampleSize - 1))]))
   w1T_AT <- unname(unlist(combined_mcmcfin[idx, witch("w1T_AT[1]") : (witch("w1T_AT[1]") + (SampleSize - 1))]))
   w2T <- unname(unlist(combined_mcmcfin[idx, witch("w2T[1]") : (witch("w2T[1]") + (SampleSize - 1))]))
@@ -158,13 +174,52 @@ for (sim in 1:simRuns) {
   sp <- unname(unlist(combined_mcmcfin[idx, witch("sp[1]") : (witch("sp[1]") + (SampleSize - 1))]))
   sp_AT <- unname(unlist(combined_mcmcfin[idx, witch("sp_AT[1]") : (witch("sp_AT[1]") + (SampleSize - 1))]))
   
-  # simulate choice and rt
-  results <- sim_maaDDM()
+  result <- sim_maaDDM(N,
+                       Subject,
+                       Session,
+                       Price_Eco,
+                       Energy_Eco,
+                       Popularity_Eco,
+                       Price_NonEco,
+                       Energy_NonEco,
+                       Popularity_NonEco,
+                       fixProps,
+                       
+                       # parameters
+                       w1T, 
+                       w1T_AT,
+                       w2T,
+                       w2T_AT,
+                       w3T,
+                       w3T_AT, 
+                       thetaT,
+                       thetaT_AT, 
+                       phiT, 
+                       phiT_AT, 
+                       alpha, 
+                       alpha_AT, 
+                       scaling, 
+                       scaling_AT, 
+                       tau, 
+                       tau_AT,
+                       sp,
+                       sp_AT)
   
+  ### add information about run
+  result$sim <- sim
   
-  # Print progress to console
+  ### store results in data frame
+  sim_results <- rbind(sim_results, result)
+  
+  ### print progress to console
   flush.console()
-  msg = sprintf('Done with simulation: %d',sim)
+  msg = sprintf('Done with sim run: %d',sim)
   print(msg)
-  
+      
+
 }
+
+### Save simulated data
+
+filename <- paste0("data/simResults_", group_of_interest, file_extension, ".rds")
+saveRDS(sim_results, file = filename)

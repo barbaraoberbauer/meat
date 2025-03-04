@@ -7,49 +7,85 @@
 
 # function for simulating data using rtdists
 
-sim_maaDDM <- function(parameters,
+sim_maaDDM <- function(N,
+                       Subject,
+                       Session,
                        Price_Eco,
-                       Price_NonEco,
                        Energy_Eco,
-                       Energy_NonEco,
                        Popularity_Eco,
+                       Price_NonEco,
+                       Energy_NonEco,
                        Popularity_NonEco,
-                       fixProps
-                       ) {
+                       fixProps,
+                       
+                       # parameters
+                       w1T, 
+                       w1T_AT,
+                       w2T,
+                       w2T_AT,
+                       w3T,
+                       w3T_AT, 
+                       thetaT,
+                       thetaT_AT, 
+                       phiT, 
+                       phiT_AT, 
+                       alpha, 
+                       alpha_AT, 
+                       scaling, 
+                       scaling_AT, 
+                       tau, 
+                       tau_AT,
+                       sp,
+                       sp_AT) {
   
-  alpha <- parameters[1] # boundary separation
-  tau <- parameters[2] # non-decision time
-  scaling <- parameters[3] 
-  theta <- parameters[4] 
-  phi <- parameters[5] 
-  weight1 <- parameters[6] # weight price
-  weight2 <- parameters[7] # weight consumption
-  weight3 <- parameters[8] # weight popularity
-  sp <- parameters[9] * alpha # starting point bias; relative in dwiener but absolute in rtdists
+  # initiate data frame to store simulated rts
+  sim_rt <- data.frame(matrix(nrow=N,
+                              ncol = 1))
+  colnames(sim_rt) <- "rt"
   
-  # compute drift rate
-  v <- 
-    fixProps[,1]*(weight1*(Price_Eco-theta*Price_NonEco) + weight2*phi*(Energy_Eco-theta*Energy_NonEco) + weight3*phi*(Popularity_Eco-theta*Popularity_NonEco)) + # Price_Eco is looked at
-    fixProps[,2]*(weight1*phi*(Price_Eco-theta*Price_NonEco) + weight2*(Energy_Eco-theta*Energy_NonEco) + weight3*phi*(Popularity_Eco-theta*Popularity_NonEco)) + # Consumption_Eco is looked at
-    fixProps[,3]*(weight1*phi*(Price_Eco-theta*Price_NonEco) + weight2*phi*(Energy_Eco-theta*Energy_NonEco) + weight3*(Popularity_Eco-theta*Popularity_NonEco)) + # Popularity_Eco is looked at
-    fixProps[,4]*(weight1*(theta*Price_Eco-Price_NonEco) + weight2*phi*(theta*Energy_Eco-Energy_NonEco) + weight3*phi*(theta*Popularity_Eco-Popularity_NonEco)) + # Price_NonEco is looked at
-    fixProps[,5]*(weight1*phi*(theta*Price_Eco-Price_NonEco) + weight2*(theta*Energy_Eco-Energy_NonEco) + weight3*phi*(theta*Popularity_Eco-Popularity_NonEco)) + # Consumption_NonEco is looked at
-    fixProps[,6]*(weight1*phi*(theta*Price_Eco-Price_NonEco) + weight2*phi*(theta*Energy_Eco-Energy_NonEco) + weight3*(theta*Popularity_Eco-Popularity_NonEco))   # Popularity_NonEco is looked at
-  
-  # simulate rts
-  nTrials <- length(v)
-  choices <- rep(NA, nTrials)
-  rts <- rep(NA, nTrials)
-  
-  for (i in 1:nTrials) {
-    result <- rdiffusion(1, alpha, scaling * v[i], tau, sp)
-    choices[i] <- ifelse(result$response == "upper", 1, 0)
-    rts[i] <- result$rt
+  for (i in 1:N) {
+    
+    #specify parameters depending on sessions
+    weight1 <- w1T[Subject[i]]*setequal(Session[i],1) + w1T_AT[Subject[i]]*setequal(Session[i],2)
+    weight2 <- w2T[Subject[i]]*setequal(Session[i],1) + w2T_AT[Subject[i]]*setequal(Session[i],2)
+    weight3 <- w3T[Subject[i]]*setequal(Session[i],1) + w3T_AT[Subject[i]]*setequal(Session[i],2)
+    
+    theta_x <- thetaT[Subject[i]]*setequal(Session[i],1) + thetaT_AT[Subject[i]]*setequal(Session[i],2)
+    
+    phi_x <- phiT[Subject[i]]*setequal(Session[i],1) + phiT_AT[Subject[i]]*setequal(Session[i],2)
+    
+    alpha_x <- alpha[Subject[i]]*setequal(Session[i],1) + alpha_AT[Subject[i]]*setequal(Session[i],2)
+    
+    scaling_x <- scaling[Subject[i]]*setequal(Session[i],1) + scaling_AT[Subject[i]]*setequal(Session[i],2)
+    
+    tau_x <- tau[Subject[i]]*setequal(Session[i],1) + tau_AT[Subject[i]]*setequal(Session[i],2)
+    
+    sp_x <- sp[Subject[i]]*setequal(Session[i],1) + sp_AT[Subject[i]]*setequal(Session[i],2)
+    
+    
+    # calculate mean drift rate mu
+    mu <- 	
+      fixProps[i,1]*(weight1*(Price_Eco[i]-theta_x*Price_NonEco[i]) + weight2*phi_x*(Energy_Eco[i]-theta_x*Energy_NonEco[i]) + weight3*phi_x*(Popularity_Eco[i]-theta_x*Popularity_NonEco[i])) + # Price_Eco is looked at
+      fixProps[i,2]*(weight1*phi_x*(Price_Eco[i]-theta_x*Price_NonEco[i]) + weight2*(Energy_Eco[i]-theta_x*Energy_NonEco[i]) + weight3*phi_x*(Popularity_Eco[i]-theta_x*Popularity_NonEco[i])) + # Consumption_Eco is looked at
+      fixProps[i,3]*(weight1*phi_x*(Price_Eco[i]-theta_x*Price_NonEco[i]) + weight2*phi_x*(Energy_Eco[i]-theta_x*Energy_NonEco[i]) + weight3*(Popularity_Eco[i]-theta_x*Popularity_NonEco[i])) + # Popularity_Eco is looked at
+      fixProps[i,4]*(weight1*(theta_x*Price_Eco[i]-Price_NonEco[i]) + weight2*phi_x*(theta_x*Energy_Eco[i]-Energy_NonEco[i]) + weight3*phi_x*(theta_x*Popularity_Eco[i]-Popularity_NonEco[i])) + # Price_NonEco is looked at
+      fixProps[i,5]*(weight1*phi_x*(theta_x*Price_Eco[i]-Price_NonEco[i]) + weight2*(theta_x*Energy_Eco[i]-Energy_NonEco[i]) + weight3*phi_x*(theta_x*Popularity_Eco[i]-Popularity_NonEco[i])) + # Consumption_NonEco is looked at
+      fixProps[i,6]*(weight1*phi_x*(theta_x*Price_Eco[i]-Price_NonEco[i]) + weight2*phi_x*(theta_x*Energy_Eco[i]-Energy_NonEco[i]) + weight3*(theta_x*Popularity_Eco[i]-Popularity_NonEco[i]))   # Popularity_NonEco is looked at
+    
+    # draw from rt distribution
+    result <- rdiffusion(1, alpha_x, scaling_x * mu, tau_x, sp_x * alpha_x) # starting point is absolute in rtdists
+    
+    # return response time (+ if eco choice, i.e. upper, - if non-eco choice, i.e. lower)
+    rt <- if (result$response == "upper") {result$rt} else {-1 * result$rt}
+    
+    # store in data frame
+    sim_rt[i, 1] <- rt
+    
   }
   
-  # bind data
-  sim_results <- cbind(choices, rts)
-  
-  return(sim_results)
+  # return data frame
+  return(sim_rt)
   
 }
+
+
