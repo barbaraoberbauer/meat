@@ -119,7 +119,7 @@ fixProps$consumption1 <- rowSums(df_subset[, c("t_consumption1", "t_consumption_
 fixProps$popularity1 <- df_subset$t_popularity1/1000
 
 # divide by total duration of the trial
-fixProps <- fixProps/abs(df_subset$t_decision/1000) #take absolute value instead of +/- coded RT
+fixProps <- fixProps/(df_subset$t_decision/1000)
 
 # normalize each trial to 1
 fixProps <- fixProps/rowSums(fixProps)
@@ -127,7 +127,7 @@ fixProps <- fixProps/rowSums(fixProps)
 
 # Prepare Data Simulation ------
 
-simRuns <- 500 # specify number of simulations
+simRuns <- 1 # specify number of simulations
 
 # write function that determines the index of the parameter
 witch <- function(parameter_name){
