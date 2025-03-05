@@ -45,7 +45,7 @@ plot_posterior_predictives <- function(session_value, title){
       x = "Response Time (in sec)",
       y = "Frequency"
     ) +
-    coord_cartesian(ylim = c(-130, 130)) +
+    coord_cartesian(ylim = c(-130, 160)) +
     ggtitle(title) +
     theme_classic() +
     theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5,
