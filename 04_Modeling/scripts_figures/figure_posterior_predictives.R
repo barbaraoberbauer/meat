@@ -83,6 +83,13 @@ df <- readRDS("data/df.rds")
 df_subset <- df %>%
   filter(consumption_translation == group_of_interest)
 
+# assign new ids that are starting from 1 and increment by 1
+df_subset <- df_subset %>%
+  mutate(id_new = dense_rank(id))
+
+# sort data frame according to id_new (starting from 1 to last participant)
+df_subset <- df_subset[order(df_subset$id_new),]
+
 
 # Calculate Bayesian Credibility Intervals for each Bin of Plot ----------
 
