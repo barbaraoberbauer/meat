@@ -53,7 +53,7 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-group_of_interest <- "environmental_friendliness"
+group_of_interest <- "control"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
 # bounded or unbounded attentional parameters? 
@@ -212,32 +212,32 @@ for (sim in 1:simRuns) {
   
   # simulate data using JAGS
   
-  # results <- run.jags(model = model_file,
-  #                     monitor = monitor_sim,
-  #                     module = "wiener",
-  #                     data = dat_sim,
-  #                     n.chains = 1,
-  #                     sample = 1,
-  #                     silent.jags = TRUE)
-  # 
-  # sim_results[,sim] <- unlist(results$mcmc)
-  
+  results <- run.jags(model = model_file,
+                      monitor = monitor_sim,
+                      module = "wiener",
+                      data = dat_sim,
+                      n.chains = 1,
+                      sample = 1,
+                      silent.jags = TRUE)
+
+  sim_results[,sim] <- unlist(results$mcmc)
+
   # simulate data using JAGS
-  
-  myj_sim <- jags.model(model_file,
-                        dat_sim,
-                        #myinits,
-                        n.chains = 1,
-                        quiet = T) # suppress messages during compilation
-  
-  
-  ### MCMC sampling -----
-  
-  results <- coda.samples(myj_sim,
-                          monitor_sim, 
-                          n.iter = 1) # number of iterations to monitor
-  
-  sim_results[,sim] <- unlist(results)
+
+  # myj_sim <- jags.model(model_file,
+  #                       dat_sim,
+  #                       #myinits,
+  #                       n.chains = 1,
+  #                       quiet = T) # suppress messages during compilation
+  # 
+  # 
+  # ### MCMC sampling -----
+  # 
+  # results <- coda.samples(myj_sim,
+  #                         monitor_sim, 
+  #                         n.iter = 1) # number of iterations to monitor
+  # 
+  # sim_results[,sim] <- unlist(results)
   
   
   
