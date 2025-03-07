@@ -53,7 +53,7 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-group_of_interest <- "control"
+group_of_interest <- "operating_costs"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
 # bounded or unbounded attentional parameters? 
@@ -127,7 +127,7 @@ fixProps <- fixProps/rowSums(fixProps)
 
 # Prepare Data Simulation ------
 
-simRuns <- 1 # specify number of simulations
+simRuns <- 1000 # specify number of simulations
 
 # write function that determines the index of the parameter
 witch <- function(parameter_name){

@@ -55,7 +55,7 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-group_of_interest <- "environmental_friendliness"
+group_of_interest <- "operating_costs"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
 # bounded or unbounded attentional parameters? 
@@ -96,7 +96,7 @@ df_subset <- df_subset[order(df_subset$id_new),]
 ### Preparations
 
 # calculate max empirical response time to determine bins
-maxRT <- (max(df_subset$t_decision)/1000) + 1 #extend max response time so that max RT is also in bin
+maxRT <- (max(df_subset$t_decision)/1000) + 2 #extend max response time so that max RT is also in bin
 
 
 # determine binwidth
