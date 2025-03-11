@@ -174,7 +174,7 @@ model {
 
 
 	# initiate and transform weight parameters
-	# after phy-transformation, weight parameters will be bound between 0 and 1
+	# after phi-transformation, weight parameters will be bound between 0 and 1
 	# define change parameters for when attribute translation is present
 	
 	# Define subject priors
