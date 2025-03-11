@@ -47,7 +47,7 @@ library(bayestestR)
 
 # Load functions written by John Kruschke
 # https://github.com/boboppie/kruschke-doing_bayesian_data_analysis/blob/master/2e/DBDA2E-utilities.R
-source("functions/DBDA2E-utilities.R")
+#source("functions/DBDA2E-utilities.R")
 
 # Load required modules
 load.runjagsmodule("wiener")
@@ -62,19 +62,7 @@ rm(package, packages, is_package_installed)
 group_of_interest <- "environmental_friendliness"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
-# bounded or unbounded attentional parameters? 
-
-bounded <- FALSE # set to TRUE for bounded model, set to FALSE for unbounded model
-
-if (bounded == TRUE) {
-  
-  file_extension <- "_bounds"
-  
-} else if (bounded == FALSE) {
-  
-  file_extension <- "_nobounds"
-  
-}
+file_extension <- "_nobounds" # only supports unbounded parameter estimates
 
 filename <- paste0("data/runJagsOut_", group_of_interest, file_extension, ".rds")
 
@@ -130,3 +118,144 @@ fixProps <- fixProps/(df_subset$t_decision/1000)
 
 # normalize each trial to 1
 fixProps <- fixProps/rowSums(fixProps)
+
+# Retrieve parameter modes as most likely values  -----
+
+# round parameter estimates to three decimals for modes to have plausible results
+combined_mcmcfin <- round(combined_mcmcfin, 3)
+
+### Boundary separation ----
+
+mu_alpha <- as.numeric(names(sort(-table(combined_mcmcfin$mu_alpha)))[1])
+sigma_alpha <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_alpha)))[1])
+
+mu_dalpha <- as.numeric(names(sort(-table(combined_mcmcfin$mu_dalpha)))[1])
+sigma_dalpha <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_dalpha)))[1])
+
+### Non-decision time -----
+
+mu_tau <- as.numeric(names(sort(-table(combined_mcmcfin$mu_tau)))[1])
+sigma_tau <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_tau)))[1])
+
+mu_dtau <- as.numeric(names(sort(-table(combined_mcmcfin$mu_dtau)))[1])
+sigma_dtau <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_dtau)))[1])
+
+### Scaling -------
+
+mu_scaling <- as.numeric(names(sort(-table(combined_mcmcfin$mu_scaling)))[1])
+sigma_scaling <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_scaling)))[1])
+
+mu_dscaling <- as.numeric(names(sort(-table(combined_mcmcfin$mu_dscaling)))[1])
+sigma_dscaling <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_dscaling)))[1])
+
+### Starting point -----
+
+mu_sp <- as.numeric(names(sort(-table(combined_mcmcfin$mu_sp)))[1])
+sigma_sp <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_sp)))[1])
+
+mu_dsp <- as.numeric(names(sort(-table(combined_mcmcfin$mu_dsp)))[1])
+sigma_dsp <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_dsp)))[1])
+
+### Theta -----
+
+mu_theta <- as.numeric(names(sort(-table(combined_mcmcfin$mu_theta)))[1])
+sigma_theta <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_theta)))[1])
+
+mu_dtheta <- as.numeric(names(sort(-table(combined_mcmcfin$mu_dtheta)))[1])
+sigma_dtheta <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_dtheta)))[1])
+
+### Phi -----
+
+mu_phi <- as.numeric(names(sort(-table(combined_mcmcfin$mu_phi)))[1])
+sigma_phi <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_phi)))[1])
+
+mu_dphi <- as.numeric(names(sort(-table(combined_mcmcfin$mu_dphi)))[1])
+sigma_dphi <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_dphi)))[1])
+
+### Weight Price -----
+
+mu_w1 <- as.numeric(names(sort(-table(combined_mcmcfin$mu_w1)))[1])
+sigma_w1 <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_w1)))[1])
+
+mu_dw1 <- as.numeric(names(sort(-table(combined_mcmcfin$mu_dw1)))[1])
+sigma_dw1 <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_dw1)))[1])
+
+### Weight Consumption -----
+
+mu_w2 <- as.numeric(names(sort(-table(combined_mcmcfin$mu_w2)))[1])
+sigma_w2 <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_w2)))[1])
+
+mu_dw2 <- as.numeric(names(sort(-table(combined_mcmcfin$mu_dw2)))[1])
+sigma_dw2 <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_dw2)))[1])
+
+# Prepare data simulation ---------
+
+# select model file
+model_file <- "04_Modeling/bayes_models/recovery_maaDDM.txt"
+
+# create data list as input for JAGS (this time, parameters serve as input and RT are monitored)
+dat_sim <- list(N=nrow(df_subset),
+                Subject=df_subset$id_new,
+                Session=df_subset$session,
+                SampleSize=SampleSize,
+                Price_Eco=df_subset$priceEco,
+                Energy_Eco=df_subset$energyEco,
+                Popularity_Eco=df_subset$popularityEco,
+                Price_NonEco=df_subset$priceNonEco,
+                Energy_NonEco=df_subset$energyNonEco,
+                Popularity_NonEco=df_subset$popularityNonEco,
+                fixProps_Price_Eco=fixProps$price1,
+                fixProps_Energy_Eco=fixProps$consumption1,
+                fixProps_Popularity_Eco=fixProps$popularity1,
+                fixProps_Price_NonEco=fixProps$price0,
+                fixProps_Energy_NonEco=fixProps$consumption0,
+                fixProps_Popularity_NonEco=fixProps$popularity0,
+                
+                # parameters
+                mu_alpha=mu_alpha,
+                sigma_alpha=sigma_alpha,
+                mu_dalpha=mu_dalpha,
+                sigma_dalpha=sigma_dalpha,
+                mu_tau=mu_tau,
+                sigma_tau=sigma_tau,
+                mu_dtau=mu_dtau,
+                sigma_dtau=sigma_dtau,
+                mu_scaling=mu_scaling,
+                sigma_scaling=sigma_scaling,
+                mu_dscaling=mu_dscaling,
+                sigma_dscaling=sigma_dscaling,
+                mu_sp=mu_sp,
+                sigma_sp=sigma_sp,
+                mu_dsp=mu_dsp,
+                sigma_dsp=sigma_dsp,
+                mu_theta=mu_theta,
+                sigma_theta=sigma_theta,
+                mu_dtheta=mu_dtheta,
+                sigma_dtheta=sigma_dtheta,
+                mu_phi=mu_phi,
+                sigma_phi=sigma_phi,
+                mu_dphi=mu_dphi,
+                sigma_dphi=sigma_dphi,
+                mu_w1=mu_w1,
+                sigma_w1=sigma_w1,
+                mu_dw1=mu_dw1,
+                sigma_dw1=sigma_dw1,
+                mu_w2=mu_w2,
+                sigma_w2=sigma_w2,
+                mu_dw2=mu_dw2,
+                sigma_dw2=sigma_dw2
+                
+)
+
+# declare variables to be monitored
+monitor_sim <- c("x")
+
+# Simulate data ------
+
+results <- run.jags(model = model_file,
+                    monitor = monitor_sim,
+                    module = "wiener",
+                    data = dat_sim,
+                    n.chains = 1,
+                    sample = 1,
+                    silent.jags = TRUE)
