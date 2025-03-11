@@ -1,0 +1,221 @@
+#maaDDM with starting point bias
+model {
+	##########################
+	# model the data
+	##########################
+
+	#JAGS for loop specifies the distributional assumptions for the variable that is defined within its body
+	for (i in 1:N) {
+
+		#specify parameters depending on sessions
+		weight1[i] <- w1T[Subject[i]]*equals(Session[i],1) + w1T_AT[Subject[i]]*equals(Session[i],2)
+		weight2[i] <- w2T[Subject[i]]*equals(Session[i],1) + w2T_AT[Subject[i]]*equals(Session[i],2)
+		weight3[i] <- w3T[Subject[i]]*equals(Session[i],1) + w3T_AT[Subject[i]]*equals(Session[i],2)
+
+		theta_x[i] <- thetaT[Subject[i]]*equals(Session[i],1) + thetaT_AT[Subject[i]]*equals(Session[i],2)
+
+		phi_x[i] <- phiT[Subject[i]]*equals(Session[i],1) + phiT_AT[Subject[i]]*equals(Session[i],2)
+
+		alpha_x[i] <- alpha[Subject[i]]*equals(Session[i],1) + alpha_AT[Subject[i]]*equals(Session[i],2)
+
+		scaling_x[i] <- scaling[Subject[i]]*equals(Session[i],1) + scaling_AT[Subject[i]]*equals(Session[i],2)
+
+		tau_x[i] <- tau[Subject[i]]*equals(Session[i],1) + tau_AT[Subject[i]]*equals(Session[i],2)
+
+		sp_x[i] <- sp[Subject[i]]*equals(Session[i],1) + sp_AT[Subject[i]]*equals(Session[i],2)
+
+
+		#calculate mean drift rate mu
+		mu[i] <- 	fixProps_Price_Eco[i]*(weight1[i]*(Price_Eco[i]-theta_x[i]*Price_NonEco[i]) + weight2[i]*phi_x[i]*(Energy_Eco[i]-theta_x[i]*Energy_NonEco[i]) + weight3[i]*phi_x[i]*(Popularity_Eco[i]-theta_x[i]*Popularity_NonEco[i])) + # Price_Eco is looked at
+                		fixProps_Energy_Eco[i]*(weight1[i]*phi_x[i]*(Price_Eco[i]-theta_x[i]*Price_NonEco[i]) + weight2[i]*(Energy_Eco[i]-theta_x[i]*Energy_NonEco[i]) + weight3[i]*phi_x[i]*(Popularity_Eco[i]-theta_x[i]*Popularity_NonEco[i])) + # Consumption_Eco is looked at
+                		fixProps_Popularity_Eco[i]*(weight1[i]*phi_x[i]*(Price_Eco[i]-theta_x[i]*Price_NonEco[i]) + weight2[i]*phi_x[i]*(Energy_Eco[i]-theta_x[i]*Energy_NonEco[i]) + weight3[i]*(Popularity_Eco[i]-theta_x[i]*Popularity_NonEco[i])) + # Popularity_Eco is looked at
+                		fixProps_Price_NonEco[i]*(weight1[i]*(theta_x[i]*Price_Eco[i]-Price_NonEco[i]) + weight2[i]*phi_x[i]*(theta_x[i]*Energy_Eco[i]-Energy_NonEco[i]) + weight3[i]*phi_x[i]*(theta_x[i]*Popularity_Eco[i]-Popularity_NonEco[i])) + # Price_NonEco is looked at
+                		fixProps_Energy_NonEco[i]*(weight1[i]*phi_x[i]*(theta_x[i]*Price_Eco[i]-Price_NonEco[i]) + weight2[i]*(theta_x[i]*Energy_Eco[i]-Energy_NonEco[i]) + weight3[i]*phi_x[i]*(theta_x[i]*Popularity_Eco[i]-Popularity_NonEco[i])) + # Consumption_NonEco is looked at
+                		fixProps_Popularity_NonEco[i]*(weight1[i]*phi_x[i]*(theta_x[i]*Price_Eco[i]-Price_NonEco[i]) + weight2[i]*phi_x[i]*(theta_x[i]*Energy_Eco[i]-Energy_NonEco[i]) + weight3[i]*(theta_x[i]*Popularity_Eco[i]-Popularity_NonEco[i]))   # Popularity_NonEco is looked at
+		
+		#draw from wiener distribution
+		x[i] ~ dwiener(alpha_x[i], tau_x[i], sp_x[i], scaling_x[i] * mu[i])
+
+		#loglikelihood
+		#see https://sourceforge.net/p/jags-wiener/code/ci/master/tree/README.rst 
+		loglik[i] <- dlogwiener(x[i], alpha_x[i], tau_x[i], sp_x[i], scaling_x[i] * mu[i])
+
+	}
+
+	##########################
+	# priors for parameters
+	##########################
+
+	# Define group priors
+
+
+		# boundary
+			# transform SD to precision
+			lambda_alpha <- 1/pow(sigma_alpha, 2)
+
+		# non-decision time
+			# transform SD to precision
+			lambda_tau <- 1/pow(sigma_tau, 2)
+
+		# scaling
+			# transform SD to precision
+			lambda_scaling <- 1/pow(sigma_scaling, 2)
+
+
+		# theta
+			# transform SD to precision
+			lambda_theta <- 1/pow(sigma_theta, 2)
+
+		# phi
+			# transform SD to precision
+			lambda_phi <- 1/pow(sigma_phi, 2)
+
+		# weights
+			# transform SD to precision
+			lambda_w1 <- 1/pow(sigma_w1, 2)
+	
+			# transform SD to precision
+			lambda_w2 <- 1/pow(sigma_w2, 2)
+
+		# starting point
+			# transform SD to precision
+			lambda_sp <- 1/pow(sigma_sp, 2)
+
+		
+		# -----------------
+		# Manipulation Session
+		# -----------------
+
+		# weights change parameters
+			
+			# transform SD to precision
+			lambda_dw1 <- 1/pow(sigma_dw1, 2)
+
+			# transform SD to precision
+			lambda_dw2 <- 1/pow(sigma_dw2, 2)
+
+		# theta change parameter
+		
+			# transform SD to precision
+			lambda_dtheta <- 1/pow(sigma_dtheta, 2)
+
+		# phi change parameter
+		
+			# transform SD to precision
+			lambda_dphi <- 1/pow(sigma_dphi, 2)
+
+		# boundary change parameter
+			
+			# transform SD to precision
+			lambda_dalpha <- 1/pow(sigma_dalpha, 2)
+
+		# scaling change parameter
+		
+			# transform SD to precision
+			lambda_dscaling <- 1/pow(sigma_dscaling, 2)
+
+		# tau change parameter
+	
+			# transform SD to precision
+			lambda_dtau <- 1/pow(sigma_dtau, 2)
+
+		# starting point change parameter
+		
+			# transform SD to precision
+			lambda_dsp <- 1/pow(sigma_dsp, 2)
+
+
+	# initiate and transform weight parameters
+	# after phy-transformation, weight parameters will be bound between 0 and 1
+	# define change parameters for when attribute translation is present
+	
+	# Define subject priors
+	for (s in 1:SampleSize){
+
+		# ----------
+		# price
+		# ----------
+	
+		w1[s] ~ dnorm(mu_w1, lambda_w1) # weight for price, untransformed
+		w1T[s] <- phi(w1[s]) # weight for price, phi-transformed
+
+		dw1[s] ~ dnorm(mu_dw1, lambda_dw1) # change parameter for when attribute translation is present (change from baseline to manipulation)
+		w1T_AT[s] <- phi(w1[s] + dw1[s]) # transformed weight for price in the attribute translation manipulation
+
+		# ----------
+		# energy consumption
+		# ----------
+
+		w2[s] ~ dnorm(mu_w2, lambda_w2) # weight for energy consumption, untransformed
+		w2T[s] <- phi(w2[s]) # weight for energy consumption, phi-transformed
+
+		dw2[s] ~ dnorm(mu_dw2, lambda_dw2) # change parameter for when attribute translation is present (change from baseline to manipulation)
+		w2T_AT[s] <- phi(w2[s] + dw2[s]) # transformed weight for energy consumption in the attribute translation manipulation
+
+		# ----------
+		# popularity
+		# ----------
+
+		w3T[s] <- 1 - w1T[s] - w2T[s]
+		w3T_AT[s] <- 1 - w1T_AT[s] - w2T_AT[s]
+
+		# ----------
+		# theta
+		# ----------
+	
+		theta[s] ~ dnorm(mu_theta, lambda_theta) #theta parameter (devalues option that is not looked at)
+		thetaT[s] <- theta[s] # no phi-transformation		
+
+		dtheta[s] ~ dnorm(mu_dtheta, lambda_dtheta) # change parameter for when attribute translation is present (change from baseline to manipulation)
+		thetaT_AT[s] <- theta[s] + dtheta[s] # no phi-transformation
+
+		# ----------
+		# phi
+		# ----------
+			
+		phi[s] ~ dnorm(mu_phi, lambda_phi)	#phi parameter (devalues attributes that are not looked at)
+		phiT[s] <- phi[s] # no phi-transformation
+
+		dphi[s] ~ dnorm(mu_dphi, lambda_dphi) # change parameter for when attribute translation is present (change from baseline to manipulation)
+		phiT_AT[s] <- phi[s] + dphi[s] # no phi-transformation
+
+		# ----------
+		# boundary
+		# ----------
+
+		alpha[s] ~ dnorm(mu_alpha, lambda_alpha)T(0,) #boundary separation, truncated above 0
+		
+		dalpha[s] ~ dnorm(mu_dalpha, lambda_dalpha) # change parameter for when attribute translation is present (change from baseline to manipulation)
+		alpha_AT[s] <- alpha[s] + dalpha[s]
+
+		# ----------
+		# scaling
+		# ----------
+
+		scaling[s] ~ dnorm(mu_scaling, lambda_scaling) #scaling parameter, multplied by mu for drift rate
+
+		dscaling[s] ~ dnorm(mu_dscaling, lambda_dscaling) # change parameter for when attribute translation is present (change from baseline to manipulation)
+		scaling_AT[s] <- scaling[s] + dscaling[s]
+
+		# ----------
+		# non-decision time
+		# ----------
+
+		tau[s] ~ dnorm(mu_tau, lambda_tau)T(0,) #non-decision time, truncated above 0
+
+		dtau[s] ~ dnorm(mu_dtau, lambda_dtau) # change parameter for when attribute translation is present (change from baseline to manipulation)
+		tau_AT[s] <- tau[s] + dtau[s]
+
+		# ----------
+		# starting point bias
+		# ----------
+
+		sp[s] ~ dnorm(mu_sp, lambda_sp)
+
+		dsp[s] ~ dnorm(mu_dsp, lambda_dsp) # change parameter for when attribute translation is present 
+		sp_AT[s] <- sp[s] + dsp[s]
+		
+	}
+
+	
+}
