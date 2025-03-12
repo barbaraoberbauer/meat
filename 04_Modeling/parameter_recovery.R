@@ -1,7 +1,7 @@
 #---
 # title: "Computational Mechanisms of Attribute Translations" 
 # author: Barbara Oberbauer (barbara.oberbauer@uni-hamburg.de)
-# last update: "2025-03-07"
+# last update: "2025-01-23"
 # produced under R version: 2024.09.0
 #---
 
@@ -19,10 +19,9 @@ if(!is.null(dev.list())) dev.off()
 
 # List of packages to check and install if necessary
 packages <- c("tidyverse",
-              "runjags",
               "dplyr",
-              "parallel",
-              "bayestestR")
+              "rjags",
+              "runjags")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -39,18 +38,13 @@ for (package in packages) {
 
 # Load required libraries
 library(tidyverse)
-library(runjags)
 library(dplyr)
-library(parallel)
-library(bayestestR)
-
-
-# Load functions written by John Kruschke
-# https://github.com/boboppie/kruschke-doing_bayesian_data_analysis/blob/master/2e/DBDA2E-utilities.R
-#source("functions/DBDA2E-utilities.R")
+library(rjags)
+library(runjags)
 
 # Load required modules
-load.runjagsmodule("wiener")
+load.module("wiener")
+
 
 rm(package, packages, is_package_installed)
 
@@ -62,7 +56,9 @@ rm(package, packages, is_package_installed)
 group_of_interest <- "environmental_friendliness"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
-file_extension <- "_nobounds" # only supports unbounded parameter estimates
+# only supports unbounded model 
+
+file_extension <- "_nobounds"
 
 filename <- paste0("data/runJagsOut_", group_of_interest, file_extension, ".rds")
 
@@ -84,7 +80,6 @@ df_subset <- df_subset[order(df_subset$id_new),]
 
 # sample size
 SampleSize <- length(unique(df_subset$id_new))
-
 
 ### Combine chains ------
 
@@ -119,85 +114,108 @@ fixProps <- fixProps/(df_subset$t_decision/1000)
 # normalize each trial to 1
 fixProps <- fixProps/rowSums(fixProps)
 
-# Retrieve parameter modes as most likely values  -----
 
-# round parameter estimates to three decimals for modes to have plausible results
-combined_mcmcfin <- round(combined_mcmcfin, 3)
+# Determine best fitting parameters (mode) ------------
 
-### Boundary separation ----
+# write function that determines the index of the parameter
+witch <- function(parameter_name){
+  which(colnames(mcmcfin[[1]]) == parameter_name)
+}
 
-mu_alpha <- as.numeric(names(sort(-table(combined_mcmcfin$mu_alpha)))[1])
-sigma_alpha <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_alpha)))[1])
+# write function that finds mode
+distMode <- function(x){
+  as.numeric(names(sort(-table(x)))[1])
+}
 
-mu_dalpha <- as.numeric(names(sort(-table(combined_mcmcfin$mu_dalpha)))[1])
-sigma_dalpha <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_dalpha)))[1])
 
-### Non-decision time -----
+w1T <- apply(X = combined_mcmcfin[, witch("w1T[1]") : (witch("w1T[1]") + (SampleSize - 1))], 
+             MARGIN = 2, 
+             FUN = distMode)
 
-mu_tau <- as.numeric(names(sort(-table(combined_mcmcfin$mu_tau)))[1])
-sigma_tau <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_tau)))[1])
+w1T_AT <- apply(X = combined_mcmcfin[, witch("w1T_AT[1]") : (witch("w1T_AT[1]") + (SampleSize - 1))], 
+                MARGIN = 2, 
+                FUN = distMode)
 
-mu_dtau <- as.numeric(names(sort(-table(combined_mcmcfin$mu_dtau)))[1])
-sigma_dtau <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_dtau)))[1])
+w2T <- apply(X = combined_mcmcfin[, witch("w2T[1]") : (witch("w2T[1]") + (SampleSize - 1))], 
+             MARGIN = 2, 
+             FUN = distMode)
 
-### Scaling -------
+w2T_AT <- apply(X = combined_mcmcfin[, witch("w2T_AT[1]") : (witch("w2T_AT[1]") + (SampleSize - 1))], 
+                MARGIN = 2, 
+                FUN = distMode)
 
-mu_scaling <- as.numeric(names(sort(-table(combined_mcmcfin$mu_scaling)))[1])
-sigma_scaling <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_scaling)))[1])
+w3T <- apply(X = combined_mcmcfin[, witch("w3T[1]") : (witch("w3T[1]") + (SampleSize - 1))], 
+             MARGIN = 2, 
+             FUN = distMode)
 
-mu_dscaling <- as.numeric(names(sort(-table(combined_mcmcfin$mu_dscaling)))[1])
-sigma_dscaling <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_dscaling)))[1])
+w3T_AT <- apply(X = combined_mcmcfin[, witch("w3T_AT[1]") : (witch("w3T_AT[1]") + (SampleSize - 1))], 
+                MARGIN = 2, 
+                FUN = distMode)
 
-### Starting point -----
+thetaT <- apply(X = combined_mcmcfin[, witch("thetaT[1]") : (witch("thetaT[1]") + (SampleSize - 1))], 
+                MARGIN = 2, 
+                FUN = distMode)
 
-mu_sp <- as.numeric(names(sort(-table(combined_mcmcfin$mu_sp)))[1])
-sigma_sp <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_sp)))[1])
+thetaT_AT <- apply(X = combined_mcmcfin[, witch("thetaT_AT[1]") : (witch("thetaT_AT[1]") + (SampleSize - 1))], 
+                   MARGIN = 2, 
+                   FUN = distMode)
 
-mu_dsp <- as.numeric(names(sort(-table(combined_mcmcfin$mu_dsp)))[1])
-sigma_dsp <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_dsp)))[1])
+phiT <- apply(X = combined_mcmcfin[, witch("phiT[1]") : (witch("phiT[1]") + (SampleSize - 1))], 
+              MARGIN = 2, 
+              FUN = distMode)
 
-### Theta -----
+phiT_AT <- apply(X = combined_mcmcfin[, witch("w2T_AT[1]") : (witch("w2T_AT[1]") + (SampleSize - 1))], 
+                 MARGIN = 2, 
+                 FUN = distMode)
 
-mu_theta <- as.numeric(names(sort(-table(combined_mcmcfin$mu_theta)))[1])
-sigma_theta <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_theta)))[1])
+alpha <- apply(X = combined_mcmcfin[, witch("alpha[1]") : (witch("alpha[1]") + (SampleSize - 1))], 
+               MARGIN = 2, 
+               FUN = distMode)
 
-mu_dtheta <- as.numeric(names(sort(-table(combined_mcmcfin$mu_dtheta)))[1])
-sigma_dtheta <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_dtheta)))[1])
+alpha_AT <- apply(X = combined_mcmcfin[, witch("alpha_AT[1]") : (witch("alpha_AT[1]") + (SampleSize - 1))], 
+                  MARGIN = 2, 
+                  FUN = distMode)
 
-### Phi -----
+scaling <- apply(X = combined_mcmcfin[, witch("scaling[1]") : (witch("scaling[1]") + (SampleSize - 1))], 
+                 MARGIN = 2, 
+                 FUN = distMode)
 
-mu_phi <- as.numeric(names(sort(-table(combined_mcmcfin$mu_phi)))[1])
-sigma_phi <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_phi)))[1])
+scaling_AT <- apply(X = combined_mcmcfin[, witch("scaling_AT[1]") : (witch("scaling_AT[1]") + (SampleSize - 1))], 
+                    MARGIN = 2, 
+                    FUN = distMode)
 
-mu_dphi <- as.numeric(names(sort(-table(combined_mcmcfin$mu_dphi)))[1])
-sigma_dphi <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_dphi)))[1])
+tau <- apply(X = combined_mcmcfin[, witch("tau[1]") : (witch("tau[1]") + (SampleSize - 1))], 
+             MARGIN = 2, 
+             FUN = distMode)
 
-### Weight Price -----
+tau_AT <- apply(X = combined_mcmcfin[, witch("tau_AT[1]") : (witch("tau_AT[1]") + (SampleSize - 1))], 
+                MARGIN = 2, 
+                FUN = distMode)
 
-mu_w1 <- as.numeric(names(sort(-table(combined_mcmcfin$mu_w1)))[1])
-sigma_w1 <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_w1)))[1])
+sp <- apply(X = combined_mcmcfin[, witch("sp[1]") : (witch("sp[1]") + (SampleSize - 1))], 
+            MARGIN = 2, 
+            FUN = distMode)
 
-mu_dw1 <- as.numeric(names(sort(-table(combined_mcmcfin$mu_dw1)))[1])
-sigma_dw1 <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_dw1)))[1])
+sp_AT <- apply(X = combined_mcmcfin[, witch("sp_AT[1]") : (witch("sp_AT[1]") + (SampleSize - 1))], 
+               MARGIN = 2, 
+               FUN = distMode)
 
-### Weight Consumption -----
 
-mu_w2 <- as.numeric(names(sort(-table(combined_mcmcfin$mu_w2)))[1])
-sigma_w2 <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_w2)))[1])
 
-mu_dw2 <- as.numeric(names(sort(-table(combined_mcmcfin$mu_dw2)))[1])
-sigma_dw2 <- as.numeric(names(sort(-table(combined_mcmcfin$sigma_dw2)))[1])
+# Prepare Data Simulation ------
 
-# Prepare data simulation ---------
+simRuns <- 10 # 10 recoveries
+
+# initiate matrix to store simulation results
+sim_results <- matrix(nrow = nrow(df_subset), ncol = simRuns)
 
 # select model file
-model_file <- "04_Modeling/bayes_models/recovery_maaDDM.txt"
+model_file <- "04_Modeling/bayes_models/simulation_maaDDM.txt"
 
 # create data list as input for JAGS (this time, parameters serve as input and RT are monitored)
 dat_sim <- list(N=nrow(df_subset),
                 Subject=df_subset$id_new,
                 Session=df_subset$session,
-                SampleSize=SampleSize,
                 Price_Eco=df_subset$priceEco,
                 Energy_Eco=df_subset$energyEco,
                 Popularity_Eco=df_subset$popularityEco,
@@ -212,50 +230,62 @@ dat_sim <- list(N=nrow(df_subset),
                 fixProps_Popularity_NonEco=fixProps$popularity0,
                 
                 # parameters
-                mu_alpha=mu_alpha,
-                sigma_alpha=sigma_alpha,
-                mu_dalpha=mu_dalpha,
-                sigma_dalpha=sigma_dalpha,
-                mu_tau=mu_tau,
-                sigma_tau=sigma_tau,
-                mu_dtau=mu_dtau,
-                sigma_dtau=sigma_dtau,
-                mu_scaling=mu_scaling,
-                sigma_scaling=sigma_scaling,
-                mu_dscaling=mu_dscaling,
-                sigma_dscaling=sigma_dscaling,
-                mu_sp=mu_sp,
-                sigma_sp=sigma_sp,
-                mu_dsp=mu_dsp,
-                sigma_dsp=sigma_dsp,
-                mu_theta=mu_theta,
-                sigma_theta=sigma_theta,
-                mu_dtheta=mu_dtheta,
-                sigma_dtheta=sigma_dtheta,
-                mu_phi=mu_phi,
-                sigma_phi=sigma_phi,
-                mu_dphi=mu_dphi,
-                sigma_dphi=sigma_dphi,
-                mu_w1=mu_w1,
-                sigma_w1=sigma_w1,
-                mu_dw1=mu_dw1,
-                sigma_dw1=sigma_dw1,
-                mu_w2=mu_w2,
-                sigma_w2=sigma_w2,
-                mu_dw2=mu_dw2,
-                sigma_dw2=sigma_dw2
-                
+                w1T=w1T, 
+                w1T_AT=w1T_AT,
+                w2T=w2T,
+                w2T_AT=w2T_AT,
+                w3T=w3T,
+                w3T_AT=w3T_AT, 
+                thetaT=thetaT,
+                thetaT_AT=thetaT_AT, 
+                phiT=phiT, 
+                phiT_AT=phiT_AT, 
+                alpha=alpha, 
+                alpha_AT=alpha_AT, 
+                scaling=scaling, 
+                scaling_AT=scaling_AT, 
+                tau=tau, 
+                tau_AT=tau_AT,
+                sp=sp,
+                sp_AT=sp_AT
 )
 
 # declare variables to be monitored
 monitor_sim <- c("x")
 
-# Simulate data ------
+# Simulate Data --------
 
-results <- run.jags(model = model_file,
-                    monitor = monitor_sim,
-                    module = "wiener",
-                    data = dat_sim,
-                    n.chains = 1,
-                    sample = 1,
-                    silent.jags = TRUE)
+for (sim in 1:simRuns) {
+  
+  # simulate data using JAGS
+  
+  results <- run.jags(model = model_file,
+                      monitor = monitor_sim,
+                      module = "wiener",
+                      data = dat_sim,
+                      n.chains = 1,
+                      sample = 1,
+                      silent.jags = TRUE)
+  
+  sim_results[,sim] <- unlist(results$mcmc)
+  
+  # Print progress to console
+  flush.console()
+  msg = sprintf('Done with simulation: %d',sim)
+  print(msg)
+  
+}
+
+### Save simulated data
+filename <- paste0("data/simResults_", group_of_interest, file_extension, "_recovery", ".rds")
+saveRDS(sim_results, file = filename)
+
+
+
+
+
+
+
+
+
+
