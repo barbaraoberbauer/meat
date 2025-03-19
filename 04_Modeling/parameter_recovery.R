@@ -122,9 +122,7 @@ fixProps <- fixProps/rowSums(fixProps)
 
 # Determine best fitting parameters (highest log-likelihood) ------------
 
-# what likelihood? likelihood of observations given parameters or the other way around?
-# the latter is the posterior distribution so that doesn't seem to make much sense to me
-
+# likelihood of an observation given the parameters
 
 mcmcMat <- as.matrix(mcmcfin_true,chains=TRUE)
 mcmc_loglik <- mcmcMat[,grep("^loglik",colnames(mcmcMat))]
@@ -258,7 +256,7 @@ saveRDS(sim_results, file = filename)
 # this was recommended in the example code of dwiener 
 
 dat <- list(N=nrow(df_subset),
-            x=sim_results[,1],
+            x=sim_results[,6],
             Subject=df_subset$id_new,
             Session=df_subset$session,
             SampleSize=SampleSize,
