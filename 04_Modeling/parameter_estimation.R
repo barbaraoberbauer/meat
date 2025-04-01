@@ -226,152 +226,80 @@ monitor <- c(
 
 ### Set up initial values ------
 
-# sd <- 1
-# 
-# GenInits = function() {
-# 
-#   mu_alpha = rnorm(1, 6, 1)
-#   sigma_alpha = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_tau = rnorm(1, 1, 1)
-#   sigma_tau = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_scaling = rnorm(1, 1, 1)
-#   sigma_scaling = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_theta = rnorm(1, 0.5, 1)
-#   sigma_theta = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_phi = rnorm(1, 0.5, 1)
-#   sigma_phi = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_w1 = rnorm(1, 0, 1)
-#   sigma_w1 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_w2 = rnorm(1, 0, 1)
-#   sigma_w2 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_sp = rnorm(1, 0.5, 1)
-#   sigma_sp = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_dw1 = rnorm(1, 0, 1)
-#   sigma_dw1 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_dw2 = rnorm(1, 0, 1)
-#   sigma_dw2 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_dtheta = rnorm(1, 0, 1)
-#   sigma_dtheta = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_dphi = rnorm(1, 0, 1)
-#   sigma_dphi = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_dalpha = rnorm(1, 0, 1)
-#   sigma_dalpha = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_dscaling = rnorm(1, 0, 1)
-#   sigma_dscaling = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_dtau = rnorm(1, 0, 1)
-#   sigma_dtau = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_dsp = rnorm(1, 0, 1)
-#   sigma_dsp = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-# 
-#   list(
-#     mu_alpha = mu_alpha,
-#     sigma_alpha = sigma_alpha,
-#     mu_tau = mu_tau,
-#     sigma_tau = sigma_tau,
-#     mu_scaling = mu_scaling,
-#     sigma_scaling = sigma_scaling,
-#     mu_theta = mu_theta,
-#     sigma_theta = sigma_theta,
-#     mu_phi = mu_phi,
-#     sigma_phi = sigma_phi,
-#     mu_w1 = mu_w1,
-#     sigma_w1 = sigma_w1,
-#     mu_w2 = mu_w2,
-#     sigma_w2 = sigma_w2,
-#     mu_sp = mu_sp,
-#     sigma_sp = sigma_sp,
-#     mu_dw1 = mu_dw1,
-#     sigma_dw1 = sigma_dw1,
-#     mu_dw2 = mu_dw2,
-#     sigma_dw2 = sigma_dw2,
-#     mu_dtheta = mu_dtheta,
-#     sigma_dtheta = sigma_dtheta,
-#     mu_dphi = mu_dphi,
-#     sigma_dphi = sigma_dphi,
-#     mu_dalpha = mu_dalpha,
-#     sigma_dalpha = sigma_dalpha,
-#     mu_dscaling = mu_dscaling,
-#     sigma_dscaling = sigma_dscaling,
-#     mu_dtau = mu_dtau,
-#     sigma_dtau = sigma_dtau,
-#     mu_dsp = mu_dsp,
-#     sigma_dsp = sigma_dsp
-#   )
-# 
-# }
+sd <- 0.1
 
+GenInits = function() {
 
-# GenInits = function() {
-#   
-#   mu_alpha = 8
-#   sigma_alpha = 1
-#   mu_tau = 1
-#   sigma_tau = 1
-#   mu_scaling = 1
-#   sigma_scaling = 1
-#   mu_theta = 0.5
-#   sigma_theta = 1
-#   mu_phi = 0.5
-#   sigma_phi = 1
-#   mu_w1 = 0
-#   sigma_w1 = 1
-#   mu_w2 = 0
-#   sigma_w2 = 1
-#   mu_sp = 0.5
-#   sigma_sp = 1
-#   mu_dw1 = 0
-#   sigma_dw1 = 1
-#   mu_dw2 = 0
-#   sigma_dw2 = 1
-#   mu_dtheta = 0
-#   sigma_dtheta = 1
-#   mu_dphi = 0
-#   sigma_dphi = 1
-#   mu_dalpha = 0
-#   sigma_dalpha = 1
-#   mu_dscaling = 0
-#   sigma_dscaling = 1
-#   mu_dtau = 0
-#   sigma_dtau = 1
-#   mu_dsp = 0
-#   sigma_dsp = 1
-#   
-#   list(
-#     mu_alpha = mu_alpha,
-#     sigma_alpha = sigma_alpha,
-#     mu_tau = mu_tau,
-#     sigma_tau = sigma_tau,
-#     mu_scaling = mu_scaling,
-#     sigma_scaling = sigma_scaling,
-#     mu_theta = mu_theta,
-#     sigma_theta = sigma_theta,
-#     mu_phi = mu_phi,
-#     sigma_phi = sigma_phi,
-#     mu_w1 = mu_w1,
-#     sigma_w1 = sigma_w1,
-#     mu_w2 = mu_w2,
-#     sigma_w2 = sigma_w2,
-#     mu_sp = mu_sp,
-#     sigma_sp = sigma_sp,
-#     mu_dw1 = mu_dw1,
-#     sigma_dw1 = sigma_dw1,
-#     mu_dw2 = mu_dw2,
-#     sigma_dw2 = sigma_dw2,
-#     mu_dtheta = mu_dtheta,
-#     sigma_dtheta = sigma_dtheta,
-#     mu_dphi = mu_dphi,
-#     sigma_dphi = sigma_dphi,
-#     mu_dalpha = mu_dalpha,
-#     sigma_dalpha = sigma_dalpha,
-#     mu_dscaling = mu_dscaling,
-#     sigma_dscaling = sigma_dscaling,
-#     mu_dtau = mu_dtau,
-#     sigma_dtau = sigma_dtau,
-#     mu_dsp = mu_dsp,
-#     sigma_dsp = sigma_dsp
-#   )
-#   
-# }
+  mu_alpha = rnorm(1, 6, sd)
+  sigma_alpha = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+  mu_tau = rnorm(1, 0.5, sd)
+  sigma_tau = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+  mu_scaling = rnorm(1, 1, sd)
+  sigma_scaling = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+  mu_theta = rnorm(1, 0.5, sd)
+  sigma_theta = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+  mu_phi = rnorm(1, 0.5, sd)
+  sigma_phi = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+  mu_w1 = rnorm(1, 0, sd)
+  sigma_w1 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+  mu_w2 = rnorm(1, 0, sd)
+  sigma_w2 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+  mu_sp = rnorm(1, 0.5, sd)
+  sigma_sp = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+  mu_dw1 = rnorm(1, 0, sd)
+  sigma_dw1 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+  mu_dw2 = rnorm(1, 0, sd)
+  sigma_dw2 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+  mu_dtheta = rnorm(1, 0, sd)
+  sigma_dtheta = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+  mu_dphi = rnorm(1, 0, sd)
+  sigma_dphi = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+  mu_dalpha = rnorm(1, 0, sd)
+  sigma_dalpha = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+  mu_dscaling = rnorm(1, 0, sd)
+  sigma_dscaling = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+  mu_dtau = rnorm(1, 0, sd)
+  sigma_dtau = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+  mu_dsp = rnorm(1, 0, sd)
+  sigma_dsp = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+
+  list(
+    mu_alpha = mu_alpha,
+    sigma_alpha = sigma_alpha,
+    mu_tau = mu_tau,
+    sigma_tau = sigma_tau,
+    mu_scaling = mu_scaling,
+    sigma_scaling = sigma_scaling,
+    mu_theta = mu_theta,
+    sigma_theta = sigma_theta,
+    mu_phi = mu_phi,
+    sigma_phi = sigma_phi,
+    mu_w1 = mu_w1,
+    sigma_w1 = sigma_w1,
+    mu_w2 = mu_w2,
+    sigma_w2 = sigma_w2,
+    mu_sp = mu_sp,
+    sigma_sp = sigma_sp,
+    mu_dw1 = mu_dw1,
+    sigma_dw1 = sigma_dw1,
+    mu_dw2 = mu_dw2,
+    sigma_dw2 = sigma_dw2,
+    mu_dtheta = mu_dtheta,
+    sigma_dtheta = sigma_dtheta,
+    mu_dphi = mu_dphi,
+    sigma_dphi = sigma_dphi,
+    mu_dalpha = mu_dalpha,
+    sigma_dalpha = sigma_dalpha,
+    mu_dscaling = mu_dscaling,
+    sigma_dscaling = sigma_dscaling,
+    mu_dtau = mu_dtau,
+    sigma_dtau = sigma_dtau,
+    mu_dsp = mu_dsp,
+    sigma_dsp = sigma_dsp
+  )
+
+}
+
 
 ### Set model specifications ------
 
@@ -409,7 +337,7 @@ runJagsOut <- run.jags(method = "parallel",
                        module = "wiener",
                        data = dat,
                        n.chains = nchains,
-                       #inits = GenInits(),
+                       inits = GenInits(),
                        adapt = nAdaptSteps,
                        burnin = nBurninSteps,
                        sample = ceiling(nUseSteps/nchains),
