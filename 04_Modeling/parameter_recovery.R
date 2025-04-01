@@ -256,7 +256,7 @@ saveRDS(sim_results, file = filename)
 # this was recommended in the example code of dwiener 
 
 dat <- list(N=nrow(df_subset),
-            x=sim_results[,6],
+            x=sim_results[,10],
             Subject=df_subset$id_new,
             Session=df_subset$session,
             SampleSize=SampleSize,
