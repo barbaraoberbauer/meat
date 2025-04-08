@@ -63,7 +63,7 @@ df <- readRDS("data/df.rds")
 
 ### Specify subset of data ----
 
-group_of_interest <- "environmental_friendliness"
+group_of_interest <- "emissions"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
 df_subset <- df %>%
@@ -318,8 +318,8 @@ if (bounded == TRUE) {
   
 } else if (bounded == FALSE) {
   
-  model_file <- "04_Modeling/bayes_models/hierarchical_bayesian_maaDDM_nobounds.txt"
-  file_extension <- "_nobounds"
+  model_file <- "04_Modeling/bayes_models/hierarchical_bayesian_maaDDM_nobounds_positive_weights.txt"
+  file_extension <- "_nobounds_positive_weights"
   
 }
 
@@ -329,7 +329,13 @@ if (bounded == TRUE) {
 # set up cluster manually and make sure module is loaded before running the model
 # https://sourceforge.net/p/runjags/forum/general/thread/e34ce49c3c/ 
 cl <- makePSOCKcluster(nchains)
-clusterCall(cl, function(x) require("wiener"))
+# clusterCall(cl, function(x) require("wiener"))
+
+clusterEvalQ(cl, {
+  library(rjags)
+  library(runjags)
+  load.runjagsmodule("wiener")  
+})
 
 runJagsOut <- run.jags(method = "parallel",
                        model = model_file,
