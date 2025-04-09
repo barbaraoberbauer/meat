@@ -303,7 +303,7 @@ GenInits = function() {
 
 ### Set model specifications ------
 
-nchains <- 6
+nchains <- 30
 nAdaptSteps <- 5000
 nBurninSteps <- 25000
 nUseSteps = nchains * 6500 # total number of used steps
@@ -318,8 +318,8 @@ if (bounded == TRUE) {
   
 } else if (bounded == FALSE) {
   
-  model_file <- "04_Modeling/bayes_models/hierarchical_bayesian_maaDDM_nobounds_positive_weights.txt"
-  file_extension <- "_nobounds_positive_weights"
+  model_file <- "04_Modeling/bayes_models/hierarchical_bayesian_maaDDM_nobounds.txt"
+  file_extension <- "_nobounds"
   
 }
 
