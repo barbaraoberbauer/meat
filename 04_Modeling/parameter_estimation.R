@@ -303,7 +303,7 @@ GenInits = function() {
 
 ### Set model specifications ------
 
-nchains <- 30
+nchains <- 6
 nAdaptSteps <- 5000
 nBurninSteps <- 25000
 nUseSteps = nchains * 6500 # total number of used steps
