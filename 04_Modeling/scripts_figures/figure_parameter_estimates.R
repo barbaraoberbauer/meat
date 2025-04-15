@@ -57,7 +57,7 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-group_of_interest <- "environmental_friendliness"
+group_of_interest <- "emissions"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
 # bounded or unbounded attentional parameters? 
