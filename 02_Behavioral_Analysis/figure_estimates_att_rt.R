@@ -44,6 +44,7 @@ library(cowplot)
 
 # Load required functions
 source("functions/fun_plot_model_estimates.R")
+source("functions/fun_nudgedodge.R")
 
 
 rm(package, packages, is_package_installed)
@@ -51,14 +52,20 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-results_att <- readRDS("data/results_att.rds")
-results_rt <- readRDS("data/results_rt.rds")
+results_att_rt <- readRDS("data/results_att_rt.rds")
+
+results_att <- as.data.frame(results_att_rt$results_att)
+results_att_red <- as.data.frame(results_att_rt$results_att_red)
+results_rt <- as.data.frame(results_att_rt$results_rt)
+results_rt_red <- as.data.frame(results_att_rt$results_rt_red)
 
 
 # Check data structure -------
 
 str(results_att)
+str(results_att_red)
 str(results_rt)
+str(results_rt_red)
 
 ### reverse factor levels for plot ----
 
@@ -68,21 +75,27 @@ results_att$consumption_translation <- factor(x = results_att$consumption_transl
 results_att$price_translation <- factor(x = results_att$price_translation,
                                         levels = rev(levels(results_att$price_translation)))
 
+results_att_red$consumption_translation <- factor(x = results_att_red$consumption_translation,
+                                              levels = rev(levels(results_att_red$consumption_translation)))
+
 results_rt$consumption_translation <- factor(x = results_rt$consumption_translation,
                                               levels = rev(levels(results_rt$consumption_translation)))
 
 results_rt$price_translation <- factor(x = results_rt$price_translation,
                                         levels = rev(levels(results_rt$price_translation)))
 
+results_rt_red$consumption_translation <- factor(x = results_rt_red$consumption_translation,
+                                             levels = rev(levels(results_rt_red$consumption_translation)))
 
 
 # Plot model estimates -----
 
-color_price <- c("#1a80bb", "#8cc5e3") # present, absent
+color_price <- c("#2D3142", "#BFC0C0") # present, absent
 
 ### Attention ----
 
 p_att <- plot_model_estimates(results_att,
+                              results_att_red,
                               "Effect on Relative Difference in Dwell Time",
                               c(-0.05, 0.1)
                               )
@@ -90,10 +103,10 @@ p_att <- plot_model_estimates(results_att,
 ### RT ----
 
 p_rt <- plot_model_estimates(results_rt,
+                             results_rt_red,
                               "Effect on Response Times (in sec)",
                               c(-3, 6)
 )
-p_rt
 
   
 ### Arrange grids -----

@@ -7,15 +7,17 @@
 
 # function for plotting model estimates for attentional and rt data
 
-plot_model_estimates <- function(data, xtitle, xlim){
+plot_model_estimates <- function(data, data_red, xtitle, xlim){
   
   ggplot(data = data,
          mapping = aes(x = estimate, y = consumption_translation, 
                        color = price_translation)) +
     geom_vline(xintercept = 0, linetype = 'dashed', size = 1) +
-    geom_point(position = position_dodge(width = 0.4), size = 3.5) +
-    geom_errorbar(aes(xmin=lower_ci, xmax=upper_ci), width=.2, size = 1.5,
-                  position = position_dodge(width = 0.4)) +
+    geom_point(position = position_nudgedodge(y=0.15, width=0.2), 
+               size = 2.5) +
+    geom_errorbar(aes(xmin=asymp.LCL, xmax=asymp.UCL), width=.1, size = 1,
+                  position = position_nudgedodge(y=0.15, width=0.2)) +
+    
     labs(
       x = xtitle,
       y = "Consumption Translation",
@@ -28,7 +30,7 @@ plot_model_estimates <- function(data, xtitle, xlim){
                                 "environmental_friendliness" = "Rating")) +
     scale_color_manual(values = color_price,
                        breaks = c("0", "1"),
-                       labels = c("1" = "Present", 
+                       labels = c("1" = "Present",
                                   "0" = "Absent")) +
     theme_light() +
     theme(axis.title.x = element_text(size = 12,
@@ -46,6 +48,15 @@ plot_model_estimates <- function(data, xtitle, xlim){
                                b = 15,
                                l = 15),
           panel.spacing = unit(0.7, "lines")
-    )
+    ) +
+    
+    
+    # add main effect of consumption translation (data_red)
+    geom_point(data = data_red, aes(x = estimate, y = consumption_translation), 
+               position = position_nudgedodge(y=-0.15, width=0), 
+               size = 3.5, color = "#C33C54") +
+    geom_errorbar(data = data_red, aes(xmin=asymp.LCL, xmax=asymp.UCL, 
+                                       color = NULL), width = .2, size = 1.5,
+                  position = position_nudgedodge(y=-0.15, width=0), color = "#C33C54") 
   
 }
