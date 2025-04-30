@@ -64,7 +64,7 @@ df_agg <- df_agg_id %>%
 
 # Plot choice probabilities -------
 
-color_sessions <- c("#6A66A3", "#C33C54")
+color_sessions <- c("#225780", "#8CC5E3")
 
 fig_choice_prob <- 
 df_agg_id %>%
