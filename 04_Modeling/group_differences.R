@@ -53,20 +53,20 @@ rm(package, packages, is_package_installed)
 
 runJagsOut_environmental_friendliness <- readRDS("data/runJagsOut_environmental_friendliness_nobounds.rds")
 runJagsOut_control <- readRDS("data/runJagsOut_control_nobounds.rds")
-runJagsOut_operating_costs <- readRDS("data/runJagsOut_operating_costs_nobounds.rds")
+runJagsOut_emissions <- readRDS("data/runJagsOut_emissions_nobounds.rds")
 
 ### Combine all chains ------
 
 # store as mcmc object
 mcmcfin_environmental_friendliness = as.mcmc.list(runJagsOut_environmental_friendliness)
 mcmcfin_control = as.mcmc.list(runJagsOut_control)
-mcmcfin_operating_costs = as.mcmc.list(runJagsOut_operating_costs)
+mcmcfin_emissions = as.mcmc.list(runJagsOut_emissions)
 
 
 # combine chains
 combined_mcmcfin_environmental_friendliness <- as.data.frame(do.call(rbind, mcmcfin_environmental_friendliness))
 combined_mcmcfin_control <- as.data.frame(do.call(rbind, mcmcfin_control))
-combined_mcmcfin_operating_costs <- as.data.frame(do.call(rbind, mcmcfin_operating_costs))
+combined_mcmcfin_emissions <- as.data.frame(do.call(rbind, mcmcfin_emissions))
 
 
 # Calculate group differences -------
@@ -121,42 +121,42 @@ popularity_rc <- (combined_mcmcfin_environmental_friendliness$mu_w3_AT -
 HDIofMCMC(popularity_rc)
 
 
-###### Rating vs. Operating Costs ------
+###### Rating vs. Carbon Emissions ------
 
 # price
-price_ro <- 
+price_re <- 
   pnorm(combined_mcmcfin_environmental_friendliness$mu_dw1) -
-  pnorm(combined_mcmcfin_operating_costs$mu_dw1)
+  pnorm(combined_mcmcfin_emissions$mu_dw1)
 
-HDIofMCMC(price_ro)
+HDIofMCMC(price_re)
 
 # consumption
-consumption_ro <- 
+consumption_re <- 
   pnorm(combined_mcmcfin_environmental_friendliness$mu_dw2) -
-  pnorm(combined_mcmcfin_operating_costs$mu_dw2)
+  pnorm(combined_mcmcfin_emissions$mu_dw2)
 
-HDIofMCMC(consumption_ro)
+HDIofMCMC(consumption_re)
 
 # popularity
 
 # calculate mu_w3 (baseline) and mu_w3_AT (manipulation)
-combined_mcmcfin_operating_costs$mu_w3 <- 1 - 
-  pnorm(combined_mcmcfin_operating_costs$mu_w1) - 
-  pnorm(combined_mcmcfin_operating_costs$mu_w2)
+combined_mcmcfin_emissions$mu_w3 <- 1 - 
+  pnorm(combined_mcmcfin_emissions$mu_w1) - 
+  pnorm(combined_mcmcfin_emissions$mu_w2)
 
-combined_mcmcfin_operating_costs$mu_w3_AT <- 1 - 
-  pnorm(combined_mcmcfin_operating_costs$mu_w1 + 
-          combined_mcmcfin_operating_costs$mu_dw1) - 
-  pnorm(combined_mcmcfin_operating_costs$mu_w2 + 
-          combined_mcmcfin_operating_costs$mu_dw2)
+combined_mcmcfin_emissions$mu_w3_AT <- 1 - 
+  pnorm(combined_mcmcfin_emissions$mu_w1 + 
+          combined_mcmcfin_emissions$mu_dw1) - 
+  pnorm(combined_mcmcfin_emissions$mu_w2 + 
+          combined_mcmcfin_emissions$mu_dw2)
 
 
-popularity_ro <- (combined_mcmcfin_environmental_friendliness$mu_w3_AT -
+popularity_re <- (combined_mcmcfin_environmental_friendliness$mu_w3_AT -
                     combined_mcmcfin_environmental_friendliness$mu_w3) -
-  (combined_mcmcfin_operating_costs$mu_w3_AT -
-     combined_mcmcfin_operating_costs$mu_w3)
+  (combined_mcmcfin_emissions$mu_w3_AT -
+     combined_mcmcfin_emissions$mu_w3)
 
-HDIofMCMC(popularity_ro)
+HDIofMCMC(popularity_re)
 
 ### Theta --------
 
@@ -168,21 +168,21 @@ theta_rc <-
 
 HDIofMCMC(theta_rc)
 
-###### Rating vs. Operating Costs ------
+###### Rating vs. Carbon Emissions ------
 
-theta_ro <- 
+theta_re <- 
   pnorm(combined_mcmcfin_environmental_friendliness$mu_dtheta) -
-  pnorm(combined_mcmcfin_operating_costs$mu_dtheta)
+  pnorm(combined_mcmcfin_emissions$mu_dtheta)
 
-HDIofMCMC(theta_ro)
+HDIofMCMC(theta_re)
 
-###### Operating Costs vs. Control --------
+###### Carbon Emissions vs. Control --------
 
-theta_oc <- 
-  pnorm(combined_mcmcfin_operating_costs$mu_dtheta) -
+theta_ec <- 
+  pnorm(combined_mcmcfin_emissions$mu_dtheta) -
   pnorm(combined_mcmcfin_control$mu_dtheta)
 
-HDIofMCMC(theta_oc)
+HDIofMCMC(theta_ec)
 
 
 ### Alpha --------
@@ -195,16 +195,16 @@ alpha_rc <- combined_mcmcfin_environmental_friendliness$mu_dalpha -
 HDIofMCMC(alpha_rc)
 
 
-###### Rating vs. Operating Costs ------
+###### Rating vs. Carbon Emissions ------
 
-alpha_ro <- combined_mcmcfin_environmental_friendliness$mu_dalpha -
-  combined_mcmcfin_operating_costs$mu_dalpha
+alpha_re <- combined_mcmcfin_environmental_friendliness$mu_dalpha -
+  combined_mcmcfin_emissions$mu_dalpha
 
-HDIofMCMC(alpha_ro)
+HDIofMCMC(alpha_re)
 
-###### Operating Costs vs. Control ------
+###### Carbon Emissions vs. Control ------
 
-alpha_oc <- combined_mcmcfin_operating_costs$mu_dalpha -
+alpha_ec <- combined_mcmcfin_emissions$mu_dalpha -
   combined_mcmcfin_control$mu_dalpha
 
-HDIofMCMC(alpha_oc)
+HDIofMCMC(alpha_ec)
