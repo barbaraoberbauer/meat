@@ -188,6 +188,8 @@ summary(attention_model)
 
 ### EMM Comparison -------
 
+###### Price Translation --------
+
 EMM_att <- emmeans(attention_model, 
                ~ consumption_translation * session * price_translation, 
                type = "response")
@@ -214,6 +216,32 @@ results_att[,c('estimate',
                                                'asymp.LCL',
                                                'asymp.UCL')], 4)
 
+
+###### No Price Translation ---------
+
+EMM_att_red <- emmeans(attention_model, 
+                       ~ consumption_translation * session, 
+                       type = "response")
+
+emm_session_att_red <- pairs(EMM_att_red, reverse = TRUE, simple = "session")
+
+emm_session_att_confint_red <- confint(emm_session_att_red)
+
+# extract estimates
+results_att_red <- as.data.frame(summary(emm_session_att_confint_red))[c('consumption_translation',
+                                                                        'estimate', 
+                                                                        'SE',
+                                                                        'asymp.LCL',
+                                                                        'asymp.UCL')]
+
+# round to four decimals
+results_att_red[,c('estimate', 
+               'SE',
+               'asymp.LCL',
+               'asymp.UCL')] <- round(results_att_red[,c('estimate', 
+                                                     'SE',
+                                                     'asymp.LCL',
+                                                     'asymp.UCL')], 4)
 
 # Response Times ----
 
@@ -274,6 +302,8 @@ summary(rt_model)
 
 ### EMM Comparison -------
 
+###### Price Translation --------
+
 EMM_rt <- emmeans(rt_model, 
                ~ consumption_translation * session * price_translation, 
                type = "response")
@@ -300,9 +330,44 @@ results_rt[,c('estimate',
                                                      'asymp.LCL',
                                                      'asymp.UCL')], 4)
 
+###### No Price Translation --------
+
+EMM_rt_red <- emmeans(rt_model, 
+                  ~ consumption_translation * session, 
+                  type = "response")
+
+emm_session_rt_red <- pairs(EMM_rt_red, reverse = TRUE, simple = "session")
+
+emm_session_rt_confint_red <- confint(emm_session_rt_red)
+
+
+# extract estimates
+results_rt_red <- as.data.frame(summary(emm_session_rt_confint_red))[c('consumption_translation',
+                                                               'estimate', 
+                                                               'SE',
+                                                               'asymp.LCL',
+                                                               'asymp.UCL')]
+
+# round to four decimals
+results_rt_red[,c('estimate', 
+              'SE',
+              'asymp.LCL',
+              'asymp.UCL')] <- round(results_rt_red[,c('estimate', 
+                                                   'SE',
+                                                   'asymp.LCL',
+                                                   'asymp.UCL')], 4)
+
+
 
 
 # Save results ------
 
-saveRDS(results_att, file = "data/results_att.rds")
-saveRDS(results_rt, file = "data/results_rt.rds")
+results_att_rt <- list(results_att = results_att,
+                       results_att_red = results_att_red,
+                       results_rt = results_rt,
+                       results_rt_red = results_rt_red)
+
+results_att_rt$readme <- "att = effects on dwell time; rt = effects on attention; red = reduced model (without price translation as fixed effect)"
+
+
+saveRDS(results_att_rt, file = "data/results_att_rt.rds")
