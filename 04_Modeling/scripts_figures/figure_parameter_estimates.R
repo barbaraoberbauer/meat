@@ -92,7 +92,7 @@ combined_mcmcfin <- as.data.frame(do.call(rbind, mcmcfin))
 
 # Plot Posterior Distributions ------
 
-Nbins <- 35
+Nbins <- 25
 
 ### Boundary ------
 
