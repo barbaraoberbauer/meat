@@ -7,7 +7,6 @@
 
 # function for plotting change parameters
 
-
 plot_change_param <- function(combined_mcmcfin, parameter, bins){
   
   ggplot(combined_mcmcfin, aes(parameter)) +

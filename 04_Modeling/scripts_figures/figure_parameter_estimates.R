@@ -57,7 +57,7 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-group_of_interest <- "environmental_friendliness"
+group_of_interest <- "emissions"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
 # bounded or unbounded attentional parameters? 
@@ -128,7 +128,7 @@ if (bounded == TRUE) {
                       pnorm(combined_mcmcfin$mu_theta),
                       pnorm(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta),
                       Nbins,
-                      "Discounting\nUnattended Option")
+                      "Discounting Unattended\nOption (theta)")
   
 } else if (bounded == FALSE) {
   
@@ -137,7 +137,7 @@ if (bounded == TRUE) {
                                 combined_mcmcfin$mu_theta,
                                 (combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta),
                                 Nbins,
-                                "Discounting\nUnattended Option")
+                                "Discounting Unattended\nOption (theta)")
   
 }
 
@@ -151,7 +151,7 @@ if (bounded == TRUE) {
                       pnorm(combined_mcmcfin$mu_phi),
                       pnorm(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi),
                       Nbins,
-                      "Discounting\nUnattended Attribute")
+                      "Discounting Unattended\nAttribute (phi)")
 
 } else if (bounded == FALSE) {
   
@@ -160,12 +160,9 @@ if (bounded == TRUE) {
                               combined_mcmcfin$mu_phi,
                               (combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi),
                               Nbins,
-                              "Discounting\nUnattended Attribute")
+                              "Discounting Unattended\nAttribute (phi)")
   
 }
-
-
-
 
 
 
@@ -179,13 +176,13 @@ pprice <- plot_posterior_dist(combined_mcmcfin,
                               "Weight Price")
 
 
-### Weight Energy ------
+### Weight Consumption ------
 
 penergy <- plot_posterior_dist(combined_mcmcfin, 
                                pnorm(combined_mcmcfin$mu_w2), 
                                pnorm(combined_mcmcfin$mu_w2 + combined_mcmcfin$mu_dw2), 
                                Nbins, 
-                               "Weight Sustainability")
+                               "Weight Consumption")
 
 
 ### Weight Popularity ------
