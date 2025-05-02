@@ -96,7 +96,7 @@ df_agg_id %>%
                               "emissions" = "Carbon\nEmissions",
                               "environmental_friendliness" = "Rating")) +
   labs(x = "Translation of Energy and Water Consumption", 
-       y = "Probability of Choosing More Ecological Option", 
+       y = "Probability of Choosing \nMore Ecological Option", 
        title = '',
        fill = "Session") + 
   theme_bw() +
@@ -105,13 +105,13 @@ df_agg_id %>%
                              r = 10,
                              b = 10,
                              l = 10),
-        axis.title.y = element_text(margin = margin(t = 0, r = 15, b = 0, l = 0), size = 12),
-        axis.title.x = element_text(margin = margin(t = 15, r = 0, b = 0, l = 0), size = 12),
+        axis.title.y = element_text(margin = margin(t = 0, r = 15, b = 0, l = 0), size = 14),
+        axis.title.x = element_text(margin = margin(t = 15, r = 0, b = 0, l = 0), size = 14),
         legend.title = element_text(size = 10),
-        legend.text = element_text(size = 8),
+        legend.text = element_text(size = 12),
         legend.key.size = unit(0.5, "cm"),
         legend.position = "top",
-        strip.text = element_text(size = 10),
+        strip.text = element_text(size = 12),
         strip.background = element_rect(fill="#DAD2D8")
   )
 
