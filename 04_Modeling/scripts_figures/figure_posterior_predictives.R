@@ -55,7 +55,7 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-group_of_interest <- "operating_costs"
+group_of_interest <- "environmental_friendliness"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
 # bounded or unbounded attentional parameters? 
@@ -218,9 +218,9 @@ names(frequency)[4] <- "count_emp"
 
 ### Plot Sim and Emp Data for both Sessions ------
 
-post_pred_session_1 <- plot_posterior_predictives(1, "Baseline Session")
+post_pred_session_1 <- plot_posterior_predictives(1, "Session 1")
 
-post_pred_session_2 <- plot_posterior_predictives(2, "Manipulation Session")
+post_pred_session_2 <- plot_posterior_predictives(2, "Session 2")
 
 ### Arrange Plots in Grid
 posterior_predictives <- plot_grid(# plots
