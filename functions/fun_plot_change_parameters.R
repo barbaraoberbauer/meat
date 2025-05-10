@@ -16,7 +16,7 @@ plot_change_param <- function(combined_mcmcfin, parameter, bins){
     geom_vline(xintercept = 0, color = "#CB181D", linetype = "dashed", linewidth = 1.2) +
     geom_vline(xintercept = quantile(parameter, c(.025,.975)), color = "black", linetype = "dashed", linewidth = 1.2) +
     labs(x = "Effect of Attr. Transl.", y = "", title = '') + 
-    coord_cartesian(ylim = c(0, 5000)) +
+    #coord_cartesian(ylim = c(0, 15000)) +
     theme_classic() +
     theme(axis.text.x=element_text(size=13),
           axis.text.y=element_blank(),

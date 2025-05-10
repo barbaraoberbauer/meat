@@ -19,7 +19,7 @@ plot_posterior_dist <- function(combined_mcmcfin, parameter1, parameter2, col_pa
                    fill = scales::alpha(col_param2, 0.4), 
                    bins = bins) +
     labs(x = x_title, y = "Posterior Density", title = '') + 
-    coord_cartesian(ylim = c(0, 5000)) +
+    #coord_cartesian(ylim = c(0, 15000)) +
     theme_classic() +
     theme(axis.text.x=element_text(size=12),
           axis.text.y=element_blank(),
