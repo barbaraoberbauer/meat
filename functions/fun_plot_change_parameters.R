@@ -7,7 +7,7 @@
 
 # function for plotting change parameters
 
-plot_change_param <- function(combined_mcmcfin, parameter, bins){
+plot_change_param <- function(combined_mcmcfin, parameter, bins, x_title){
   
   ggplot(combined_mcmcfin, aes(parameter)) +
     geom_histogram(color = scales::alpha("black", 0.5), 
@@ -15,7 +15,7 @@ plot_change_param <- function(combined_mcmcfin, parameter, bins){
                    bins = bins) +
     geom_vline(xintercept = 0, color = "#CB181D", linetype = "dashed", linewidth = 1.2) +
     geom_vline(xintercept = quantile(parameter, c(.025,.975)), color = "black", linetype = "dashed", linewidth = 1.2) +
-    labs(x = "Effect of Attr. Transl.", y = "", title = '') + 
+    labs(x = x_title, y = "", title = '') + 
     #coord_cartesian(ylim = c(0, 15000)) +
     theme_classic() +
     theme(axis.text.x=element_text(size=13),
