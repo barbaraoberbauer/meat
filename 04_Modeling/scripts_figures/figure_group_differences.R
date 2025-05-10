@@ -184,7 +184,7 @@ plot_theta_rc <- plot_posterior_dist(theta,
                                      theta$control,
                                      col_rating,
                                      col_control,
-                                     25,
+                                     Nbins,
                                      "Effects on Theta")
 
 # rating - emissions
@@ -194,7 +194,7 @@ plot_theta_re <- plot_posterior_dist(theta,
                                      theta$emissions,
                                      col_rating,
                                      col_emissions,
-                                     25,
+                                     Nbins,
                                      "Effects on Theta")
 
 ### Boundary -----
@@ -206,7 +206,7 @@ plot_boundary_rc <- plot_posterior_dist(boundary,
                                         boundary$control,
                                         col_rating,
                                         col_control,
-                                        25,
+                                        Nbins,
                                         "Effects on Boundary Separation")
 
 # emissions - control
@@ -216,7 +216,7 @@ plot_boundary_ec <- plot_posterior_dist(boundary,
                                         boundary$control,
                                         col_emissions,
                                         col_control,
-                                        25,
+                                        Nbins,
                                         "Effects on Boundary Separation")
 
 
