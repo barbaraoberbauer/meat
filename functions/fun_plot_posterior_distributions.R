@@ -11,12 +11,12 @@ plot_posterior_dist <- function(combined_mcmcfin, parameter1, parameter2, col_pa
   
   ggplot(combined_mcmcfin, aes(parameter1)) +
     geom_histogram(color = scales::alpha("black", 0.5), 
-                   fill = col_param1, 
+                   fill = scales::alpha(col_param1, 0.7), 
                    bins = bins) +
     geom_histogram(aes(parameter2), 
                    data = combined_mcmcfin,
                    color = scales::alpha("black", 0.5), 
-                   fill = scales::alpha(col_param2, 0.4), 
+                   fill = scales::alpha(col_param2, 0.7), 
                    bins = bins) +
     labs(x = x_title, y = "Posterior Density", title = '') + 
     #coord_cartesian(ylim = c(0, 15000)) +
