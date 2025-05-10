@@ -7,19 +7,19 @@
 
 # function for plotting parent posterior distributions
 
-plot_posterior_dist <- function(combined_mcmcfin, parameter1, parameter2, bins, x_title){
+plot_posterior_dist <- function(combined_mcmcfin, parameter1, parameter2, col_param1, col_param2, bins, x_title){
   
   ggplot(combined_mcmcfin, aes(parameter1)) +
     geom_histogram(color = scales::alpha("black", 0.5), 
-                   fill = "#225780", 
+                   fill = col_param1, 
                    bins = bins) +
     geom_histogram(aes(parameter2), 
                    data = combined_mcmcfin,
                    color = scales::alpha("black", 0.5), 
-                   fill = scales::alpha("#8CC5E3", 0.4), 
+                   fill = scales::alpha(col_param2, 0.4), 
                    bins = bins) +
     labs(x = x_title, y = "Posterior Density", title = '') + 
-    #coord_cartesian(ylim = c(0, 4500)) +
+    coord_cartesian(ylim = c(0, 5000)) +
     theme_classic() +
     theme(axis.text.x=element_text(size=12),
           axis.text.y=element_blank(),
