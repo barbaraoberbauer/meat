@@ -57,7 +57,7 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-group_of_interest <- "emissions"
+group_of_interest <- "control"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
 # bounded or unbounded attentional parameters? 
@@ -93,12 +93,16 @@ combined_mcmcfin <- as.data.frame(do.call(rbind, mcmcfin))
 # Plot Posterior Distributions ------
 
 Nbins <- 25
+col_sess1 <- "#225780"
+col_sess2 <- "#8CC5E3"
 
 ### Boundary ------
 
 pboundary <- plot_posterior_dist(combined_mcmcfin,
                                  combined_mcmcfin$mu_alpha,
                                  (combined_mcmcfin$mu_alpha + combined_mcmcfin$mu_dalpha),
+                                 col_sess1,
+                                 col_sess2,
                                  Nbins,
                                  "Boundary Separation")
 
@@ -107,6 +111,8 @@ pboundary <- plot_posterior_dist(combined_mcmcfin,
 pscaling <- plot_posterior_dist(combined_mcmcfin,
                                 combined_mcmcfin$mu_scaling,
                                 (combined_mcmcfin$mu_scaling + combined_mcmcfin$mu_dscaling),
+                                col_sess1,
+                                col_sess2,
                                 Nbins,
                                 "Drift Scaling")
 
@@ -115,6 +121,8 @@ pscaling <- plot_posterior_dist(combined_mcmcfin,
 ptau <- plot_posterior_dist(combined_mcmcfin,
                             combined_mcmcfin$mu_tau,
                             (combined_mcmcfin$mu_tau + combined_mcmcfin$mu_dtau),
+                            col_sess1,
+                            col_sess2,
                             Nbins,
                             "Non-Decision Time")
 
@@ -127,6 +135,8 @@ if (bounded == TRUE) {
   ptheta <- plot_posterior_dist(combined_mcmcfin,
                       pnorm(combined_mcmcfin$mu_theta),
                       pnorm(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta),
+                      col_sess1,
+                      col_sess2,
                       Nbins,
                       "Discounting Unattended\nOption (theta)")
   
@@ -136,6 +146,8 @@ if (bounded == TRUE) {
   ptheta <- plot_posterior_dist(combined_mcmcfin,
                                 combined_mcmcfin$mu_theta,
                                 (combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta),
+                                col_sess1,
+                                col_sess2,
                                 Nbins,
                                 "Discounting Unattended\nOption (theta)")
   
@@ -150,6 +162,8 @@ if (bounded == TRUE) {
   pphi <- plot_posterior_dist(combined_mcmcfin,
                       pnorm(combined_mcmcfin$mu_phi),
                       pnorm(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi),
+                      col_sess1,
+                      col_sess2,
                       Nbins,
                       "Discounting Unattended\nAttribute (phi)")
 
@@ -159,6 +173,8 @@ if (bounded == TRUE) {
   pphi <- plot_posterior_dist(combined_mcmcfin,
                               combined_mcmcfin$mu_phi,
                               (combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi),
+                              col_sess1,
+                              col_sess2,
                               Nbins,
                               "Discounting Unattended\nAttribute (phi)")
   
@@ -171,7 +187,9 @@ if (bounded == TRUE) {
 
 pprice <- plot_posterior_dist(combined_mcmcfin, 
                               pnorm(combined_mcmcfin$mu_w1), 
-                              pnorm(combined_mcmcfin$mu_w1 + combined_mcmcfin$mu_dw1), 
+                              pnorm(combined_mcmcfin$mu_w1 + combined_mcmcfin$mu_dw1),
+                              col_sess1,
+                              col_sess2, 
                               Nbins, 
                               "Weight Price")
 
@@ -180,7 +198,9 @@ pprice <- plot_posterior_dist(combined_mcmcfin,
 
 penergy <- plot_posterior_dist(combined_mcmcfin, 
                                pnorm(combined_mcmcfin$mu_w2), 
-                               pnorm(combined_mcmcfin$mu_w2 + combined_mcmcfin$mu_dw2), 
+                               pnorm(combined_mcmcfin$mu_w2 + combined_mcmcfin$mu_dw2),
+                               col_sess1,
+                               col_sess2, 
                                Nbins, 
                                "Weight Consumption")
 
@@ -195,7 +215,9 @@ combined_mcmcfin$mu_w3_AT <- 1 -
 
 ppopularity <- plot_posterior_dist(combined_mcmcfin,
                                    combined_mcmcfin$mu_w3, 
-                                   combined_mcmcfin$mu_w3_AT, 
+                                   combined_mcmcfin$mu_w3_AT,
+                                   col_sess1,
+                                   col_sess2, 
                                    Nbins, 
                                    "Weight Popularity")
 
@@ -205,6 +227,8 @@ ppopularity <- plot_posterior_dist(combined_mcmcfin,
 psp <- plot_posterior_dist(combined_mcmcfin,
                            combined_mcmcfin$mu_sp,
                            (combined_mcmcfin$mu_sp + combined_mcmcfin$mu_dsp),
+                           col_sess1,
+                           col_sess2,
                            Nbins,
                            "Starting Point Bias")
 
