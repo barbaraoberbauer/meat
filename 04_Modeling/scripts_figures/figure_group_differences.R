@@ -22,7 +22,8 @@ if(!is.null(dev.list())) dev.off()
 # List of packages to check and install if necessary
 packages <- c("tidyverse",
               "runjags",
-              "dplyr")
+              "dplyr",
+              "cowplot")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -41,6 +42,7 @@ for (package in packages) {
 library(tidyverse)
 library(runjags)
 library(dplyr)
+library(cowplot)
 
 
 # Load functions for plotting
@@ -143,27 +145,156 @@ consumption <- data.frame(rating =
                           )
 
 
+# Plot effects of group -----
+
+Nbins <- 30
+col_rating <- "#49416D"  #'#261132'
+col_emissions <-"#E08D79" # '#716783'
+col_control <- "#A882DD" #'#9994AB'
+
+
+### Consumption -------
+
+# rating - control
+
+plot_consumption_rc <- plot_posterior_dist(consumption,
+                                           consumption$rating,
+                                           consumption$control,
+                                           col_rating,
+                                           col_control,
+                                           Nbins,
+                                           "Effects on Weight Consumption")
+
+# rating - emissions
+
+plot_consumption_re <- plot_posterior_dist(consumption,
+                                           consumption$rating,
+                                           consumption$emissions,
+                                           col_rating,
+                                           col_emissions,
+                                           Nbins,
+                                           "Effects on Weight Consumption")
+
+### Theta ---------
+
+# rating - control
+
+plot_theta_rc <- plot_posterior_dist(theta,
+                                     theta$rating,
+                                     theta$control,
+                                     col_rating,
+                                     col_control,
+                                     25,
+                                     "Effects on Theta")
+
+# rating - emissions
+
+plot_theta_re <- plot_posterior_dist(theta,
+                                     theta$rating,
+                                     theta$emissions,
+                                     col_rating,
+                                     col_emissions,
+                                     25,
+                                     "Effects on Theta")
+
+### Boundary -----
+
+# rating - control
+
+plot_boundary_rc <- plot_posterior_dist(boundary,
+                                        boundary$rating,
+                                        boundary$control,
+                                        col_rating,
+                                        col_control,
+                                        25,
+                                        "Effects on Boundary Separation")
+
+# emissions - control
+
+plot_boundary_ec <- plot_posterior_dist(boundary,
+                                        boundary$emissions,
+                                        boundary$control,
+                                        col_emissions,
+                                        col_control,
+                                        25,
+                                        "Effects on Boundary Separation")
 
 
 
+# Plot group differences -----
 
-plot_posterior_dist(boundary,
-                    boundary$rating,
-                    boundary$control,
-                    25,
-                    "Boundary")
+### Consumption -------
+
+# rating - control 
+diff_consumption_rc <- plot_change_param(consumption,
+                                         consumption$consumption_rc,
+                                         Nbins,
+                                         "Rating - Control")
+
+# rating - control 
+diff_consumption_re <- plot_change_param(consumption,
+                                         consumption$consumption_re,
+                                         Nbins,
+                                         "Rating - Emissions")
+
+### Theta --------
+
+# rating - control
+diff_theta_rc <- plot_change_param(theta,
+                                   theta$theta_rc,
+                                   Nbins,
+                                   "Rating - Control")
+
+# rating - emissions
+diff_theta_re <- plot_change_param(theta,
+                                   theta$theta_re,
+                                   Nbins,
+                                   "Rating - Emissions")
+
+### Boundary ------
+diff_boundary_rc <- plot_change_param(boundary,
+                                      boundary$alpha_rc,
+                                      Nbins,
+                                      "Rating - Control")
+
+diff_boundary_ec <- plot_change_param(boundary,
+                                      boundary$alpha_ec,
+                                      Nbins,
+                                      "Emissions - Control")
 
 
-plot_posterior_dist(theta,
-                    theta$rating,
-                    theta$control,
-                    25,
-                    "Theta")
+
+# Arrange plots --------
+
+group_differences <- plot_grid(# plots
+  plot_consumption_rc,
+  diff_consumption_rc,
+  plot_consumption_re,
+  diff_consumption_re,
+  plot_theta_rc,
+  diff_theta_rc,
+  plot_theta_re,
+  diff_theta_re,
+  plot_boundary_rc,
+  diff_boundary_rc,
+  plot_boundary_ec,
+  diff_boundary_ec,
+  
+  # settings
+  ncol = 4,
+  labels = c("a", "",
+             "b", "",
+             "c", "",
+             "d", "",
+             "e", "",
+             "f", ""
+  )
+)
 
 
-plot_posterior_dist(consumption,
-                    consumption$rating,
-                    consumption$control,
-                    25,
-                    "Consumption")
+# Save plot -------
+
+ggsave("figures/group_differences.png", group_differences, width = 16, height = 8)
+
+
 
