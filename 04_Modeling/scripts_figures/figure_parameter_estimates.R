@@ -235,25 +235,41 @@ psp <- plot_posterior_dist(combined_mcmcfin,
 
 # Plot change parameters -------
 
+# x-axis of change plots
+if (group_of_interest == "control") {
+  
+  change_x_title <- "Difference btw. Sessions"
+  
+} else {
+  
+  change_x_title <- "Effect of Attr. Transl."
+  
+}
+
+ 
+
 # d stands for change (difference)
 
 ### Boundary -------
 
 pdBoundary <- plot_change_param(combined_mcmcfin,
                                 combined_mcmcfin$mu_dalpha,
-                                Nbins)
+                                Nbins,
+                                change_x_title)
 
 ### Scaling ------
 
 pdScaling <- plot_change_param(combined_mcmcfin,
                                combined_mcmcfin$mu_dscaling,
-                               Nbins)
+                               Nbins,
+                               change_x_title)
 
 ### Tau ------
 
 pdTau <- plot_change_param(combined_mcmcfin,
                            combined_mcmcfin$mu_dtau,
-                           Nbins)
+                           Nbins,
+                           change_x_title)
 
 ### Theta ------
 
@@ -263,14 +279,16 @@ if (bounded == TRUE) {
   pdTheta <- plot_change_param(combined_mcmcfin,
                                pnorm(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta) -
                                  pnorm(combined_mcmcfin$mu_theta),
-                               Nbins)
+                               Nbins,
+                               change_x_title)
   
 } else if (bounded == FALSE) {
   
   # unbounded parameter
   pdTheta <- plot_change_param(combined_mcmcfin,
                                combined_mcmcfin$mu_dtheta,
-                               Nbins)
+                               Nbins,
+                               change_x_title)
   
 }
 
@@ -284,14 +302,16 @@ if (bounded == TRUE) {
   pdPhi <- plot_change_param(combined_mcmcfin,
                                pnorm(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi) -
                                  pnorm(combined_mcmcfin$mu_phi),
-                               Nbins)
+                               Nbins,
+                             change_x_title)
   
 } else if (bounded == FALSE) {
   
   # unbounded parameter
   pdPhi <- plot_change_param(combined_mcmcfin,
                              combined_mcmcfin$mu_dphi,
-                             Nbins)
+                             Nbins,
+                             change_x_title)
   
 }
 
@@ -303,7 +323,8 @@ if (bounded == TRUE) {
 pdPrice <- plot_change_param(combined_mcmcfin,
                              pnorm(combined_mcmcfin$mu_w1 + combined_mcmcfin$mu_dw1) -
                                pnorm(combined_mcmcfin$mu_w1),
-                             Nbins)
+                             Nbins,
+                             change_x_title)
 
 
 ### Weight Energy ------
@@ -312,7 +333,8 @@ pdPrice <- plot_change_param(combined_mcmcfin,
 pdEnergy <- plot_change_param(combined_mcmcfin,
                               pnorm(combined_mcmcfin$mu_w2 + combined_mcmcfin$mu_dw2) -
                                 pnorm(combined_mcmcfin$mu_w2),
-                              Nbins)
+                              Nbins,
+                              change_x_title)
 
 
 ### Weight Popularity ------
@@ -320,14 +342,16 @@ pdEnergy <- plot_change_param(combined_mcmcfin,
 pdPopularity <- plot_change_param(combined_mcmcfin,
                                   (combined_mcmcfin$mu_w3_AT -  
                                      combined_mcmcfin$mu_w3),
-                                  Nbins)
+                                  Nbins,
+                                  change_x_title)
 
 
 ### Starting point bias ----
 
 pdsp <- plot_change_param(combined_mcmcfin,
                           combined_mcmcfin$mu_dsp,
-                          Nbins)
+                          Nbins,
+                          change_x_title)
 
 
 
