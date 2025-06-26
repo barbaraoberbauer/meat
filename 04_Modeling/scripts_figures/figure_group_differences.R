@@ -22,6 +22,7 @@ if(!is.null(dev.list())) dev.off()
 # List of packages to check and install if necessary
 packages <- c("tidyverse",
               "runjags",
+              "rjags",
               "dplyr",
               "cowplot")
 
@@ -41,6 +42,7 @@ for (package in packages) {
 # Load required libraries
 library(tidyverse)
 library(runjags)
+library(rjags)
 library(dplyr)
 library(cowplot)
 
@@ -148,9 +150,9 @@ consumption <- data.frame(rating =
 # Plot effects of group -----
 
 Nbins <- 30
-col_rating <- "#49416D"  #'#261132'
-col_emissions <-"#E08D79" # '#716783'
-col_control <- "#A882DD" #'#9994AB'
+col_rating <- "#6C67A7"    #"#49416D"  
+col_emissions <- "#E29501"    #"#E08D79" 
+col_control <- "#E3E3EE"  #"#A882DD" 
 
 
 ### Consumption -------
@@ -185,7 +187,7 @@ plot_theta_rc <- plot_posterior_dist(theta,
                                      col_rating,
                                      col_control,
                                      Nbins,
-                                     "Effects on Theta")
+                                     "Effects on Discounting \nUnattended Option (theta)")
 
 # rating - emissions
 
@@ -195,7 +197,7 @@ plot_theta_re <- plot_posterior_dist(theta,
                                      col_rating,
                                      col_emissions,
                                      Nbins,
-                                     "Effects on Theta")
+                                     "Effects on Discounting \nUnattended Option (theta)")
 
 ### Boundary -----
 
@@ -267,6 +269,10 @@ diff_boundary_ec <- plot_change_param(boundary,
 # Arrange plots --------
 
 group_differences <- plot_grid(# plots
+  plot_boundary_rc,
+  diff_boundary_rc,
+  plot_boundary_ec,
+  diff_boundary_ec,
   plot_consumption_rc,
   diff_consumption_rc,
   plot_consumption_re,
@@ -275,10 +281,7 @@ group_differences <- plot_grid(# plots
   diff_theta_rc,
   plot_theta_re,
   diff_theta_re,
-  plot_boundary_rc,
-  diff_boundary_rc,
-  plot_boundary_ec,
-  diff_boundary_ec,
+  
   
   # settings
   ncol = 4,
