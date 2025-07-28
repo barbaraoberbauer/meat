@@ -95,10 +95,10 @@ df_agg_id %>%
        fill = "Session") + 
   theme_bw() +
   theme(axis.text.x=element_text(size=12),
-        plot.margin = margin(t = 10,
-                             r = 10,
-                             b = 10,
-                             l = 10),
+        plot.margin = margin(t = 15,
+                             r = 15,
+                             b = 15,
+                             l = 15),
         axis.title.y = element_text(margin = margin(t = 0, r = 15, b = 0, l = 0), size = 14),
         axis.title.x = element_text(margin = margin(t = 15, r = 0, b = 0, l = 0), size = 14),
         legend.title = element_text(size = 16),
@@ -109,5 +109,7 @@ df_agg_id %>%
 
 
 # Save plot
-ggsave("figures/choice_probability.png", fig_choice_prob, width = 10, height = 6)
+saveRDS(fig_choice_prob, "figures/choice_probability_me.rds")
+#ggsave("figures/choice_probability_me.png", fig_choice_prob, width = 6, height = 5)
+
 
