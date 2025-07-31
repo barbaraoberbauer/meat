@@ -9,6 +9,7 @@
 
 plot_posterior_predictives <- function(session_value, title){
   
+  # Plot data
   ggplot(frequency, aes(x = mid_bins)) +
     # histogram for choice == 1 - ecological choice (above the x-axis)
     geom_bar(data = subset(frequency, choice == 1 & session == session_value),
@@ -43,21 +44,21 @@ plot_posterior_predictives <- function(session_value, title){
     labs(
       title = "",
       x = "Response Time (in sec)",
-      y = "Frequency"
-    ) +
+      y = "Frequency",
+    ) + 
     coord_cartesian(ylim = c(-130, 160)) +
     ggtitle(title) +
     theme_classic() +
-    theme(plot.title = element_text(size = 14, face = "bold", hjust = 0.5,
+    theme(plot.title = element_text(size = 16, face = "bold", hjust = 0.5,
                                     margin = margin(t = 10, r = 0, b = 20, l = 0)),
           axis.text.x = element_text(size = 12),
           axis.ticks.x = element_blank(),
           axis.text.y = element_text(size = 12),
-          plot.margin = margin(t = 10,
-                               r = 10,
-                               b = 10,
-                               l = 10),
-          axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 12),
-          axis.title.y = element_text(margin = margin(t = 0, r = 5, b = 0, l = 10), size = 12))
-  
+          plot.margin = margin(t = 0,
+                               r = 0,
+                               b = 0,
+                               l = 0),
+          axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14),
+          axis.title.y = element_text(margin = margin(t = 0, r = 5, b = 0, l = 10), size = 14)) 
+    
 }
