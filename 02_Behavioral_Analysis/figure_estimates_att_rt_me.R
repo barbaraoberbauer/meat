@@ -83,9 +83,8 @@ ggplot(data = results_att_red,
     x = "Effect on Relative Difference in Dwell Time",
     y = "Consumption Translation"
   ) +
-  coord_cartesian(xlim = c(-0.05, 0.08)) +
-  scale_y_discrete(limits = rev,
-                   labels = c("control" = "Control",
+  coord_cartesian(xlim = c(-0.05, 0.1)) +
+  scale_y_discrete(labels = c("control" = "Control",
                               "operating_costs" = "Operating\nCosts",
                               "emissions" = "Carbon\nEmissions",
                               "environmental_friendliness" = "Rating")) +
@@ -117,8 +116,7 @@ p_rt <-
     y = "Consumption Translation"
   ) +
   coord_cartesian(xlim = c(-2.5, 5)) +
-  scale_y_discrete(limits = rev,
-                   labels = c("control" = "Control",
+  scale_y_discrete(labels = c("control" = "Control",
                               "operating_costs" = "Operating\nCosts",
                               "emissions" = "Carbon\nEmissions",
                               "environmental_friendliness" = "Rating")) +
