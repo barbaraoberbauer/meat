@@ -229,7 +229,8 @@ posterior_predictives <- plot_grid(# plots
   
   # settings
   ncol = 2,
-  labels = c("a", "b")
+  labels = c("a", "b"),
+  label_size = 20
 )
 
 # save plot
