@@ -21,9 +21,9 @@ plot_change_param <- function(combined_mcmcfin, parameter, bins, x_title){
     theme(axis.text.x=element_text(size=13),
           axis.text.y=element_blank(),
           axis.ticks.y=element_blank(),
-          plot.margin = margin(t = 10,
+          plot.margin = margin(t = 17,
                                r = 10,
-                               b = 10,
+                               b = 17,
                                l = 10),
           axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 16),
     )

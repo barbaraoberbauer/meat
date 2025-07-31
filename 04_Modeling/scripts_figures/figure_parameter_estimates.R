@@ -57,7 +57,7 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-group_of_interest <- "environmental_friendliness"
+group_of_interest <- "control"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
 # bounded or unbounded attentional parameters? 
@@ -358,24 +358,25 @@ pdsp <- plot_change_param(combined_mcmcfin,
 # Arrange plots --------
 
 group_param_estimates <- plot_grid(# plots
-  pprice,
+  pprice + theme(legend.position = "none"),
   pdPrice,
-  penergy,
+  penergy + theme(legend.position = "none"),
   pdEnergy,
-  ppopularity,
+  ppopularity + theme(legend.position = "none"),
   pdPopularity,
-  pboundary,
-  pdBoundary,
-  ptheta,
+  ptheta + theme(legend.position = "none"),
   pdTheta,
-  pphi,
+  pphi + theme(legend.position = "none"),
   pdPhi,
-  ptau,
-  pdTau,
-  pscaling,
-  pdScaling,
-  psp,
+  pboundary + theme(legend.position = "none"),
+  pdBoundary,
+  psp + theme(legend.position = "none"),
   pdsp,
+  ptau + theme(legend.position = "none"),
+  pdTau,
+  pscaling + theme(legend.position = "none"),
+  pdScaling,
+  
   
   # settings
   ncol = 4,
@@ -388,8 +389,22 @@ group_param_estimates <- plot_grid(# plots
              "g", "",
              "h", "",
              "i", ""
-  )
+  ),
+  label_size = 20,
+  vjust = 1
 )
+
+# # get legend
+# legend <- get_legend(pboundary +
+#                        guides(color = guide_legend(nrow = 1)) +
+#                        theme(legend.position = "bottom"))
+# 
+# # add legend
+# group_param_estimates <- plot_grid(group_param_estimates,
+#                                    legend,
+#                                    ncol = 1,
+#                                    rel_heights = c(1, .1))
+
 
 
 # save plot
