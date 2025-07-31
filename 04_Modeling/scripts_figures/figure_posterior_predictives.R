@@ -224,8 +224,8 @@ post_pred_session_2 <- plot_posterior_predictives(2, "Session 2")
 
 ### Arrange Plots in Grid
 posterior_predictives <- plot_grid(# plots
-  post_pred_session_1,
-  post_pred_session_2,
+  post_pred_session_1 + theme(legend.position = "none"),
+  post_pred_session_2 + theme(legend.position = "none"),
   
   # settings
   ncol = 2,
@@ -233,6 +233,18 @@ posterior_predictives <- plot_grid(# plots
   label_size = 20
 )
 
+# get legend
+legend <- get_legend(post_pred_session_1 + 
+                       guides(color = guide_legend(nrow = 1)) +
+                       theme(legend.position = "bottom"))
+
+
+posterior_predictives <- plot_grid(posterior_predictives,
+                                   legend,
+                                   ncol = 1,
+                                   rel_heights = c(1, .1))
+
+
 # save plot
 filename <- paste0("figures/posterior_predictives_", group_of_interest, file_extension, ".png")
-ggsave(filename, posterior_predictives, width = 12, height = 5)
+ggsave(filename, posterior_predictives, width = 12, height = 6)
