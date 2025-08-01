@@ -409,7 +409,7 @@ group_param_estimates <- plot_grid(# plots
 
 # save plot
 filename <- paste0("figures/group_param_estimates_", group_of_interest, file_extension, ".png")
-ggsave(filename, group_param_estimates, width = 16, height = 14)
+ggsave(filename, group_param_estimates, width = 16, height = 13)
 
 
 
