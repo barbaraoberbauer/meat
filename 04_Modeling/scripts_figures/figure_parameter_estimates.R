@@ -57,7 +57,7 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-group_of_interest <- "emissions"
+group_of_interest <- "environmental_friendliness"
 # groups: "control", "emissions", "operating_costs", "environmental_friendliness"
 
 # bounded or unbounded attentional parameters? 
@@ -409,7 +409,7 @@ group_param_estimates <- plot_grid(# plots
 
 # save plot
 filename <- paste0("figures/group_param_estimates_", group_of_interest, file_extension, ".png")
-ggsave(filename, group_param_estimates, width = 16, height = 12)
+ggsave(filename, group_param_estimates, width = 16, height = 14)
 
 
 
