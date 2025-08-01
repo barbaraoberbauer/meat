@@ -19,6 +19,7 @@ plot_posterior_predictives <- function(session_value, title){
     geom_bar(data = subset(frequency, choice == 1 & session == session_value),
              stat = "identity",
              color = "black",
+             size = 1.2,
              aes(y = count_emp, fill = "eco choice")) +
     
     # Shaded area for error bounds for choice == 1
@@ -29,6 +30,7 @@ plot_posterior_predictives <- function(session_value, title){
     geom_bar(data = subset(frequency, choice == 0 & session == session_value),
              stat = "identity",
              color = "black",
+             size = 1.2,
              #fill = color_choice[1],
              #alpha = 0.6,
              aes(y = -count_emp, fill = "alternative choice")) +
@@ -59,7 +61,7 @@ plot_posterior_predictives <- function(session_value, title){
                                r = 5,
                                b = 10,
                                l = 5),
-          axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14),
+          axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 16),
           axis.title.y = element_text(margin = margin(t = 0, r = 5, b = 0, l = 10), size = 14),
           legend.text = element_text(size = 16)) 
   
