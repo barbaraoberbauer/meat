@@ -120,7 +120,7 @@ rm(runJagsOut_recovery1,
 
 # 1 - Ability to correctly infer group mean -----------
 
-### Get Generating Parameters ------
+### Get Generating Parent Parameters ------
 
 mcmcMat <- as.matrix(mcmcfin,chains=TRUE)
 mcmc_loglik <- mcmcMat[,grep("^loglik",colnames(mcmcMat))]
@@ -152,48 +152,36 @@ true_parent_parameters$sim <- c("sim1", "sim2", "sim3", "sim4", "sim5", "sim6", 
 # Shape into long format
 true_parent_parameters <- true_parent_parameters %>%
   pivot_longer(cols = -sim,
-               names_to = "parameter",
+               names_to = "parameters",
                values_to = "generating_value")
 
+# Get HDIs of recoveries -------
 
+hdi_recovery1 <- parameter_recovery_hdis(combined_mcmcfin_recovery1, 1)
+hdi_recovery2 <- parameter_recovery_hdis(combined_mcmcfin_recovery2, 2)
+hdi_recovery3 <- parameter_recovery_hdis(combined_mcmcfin_recovery3, 3)
+hdi_recovery4 <- parameter_recovery_hdis(combined_mcmcfin_recovery4, 4)
+hdi_recovery5 <- parameter_recovery_hdis(combined_mcmcfin_recovery5, 5)
+hdi_recovery6 <- parameter_recovery_hdis(combined_mcmcfin_recovery6, 6)
+hdi_recovery7 <- parameter_recovery_hdis(combined_mcmcfin_recovery7, 7)
+hdi_recovery8 <- parameter_recovery_hdis(combined_mcmcfin_recovery8, 8)
+hdi_recovery9 <- parameter_recovery_hdis(combined_mcmcfin_recovery9, 9)
+hdi_recovery10 <- parameter_recovery_hdis(combined_mcmcfin_recovery10, 10)
 
+hdi_recoveries <- rbind(hdi_recovery1,
+                        hdi_recovery2,
+                        hdi_recovery3,
+                        hdi_recovery4,
+                        hdi_recovery5,
+                        hdi_recovery6,
+                        hdi_recovery7,
+                        hdi_recovery8,
+                        hdi_recovery9,
+                        hdi_recovery10)
 
-
-
-
-
-
-
-
-
-
-# true_alpha <- combined_mcmcfin$mu_alpha[idx[1]]
-# true_alpha_manipulation <- combined_mcmcfin$mu_alpha[idx[1]] + combined_mcmcfin$mu_dalpha[idx[1]]
-
-hdi_recovery1 <- parameter_recovery_hdis(combined_mcmcfin_recovery1)
-hdi_recovery2 <- parameter_recovery_hdis(combined_mcmcfin_recovery2)
-hdi_recovery3 <- parameter_recovery_hdis(combined_mcmcfin_recovery3)
-hdi_recovery4 <- parameter_recovery_hdis(combined_mcmcfin_recovery4)
-hdi_recovery5 <- parameter_recovery_hdis(combined_mcmcfin_recovery5)
-hdi_recovery6 <- parameter_recovery_hdis(combined_mcmcfin_recovery6)
-hdi_recovery7 <- parameter_recovery_hdis(combined_mcmcfin_recovery7)
-hdi_recovery8 <- parameter_recovery_hdis(combined_mcmcfin_recovery8)
-hdi_recovery9 <- parameter_recovery_hdis(combined_mcmcfin_recovery9)
-hdi_recovery10 <- parameter_recovery_hdis(combined_mcmcfin_recovery10)
-
-# combine hdis of relevant parameters for all recoveries
-hdi_recoveries <- list(hdi_recovery1,
-                       hdi_recovery2,
-                       hdi_recovery3,
-                       hdi_recovery4,
-                       hdi_recovery5,
-                       hdi_recovery6,
-                       hdi_recovery7,
-                       hdi_recovery8,
-                       hdi_recovery9,
-                       hdi_recovery10)
 
 # save data
+saveRDS(true_parent_parameters, file = "data/true_parent_parameters.rds")
 saveRDS(hdi_recoveries, file = "data/hdi_recoveries.rds")
 
 
