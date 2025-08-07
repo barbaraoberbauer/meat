@@ -48,6 +48,7 @@ library(parallel)
 # https://github.com/boboppie/kruschke-doing_bayesian_data_analysis/blob/master/2e/DBDA2E-utilities.R
 source("functions/DBDA2E-utilities.R")
 source("functions/fun_parameter_recovery_hdis.R")
+source("functions/fun_parameter_recovery_subjectParameters.R")
 
 # Load required modules
 load.module("wiener")
@@ -116,20 +117,6 @@ rm(runJagsOut_recovery1,
    mcmcfin_recovery9,
    mcmcfin_recovery10)
 
-# Get Generating Parameters ------
-
-mcmcMat <- as.matrix(mcmcfin,chains=TRUE)
-mcmc_loglik <- mcmcMat[,grep("^loglik",colnames(mcmcMat))]
-
-loglik <- rowSums(mcmc_loglik)
-
-# sort loglik to determine most likely values
-loglik_sorted <- sort(loglik, decreasing = TRUE)
-
-# get positions of most likely parameters
-idx <- sapply(loglik_sorted[1:10], 
-                       function(val) which(loglik == val))
-
 
 # 1 - Ability to correctly infer group mean -----------
 
@@ -175,9 +162,47 @@ rm(hdi_recovery1,
    hdi_recovery10)
 
 
+# 2 - Ability to correctly infer individual parameters -------
 
+### Get subject parameters -------
 
+# Define the prefixes
+patterns <- c(
+  "^w1T\\[", "^dw1\\[",
+  "^w2T\\[", "^dw2\\[",
+  "^thetaT\\[", "^dtheta\\[",
+  "^phiT\\[", "^dphi\\[",
+  "^alpha\\[", "^dalpha\\[",
+  "^scaling\\[", "^dscaling\\[",
+  "^tau\\[", "^dtau\\[",
+  "^sp\\[", "^dsp\\["
+)
 
+# Create a combined regex pattern
+pattern <- paste(patterns, collapse = "|")
 
+# Get subject parameters
+subjParameters_recovery1 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery1, pattern)
+subjParameters_recovery2 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery2, pattern)
+subjParameters_recovery3 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery3, pattern)
+subjParameters_recovery4 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery4, pattern)
+subjParameters_recovery5 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery5, pattern)
+subjParameters_recovery6 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery6, pattern)
+subjParameters_recovery7 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery7, pattern)
+subjParameters_recovery8 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery8, pattern)
+subjParameters_recovery9 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery9, pattern)
+subjParameters_recovery10 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery10, pattern)
 
+subjParameters_recoveries <- list(subjParameters_recovery1,
+                                  subjParameters_recovery2,
+                                  subjParameters_recovery3,
+                                  subjParameters_recovery4,
+                                  subjParameters_recovery5,
+                                  subjParameters_recovery6,
+                                  subjParameters_recovery7,
+                                  subjParameters_recovery8,
+                                  subjParameters_recovery9,
+                                  subjParameters_recovery10)
 
+# save data
+saveRDS(subjParameters_recoveries, file = "data/subjParameters_recoveries.R")
