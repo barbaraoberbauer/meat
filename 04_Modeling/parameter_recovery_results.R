@@ -147,13 +147,15 @@ cols_to_keep <- c("mu_w1", "mu_dw1",
 
 # Get generating parameters
 true_parent_parameters <- combined_mcmcfin[idx, cols_to_keep]
-true_parent_parameters$sim <- c("sim1", "sim2", "sim3", "sim4", "sim5", "sim6", "sim7", "sim8", "sim9", "sim10")
+true_parent_parameters$sim <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 
 # Shape into long format
 true_parent_parameters <- true_parent_parameters %>%
   pivot_longer(cols = -sim,
                names_to = "parameters",
                values_to = "generating_value")
+
+true_parent_parameters <- as.data.frame(true_parent_parameters)
 
 # Get HDIs of recoveries -------
 
