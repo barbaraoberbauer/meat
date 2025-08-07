@@ -6,61 +6,47 @@
 
 # function for retrieving hdis of relevant parameters
 
-parameter_recovery_hdis <- function(combined_mcmcfin){
+parameter_recovery_hdis <- function(combined_mcmcfin, sim){
   
-  hdi <- list()
-  
+  # Set data
   combined_mcmcfin <- combined_mcmcfin
   
-  # boundary separation
-  hdi$alpha <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_alpha),
-                    hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_alpha + combined_mcmcfin$mu_dalpha),
-                    hdi_change = HDIofMCMC(combined_mcmcfin$mu_dalpha))
+  # Initialize data frame containing all relevant parameters
+  parameters <- c("mu_w1", 
+                  "mu_dw1", 
+                  "mu_w2", 
+                  "mu_dw2", 
+                  "mu_theta", 
+                  "mu_dtheta", 
+                  "mu_phi", 
+                  "mu_dphi", 
+                  "mu_alpha", 
+                  "mu_dalpha", 
+                  "mu_scaling", 
+                  "mu_dscaling", 
+                  "mu_tau", 
+                  "mu_dtau", 
+                  "mu_sp", 
+                  "mu_dsp")
   
-  # price 
+  df <- data.frame(parameters = parameters)
   
-  hdi$w_price <- list(hdi_baseline = HDIofMCMC(pnorm(combined_mcmcfin$mu_w1)),
-                      hdi_manipulation = HDIofMCMC(pnorm(combined_mcmcfin$mu_w1 + combined_mcmcfin$mu_dw1)),
-                      hdi_change = HDIofMCMC(pnorm(combined_mcmcfin$mu_w1 + combined_mcmcfin$mu_dw1) -
-                                               pnorm(combined_mcmcfin$mu_w1)))
+  # Add info about simulation number
+  df$sim <- sim
   
-  # consumption 
+  # Add hdi upper and lower
+  df$hdi_lower <- NA
+  df$hdi_upper <- NA
   
-  hdi$w_consumption <- list(hdi_baseline = HDIofMCMC(pnorm(combined_mcmcfin$mu_w2)),
-                            hdi_manipulation = HDIofMCMC(pnorm(combined_mcmcfin$mu_w2 + combined_mcmcfin$mu_dw2)),
-                            hdi_change = HDIofMCMC(pnorm(combined_mcmcfin$mu_w2 + combined_mcmcfin$mu_dw2) -
-                                                     pnorm(combined_mcmcfin$mu_w2)))
+  # Set hdi's
+  for (i in 1:length(parameters)) {
+    param <- parameters[i]
+      # possibly pnorm phi-transformed parameters
+      df[df$parameters == param, "hdi_lower"] <- HDIofMCMC(combined_mcmcfin[[param]])[1]
+      df[df$parameters == param, "hdi_upper"] <- HDIofMCMC(combined_mcmcfin[[param]])[2]
+  }
   
-  # theta
-  hdi$theta <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_theta),
-                    hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta),
-                    hdi_change = HDIofMCMC(combined_mcmcfin$mu_dtheta))
+  return(df)
   
-  # phi
-  hdi$phi <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_phi),
-                  hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi),
-                  hdi_change = HDIofMCMC(combined_mcmcfin$mu_dphi))
-  
-  # scaling  
-  
-  hdi$scaling <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_scaling),
-                      hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_scaling + combined_mcmcfin$mu_dscaling),
-                      hdi_change = HDIofMCMC(combined_mcmcfin$mu_dscaling))
-  
-  
-  # non-decision time  
-  
-  hdi$tau <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_tau),
-                  hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_tau + combined_mcmcfin$mu_dtau),
-                  hdi_change = HDIofMCMC(combined_mcmcfin$mu_dtau))
-  
-  
-  # starting point bias  
-  
-  hdi$sp <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_sp),
-                 hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_sp + combined_mcmcfin$mu_dsp),
-                 hdi_change = HDIofMCMC(combined_mcmcfin$mu_dsp))
-  
-  return(hdi)
   
 }
