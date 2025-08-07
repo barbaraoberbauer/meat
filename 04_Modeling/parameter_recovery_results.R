@@ -120,6 +120,53 @@ rm(runJagsOut_recovery1,
 
 # 1 - Ability to correctly infer group mean -----------
 
+### Get Generating Parameters ------
+
+mcmcMat <- as.matrix(mcmcfin,chains=TRUE)
+mcmc_loglik <- mcmcMat[,grep("^loglik",colnames(mcmcMat))]
+
+loglik <- rowSums(mcmc_loglik)
+
+# sort loglik to determine most likely values
+loglik_sorted <- sort(loglik, decreasing = TRUE)
+
+# get positions of most likely parameters
+idx <- sapply(loglik_sorted[1:10], 
+              function(val) which(loglik == val))
+
+# Define relevant columns
+cols_to_keep <- c("mu_w1", "mu_dw1",
+                  "mu_w2", "mu_dw2",
+                  "mu_theta", "mu_dtheta",
+                  "mu_phi", "mu_dphi",
+                  "mu_alpha", "mu_dalpha",
+                  "mu_scaling", "mu_dscaling",
+                  "mu_tau", "mu_dtau",
+                  "mu_sp", "mu_dsp")
+
+
+# Get generating parameters
+true_parent_parameters <- combined_mcmcfin[idx, cols_to_keep]
+true_parent_parameters$sim <- c("sim1", "sim2", "sim3", "sim4", "sim5", "sim6", "sim7", "sim8", "sim9", "sim10")
+
+# Shape into long format
+true_parent_parameters <- true_parent_parameters %>%
+  pivot_longer(cols = -sim,
+               names_to = "parameter",
+               values_to = "generating_value")
+
+
+
+
+
+
+
+
+
+
+
+
+
 # true_alpha <- combined_mcmcfin$mu_alpha[idx[1]]
 # true_alpha_manipulation <- combined_mcmcfin$mu_alpha[idx[1]] + combined_mcmcfin$mu_dalpha[idx[1]]
 
