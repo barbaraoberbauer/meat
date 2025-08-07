@@ -61,18 +61,6 @@ combined_mcmcfin <- as.data.frame(do.call(rbind, mcmcfin))
 hdi_recoveries <- readRDS("data/hdi_recoveries.rds")
 subjParameters_recoveries <- readRDS("data/subjParameters_recoveries.R")
 
-# Get Generating Parameters ------
 
-mcmcMat <- as.matrix(mcmcfin,chains=TRUE)
-mcmc_loglik <- mcmcMat[,grep("^loglik",colnames(mcmcMat))]
-
-loglik <- rowSums(mcmc_loglik)
-
-# sort loglik to determine most likely values
-loglik_sorted <- sort(loglik, decreasing = TRUE)
-
-# get positions of most likely parameters
-idx <- sapply(loglik_sorted[1:10], 
-              function(val) which(loglik == val))
 
 
