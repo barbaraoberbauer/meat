@@ -47,8 +47,7 @@ library(cowplot)
 library(runjags)
 
 # Load required functions
-source("functions/fun_plot_posterior_distributions.R")
-source("functions/fun_plot_change_parameters.R")
+source("functions/fun_plot_group_means_hdis.R")
 
 rm(package, packages, is_package_installed)
 
@@ -63,11 +62,62 @@ true_parent_parameters <- readRDS("data/true_parent_parameters.rds")
 
 # 1 - Ability to correctly infer group mean -----------
 
-# Combine hdi_recoveries and true_parent_parameters
-str(hdi)
+### Combine hdi_recoveries and true_parent_parameters -----
 
-test <- left_join(hdi_recoveries, 
+infer_group_means <- left_join(hdi_recoveries, 
                   true_parent_parameters,
                   join_by(sim, parameters))
+
+### Create plots ---------
+
+plot_price <- plot_group_means_hdis(infer_group_means, "mu_w1", "Weight Price")
+plot_dprice <- plot_group_means_hdis(infer_group_means, "mu_dw1", "Weight Price\nChange")
+
+plot_consumption <- plot_group_means_hdis(infer_group_means, "mu_w2", "Weight Consumption")
+plot_dconsumption <- plot_group_means_hdis(infer_group_means, "mu_dw2", "Weight Consumption\nChange")
+
+plot_theta <- plot_group_means_hdis(infer_group_means, "mu_theta", "Theta")
+plot_dtheta <- plot_group_means_hdis(infer_group_means, "mu_dtheta", "Theta\nChange")
+
+plot_phi <- plot_group_means_hdis(infer_group_means, "mu_phi", "Phi")
+plot_dphi <- plot_group_means_hdis(infer_group_means, "mu_dphi", "Phi\nChange")
+
+plot_alpha <- plot_group_means_hdis(infer_group_means, "mu_alpha", "Boundary Separation")
+plot_dalpha <- plot_group_means_hdis(infer_group_means, "mu_dalpha", "Boundary Separation\nChange")
+
+plot_scaling <- plot_group_means_hdis(infer_group_means, "mu_scaling", "Drift Scaling")
+plot_dscaling <- plot_group_means_hdis(infer_group_means, "mu_dscaling", "Drift Scaling\nChange")
+
+plot_tau <- plot_group_means_hdis(infer_group_means, "mu_tau", "Non-Decision Time")
+plot_dtau <- plot_group_means_hdis(infer_group_means, "mu_dtau", "Non-Decision Time\nChange")
+
+plot_sp <- plot_group_means_hdis(infer_group_means, "mu_sp", "Starting Point Bias")
+plot_dsp <- plot_group_means_hdis(infer_group_means, "mu_dsp", "Starting Point Bias\nChange")
+
+### Combine plots ------
+
+plot_recovery_hdi <- plot_grid(plot_price, plot_dprice,
+                                       plot_consumption, plot_dconsumption,
+                                       plot_theta, plot_dtheta,
+                                       plot_phi, plot_dphi,
+                                       plot_alpha, plot_dalpha,
+                                       plot_scaling, plot_dscaling,
+                                       plot_tau, plot_dtau,
+                                       plot_sp, plot_dsp,
+                                       ncol = 2)
+                                       # labels = c("a", "",
+                                       #            "b", "",
+                                       #            "c", "",
+                                       #            "d", "",
+                                       #            "e", "",
+                                       #            "f", "",
+                                       #            "g", "",
+                                       #            "h", ""),
+                                       # label_size = 20)
+
+# Save plot 
+ggsave("figures/plot_recovery_hdi.png", plot_recovery_hdi, width = 12, height = 17)
+
+
 
 
