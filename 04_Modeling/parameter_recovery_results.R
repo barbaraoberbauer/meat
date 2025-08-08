@@ -157,7 +157,7 @@ true_parent_parameters <- true_parent_parameters %>%
 
 true_parent_parameters <- as.data.frame(true_parent_parameters)
 
-# Get HDIs of recoveries -------
+### Get HDIs of recoveries -------
 
 hdi_recovery1 <- parameter_recovery_hdis(combined_mcmcfin_recovery1, 1)
 hdi_recovery2 <- parameter_recovery_hdis(combined_mcmcfin_recovery2, 2)
@@ -201,7 +201,32 @@ rm(hdi_recovery1,
 
 # 2 - Ability to correctly infer individual parameters -------
 
-### Get subject parameters -------
+### Get Generating Subject Parameters --------
+
+# Select columns that match any pattern
+cols_to_keep <- grepl(pattern, colnames(combined_mcmcfin))
+
+# Subset the data frame
+true_subject_parameters <- combined_mcmcfin[idx, cols_to_keep]
+true_subject_parameters$sim <- c(1,2,3,4,5,6,7,8,9,10)
+
+# Shape into long format
+true_subject_parameters <- true_subject_parameters %>%
+  pivot_longer(
+    !sim,
+    names_to = "parameter_subject",
+    values_to = "generating_value"
+  )
+
+true_subject_parameters <- true_subject_parameters %>%
+  mutate(
+    parameter = str_extract(parameter_subject, "^\\w+"),
+    subject = str_extract(parameter_subject, "\\d+(?=\\])") %>% 
+      as.integer()
+  ) %>%
+  select(-parameter_subject)
+
+### Get subject parameters of recoveries -------
 
 # Define the prefixes
 patterns <- c(
@@ -254,3 +279,4 @@ rm(subjParameters_recovery1,
 
 # save data
 saveRDS(subjParameters_recoveries, file = "data/subjParameters_recoveries.R")
+saveRDS(true_subject_parameters, file = "data/true_subject_parameters.R")
