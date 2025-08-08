@@ -73,7 +73,7 @@ infer_group_means <- left_join(hdi_recoveries,
 
 ### Create plots ---------
 
-plot_price <- plot_group_means_hdis(infer_group_means, "mu_w1", "Weight Price")
+plot_price <- plot_group_means_hdis(infer_group_means, "mu_w1", "Weight Price") 
 plot_dprice <- plot_group_means_hdis(infer_group_means, "mu_dw1", "Weight Price\nChange")
 
 plot_consumption <- plot_group_means_hdis(infer_group_means, "mu_w2", "Weight Consumption")
@@ -130,6 +130,7 @@ rm(plot_price, plot_dprice,
    plot_tau, plot_dtau,
    plot_sp, plot_dsp)
 
+
 # 2 - Ability to correctly infer individual parameters -------
 
 ### Combine subjParameters_recoveries and true_subject_parameters -----
@@ -140,87 +141,110 @@ infer_subject_parameter <- left_join(subjParameters_recoveries,
 
 infer_subject_parameter$parameter <- as.factor(infer_subject_parameter$parameter)
 
+### Calculate correlations ------
+
+subject_parameter_correlations <- infer_subject_parameter %>%
+  group_by(parameter) %>%
+  summarize(cor_mean = cor(generating_value, means, method = 'pearson'),
+            cor_median = cor(generating_value, medians, method = 'pearson'))
+
 ### Create plots ---------
 
 plot_subject_price <- plot_subject_parameter_recovery(infer_subject_parameter, 
-                                                      "w1T", 
+                                                      "w1", 
                                                       "Generating Weight Price", 
-                                                      "Estimated Weight Price")
+                                                      "Estimated Weight Price",
+                                                      subject_parameter_correlations)
 
 plot_subject_dprice <- plot_subject_parameter_recovery(infer_subject_parameter, 
                                                        "dw1", 
                                                        "Generating Weight\nPrice Change", 
-                                                       "Estimated Weight\nPrice Change")
+                                                       "Estimated Weight\nPrice Change",
+                                                       subject_parameter_correlations)
 
 plot_subject_consumption <- plot_subject_parameter_recovery(infer_subject_parameter, 
-                                                            "w2T", 
+                                                            "w2", 
                                                             "Generating Weight Consumption", 
-                                                            "Estimated Weight Consumption")
+                                                            "Estimated Weight Consumption",
+                                                            subject_parameter_correlations)
 
 plot_subject_dconsumption <- plot_subject_parameter_recovery(infer_subject_parameter, 
                                                              "dw2", 
                                                              "Generating Weight\nConsumption Change", 
-                                                             "Estimated Weight\nConsumption Change")
+                                                             "Estimated Weight\nConsumption Change",
+                                                             subject_parameter_correlations)
 
 plot_subject_theta <- plot_subject_parameter_recovery(infer_subject_parameter, 
-                                                      "thetaT", 
+                                                      "theta", 
                                                       "Generating Theta", 
-                                                      "Estimated Theta")
+                                                      "Estimated Theta",
+                                                      subject_parameter_correlations)
 
 plot_subject_dtheta <- plot_subject_parameter_recovery(infer_subject_parameter, 
                                                        "dtheta", 
                                                        "Generating Theta\nChange", 
-                                                       "Estimated Theta\nChange")
+                                                       "Estimated Theta\nChange",
+                                                       subject_parameter_correlations)
 
 plot_subject_phi <- plot_subject_parameter_recovery(infer_subject_parameter, 
-                                                    "phiT", 
+                                                    "phi", 
                                                     "Generating Phi", 
-                                                    "Estimated Phi")
+                                                    "Estimated Phi",
+                                                    subject_parameter_correlations)
 
 plot_subject_dphi <- plot_subject_parameter_recovery(infer_subject_parameter, 
                                                      "dphi", 
                                                      "Generating Phi\nChange", 
-                                                     "Estimated Phi\nChange")
+                                                     "Estimated Phi\nChange",
+                                                     subject_parameter_correlations)
 
 plot_subject_alpha <- plot_subject_parameter_recovery(infer_subject_parameter, 
                                                       "alpha", 
                                                       "Generating Boundary Separation", 
-                                                      "Estimated Boundary Separation")
+                                                      "Estimated Boundary Separation",
+                                                      subject_parameter_correlations)
 
 plot_subject_dalpha <- plot_subject_parameter_recovery(infer_subject_parameter, 
                                                        "dalpha", 
                                                        "Generating Boundary\nSeparation Change", 
-                                                       "Estimated Boundary\nSeparation Change")
+                                                       "Estimated Boundary\nSeparation Change",
+                                                       subject_parameter_correlations)
 
 plot_subject_scaling <- plot_subject_parameter_recovery(infer_subject_parameter, 
                                                         "scaling", 
                                                         "Generating Drift Scaling", 
-                                                        "Estimated Drift Scaling")
+                                                        "Estimated Drift Scaling",
+                                                        subject_parameter_correlations)
 
 plot_subject_dscaling <- plot_subject_parameter_recovery(infer_subject_parameter, 
                                                          "dscaling", 
                                                          "Generating Drift\nScaling Change", 
-                                                         "Estimated Drift\nScaling Change")
+                                                         "Estimated Drift\nScaling Change",
+                                                         subject_parameter_correlations)
 
 plot_subject_tau <- plot_subject_parameter_recovery(infer_subject_parameter, 
                                                     "tau", 
                                                     "Generating Non-Decision\nTime", 
-                                                    "Estimated Non-Decision\nTime")
+                                                    "Estimated Non-Decision\nTime",
+                                                    subject_parameter_correlations)
 
 plot_subject_dtau <- plot_subject_parameter_recovery(infer_subject_parameter, 
                                                      "dtau", 
                                                      "Generating Non-Decision\nTime Change", 
-                                                     "Estimated Non-Decision\nTime Change")
+                                                     "Estimated Non-Decision\nTime Change",
+                                                     subject_parameter_correlations)
 
 plot_subject_sp <- plot_subject_parameter_recovery(infer_subject_parameter, 
                                                    "sp", 
                                                    "Generating Starting\nPoint Bias", 
-                                                   "Estimated Starting\nPoint Bias")
+                                                   "Estimated Starting\nPoint Bias",
+                                                   subject_parameter_correlations)
 
 plot_subject_dsp <- plot_subject_parameter_recovery(infer_subject_parameter, 
                                                     "dsp", 
                                                     "Generating Starting\nPoint Bias Change", 
-                                                    "Estimated Starting\nPoint Bias Change")
+                                                    "Estimated Starting\nPoint Bias Change",
+                                                    subject_parameter_correlations)
 
 ### Combine plots ------
 
@@ -248,5 +272,14 @@ plot_recovery_subject_parameter <- plot_grid(plot_subject_price,
 # Save plot 
 ggsave("figures/plot_recovery_subject_parameter_all.png", plot_recovery_subject_parameter_all, width = 12, height = 17)
 ggsave("figures/plot_recovery_subject_parameter.png", plot_recovery_subject_parameter, width = 12, height = 17)
+
+rm(plot_subject_price, plot_subject_dprice,
+   plot_subject_consumption, plot_subject_dconsumption,
+   plot_subject_theta, plot_subject_dtheta,
+   plot_subject_phi, plot_subject_dphi,
+   plot_subject_alpha, plot_subject_dalpha,
+   plot_subject_scaling, plot_subject_dscaling,
+   plot_subject_tau, plot_subject_dtau,
+   plot_subject_sp, plot_subject_dsp)
 
 
