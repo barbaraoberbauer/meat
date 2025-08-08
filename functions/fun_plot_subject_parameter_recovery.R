@@ -6,12 +6,12 @@
 
 # function for plotting recovered subject parameters against true subject parameters
 
-plot_subject_parameter_recovery <- function(data, parameter, xtitle, ytitle){
+plot_subject_parameter_recovery <- function(data, param, xtitle, ytitle){
   
   cols <- c("black", "#E29501")
   
   data %>%
-    filter(parameter == parameter) %>%
+    filter(parameter == param) %>%
     ggplot(aes(x = generating_value)) +
     geom_point(aes(y = means), color = cols[1]) +
     geom_point(aes(y = medians), color = alpha(cols[2], 0.5)) +
