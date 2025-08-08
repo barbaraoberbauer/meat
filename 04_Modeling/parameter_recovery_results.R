@@ -203,6 +203,21 @@ rm(hdi_recovery1,
 
 ### Get Generating Subject Parameters --------
 
+# Define the prefixes
+pattern <- c(
+  "^w1\\[", "^dw1\\[",
+  "^w2\\[", "^dw2\\[",
+  "^theta\\[", "^dtheta\\[",
+  "^phi\\[", "^dphi\\[",
+  "^alpha\\[", "^dalpha\\[",
+  "^scaling\\[", "^dscaling\\[",
+  "^tau\\[", "^dtau\\[",
+  "^sp\\[", "^dsp\\["
+)
+
+# Create a combined regex pattern
+pattern <- paste(pattern, collapse = "|")
+
 # Select columns that match any pattern
 cols_to_keep <- grepl(pattern, colnames(combined_mcmcfin))
 
@@ -227,21 +242,6 @@ true_subject_parameters <- true_subject_parameters %>%
   select(-parameter_subject)
 
 ### Get subject parameters of recoveries -------
-
-# Define the prefixes
-patterns <- c(
-  "^w1\\[", "^dw1\\[",
-  "^w2\\[", "^dw2\\[",
-  "^theta\\[", "^dtheta\\[",
-  "^phi\\[", "^dphi\\[",
-  "^alpha\\[", "^dalpha\\[",
-  "^scaling\\[", "^dscaling\\[",
-  "^tau\\[", "^dtau\\[",
-  "^sp\\[", "^dsp\\["
-)
-
-# Create a combined regex pattern
-pattern <- paste(patterns, collapse = "|")
 
 # Get subject parameters
 subjParameters_recovery1 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery1, pattern, 1)
