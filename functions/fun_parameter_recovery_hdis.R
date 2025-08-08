@@ -42,8 +42,8 @@ parameter_recovery_hdis <- function(combined_mcmcfin, sim){
   for (i in 1:length(parameters)) {
     param <- parameters[i]
       # possibly pnorm phi-transformed parameters
-      df[df$parameters == param, "hdi_lower"] <- HDIofMCMC(combined_mcmcfin[[param]])[1]
-      df[df$parameters == param, "hdi_upper"] <- HDIofMCMC(combined_mcmcfin[[param]])[2]
+      df[df$parameter == param, "hdi_lower"] <- HDIofMCMC(combined_mcmcfin[[param]])[1]
+      df[df$parameter == param, "hdi_upper"] <- HDIofMCMC(combined_mcmcfin[[param]])[2]
   }
   
   return(df)

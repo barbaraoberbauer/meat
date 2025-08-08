@@ -152,7 +152,7 @@ true_parent_parameters$sim <- c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
 # Shape into long format
 true_parent_parameters <- true_parent_parameters %>%
   pivot_longer(cols = -sim,
-               names_to = "parameters",
+               names_to = "parameter",
                values_to = "generating_value")
 
 true_parent_parameters <- as.data.frame(true_parent_parameters)
@@ -278,5 +278,5 @@ rm(subjParameters_recovery1,
    subjParameters_recovery10)
 
 # save data
-saveRDS(subjParameters_recoveries, file = "data/subjParameters_recoveries.R")
-saveRDS(true_subject_parameters, file = "data/true_subject_parameters.R")
+saveRDS(subjParameters_recoveries, file = "data/subjParameters_recoveries.rds")
+saveRDS(true_subject_parameters, file = "data/true_subject_parameters.rds")

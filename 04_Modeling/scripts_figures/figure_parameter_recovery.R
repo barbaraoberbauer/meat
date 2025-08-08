@@ -58,7 +58,9 @@ runJagsOut <- readRDS("data/runJagsOut_environmental_friendliness_nobounds.rds")
 mcmcfin = as.mcmc.list(runJagsOut)
 combined_mcmcfin <- as.data.frame(do.call(rbind, mcmcfin))
 hdi_recoveries <- readRDS("data/hdi_recoveries.rds")
+subjParameters_recoveries <- readRDS("data/subjParameters_recoveries.rds")
 true_parent_parameters <- readRDS("data/true_parent_parameters.rds")
+true_subject_parameters <- readRDS("data/true_subject_parameters.rds")
 
 # 1 - Ability to correctly infer group mean -----------
 
@@ -66,7 +68,7 @@ true_parent_parameters <- readRDS("data/true_parent_parameters.rds")
 
 infer_group_means <- left_join(hdi_recoveries, 
                   true_parent_parameters,
-                  join_by(sim, parameters))
+                  join_by(sim, parameter))
 
 ### Create plots ---------
 
