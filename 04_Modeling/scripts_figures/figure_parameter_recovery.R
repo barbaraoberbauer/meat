@@ -48,6 +48,7 @@ library(runjags)
 
 # Load required functions
 source("functions/fun_plot_group_means_hdis.R")
+source("functions/fun_plot_subject_parameter_recovery.R")
 
 rm(package, packages, is_package_installed)
 
@@ -120,6 +121,132 @@ plot_recovery_hdi <- plot_grid(plot_price, plot_dprice,
 # Save plot 
 ggsave("figures/plot_recovery_hdi.png", plot_recovery_hdi, width = 12, height = 17)
 
+rm(plot_price, plot_dprice,
+   plot_consumption, plot_dconsumption,
+   plot_theta, plot_dtheta,
+   plot_phi, plot_dphi,
+   plot_alpha, plot_dalpha,
+   plot_scaling, plot_dscaling,
+   plot_tau, plot_dtau,
+   plot_sp, plot_dsp)
 
+# 2 - Ability to correctly infer individual parameters -------
+
+### Combine subjParameters_recoveries and true_subject_parameters -----
+
+infer_subject_parameter <- left_join(subjParameters_recoveries, 
+                               true_subject_parameters,
+                               join_by(sim, parameter, subject))
+
+infer_subject_parameter$parameter <- as.factor(infer_subject_parameter$parameter)
+
+### Create plots ---------
+
+plot_subject_price <- plot_subject_parameter_recovery(infer_subject_parameter, 
+                                                      "w1T", 
+                                                      "Generating Weight Price", 
+                                                      "Estimated Weight Price")
+
+plot_subject_dprice <- plot_subject_parameter_recovery(infer_subject_parameter, 
+                                                       "dw1", 
+                                                       "Generating Weight\nPrice Change", 
+                                                       "Estimated Weight\nPrice Change")
+
+plot_subject_consumption <- plot_subject_parameter_recovery(infer_subject_parameter, 
+                                                            "w2T", 
+                                                            "Generating Weight Consumption", 
+                                                            "Estimated Weight Consumption")
+
+plot_subject_dconsumption <- plot_subject_parameter_recovery(infer_subject_parameter, 
+                                                             "dw2", 
+                                                             "Generating Weight\nConsumption Change", 
+                                                             "Estimated Weight\nConsumption Change")
+
+plot_subject_theta <- plot_subject_parameter_recovery(infer_subject_parameter, 
+                                                      "thetaT", 
+                                                      "Generating Theta", 
+                                                      "Estimated Theta")
+
+plot_subject_dtheta <- plot_subject_parameter_recovery(infer_subject_parameter, 
+                                                       "dtheta", 
+                                                       "Generating Theta\nChange", 
+                                                       "Estimated Theta\nChange")
+
+plot_subject_phi <- plot_subject_parameter_recovery(infer_subject_parameter, 
+                                                    "phiT", 
+                                                    "Generating Phi", 
+                                                    "Estimated Phi")
+
+plot_subject_dphi <- plot_subject_parameter_recovery(infer_subject_parameter, 
+                                                     "dphi", 
+                                                     "Generating Phi\nChange", 
+                                                     "Estimated Phi\nChange")
+
+plot_subject_alpha <- plot_subject_parameter_recovery(infer_subject_parameter, 
+                                                      "alpha", 
+                                                      "Generating Boundary Separation", 
+                                                      "Estimated Boundary Separation")
+
+plot_subject_dalpha <- plot_subject_parameter_recovery(infer_subject_parameter, 
+                                                       "dalpha", 
+                                                       "Generating Boundary\nSeparation Change", 
+                                                       "Estimated Boundary\nSeparation Change")
+
+plot_subject_scaling <- plot_subject_parameter_recovery(infer_subject_parameter, 
+                                                        "scaling", 
+                                                        "Generating Drift Scaling", 
+                                                        "Estimated Drift Scaling")
+
+plot_subject_dscaling <- plot_subject_parameter_recovery(infer_subject_parameter, 
+                                                         "dscaling", 
+                                                         "Generating Drift\nScaling Change", 
+                                                         "Estimated Drift\nScaling Change")
+
+plot_subject_tau <- plot_subject_parameter_recovery(infer_subject_parameter, 
+                                                    "tau", 
+                                                    "Generating Non-Decision\nTime", 
+                                                    "Estimated Non-Decision\nTime")
+
+plot_subject_dtau <- plot_subject_parameter_recovery(infer_subject_parameter, 
+                                                     "dtau", 
+                                                     "Generating Non-Decision\nTime Change", 
+                                                     "Estimated Non-Decision\nTime Change")
+
+plot_subject_sp <- plot_subject_parameter_recovery(infer_subject_parameter, 
+                                                   "sp", 
+                                                   "Generating Starting\nPoint Bias", 
+                                                   "Estimated Starting\nPoint Bias")
+
+plot_subject_dsp <- plot_subject_parameter_recovery(infer_subject_parameter, 
+                                                    "dsp", 
+                                                    "Generating Starting\nPoint Bias Change", 
+                                                    "Estimated Starting\nPoint Bias Change")
+
+### Combine plots ------
+
+plot_recovery_subject_parameter_all <- plot_grid(plot_subject_price, plot_subject_dprice,
+                               plot_subject_consumption, plot_subject_dconsumption,
+                               plot_subject_theta, plot_subject_dtheta,
+                               plot_subject_phi, plot_subject_dphi,
+                               plot_subject_alpha, plot_subject_dalpha,
+                               plot_subject_scaling, plot_subject_dscaling,
+                               plot_subject_tau, plot_subject_dtau,
+                               plot_subject_sp, plot_subject_dsp,
+                               ncol = 2)
+
+plot_recovery_subject_parameter <- plot_grid(plot_subject_price,
+                               plot_subject_consumption,
+                               plot_subject_theta,
+                               plot_subject_phi,
+                               plot_subject_alpha,
+                               plot_subject_scaling,
+                               plot_subject_tau,
+                               plot_subject_sp,
+                               ncol = 2)
+
+
+# Save plot 
+ggsave("figures/plot_recovery_subject_parameter_all.png", plot_recovery_subject_parameter_all, width = 12, height = 17)
+ggsave("figures/plot_recovery_subject_parameter.png", plot_recovery_subject_parameter, width = 12, height = 17)
 
 
