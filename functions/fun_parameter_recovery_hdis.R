@@ -29,7 +29,7 @@ parameter_recovery_hdis <- function(combined_mcmcfin, sim){
                   "mu_sp", 
                   "mu_dsp")
   
-  df <- data.frame(parameters = parameters)
+  df <- data.frame(parameter = parameters)
   
   # Add info about simulation number
   df$sim <- sim
