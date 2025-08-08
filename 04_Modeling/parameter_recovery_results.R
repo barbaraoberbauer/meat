@@ -230,10 +230,10 @@ true_subject_parameters <- true_subject_parameters %>%
 
 # Define the prefixes
 patterns <- c(
-  "^w1T\\[", "^dw1\\[",
-  "^w2T\\[", "^dw2\\[",
-  "^thetaT\\[", "^dtheta\\[",
-  "^phiT\\[", "^dphi\\[",
+  "^w1\\[", "^dw1\\[",
+  "^w2\\[", "^dw2\\[",
+  "^theta\\[", "^dtheta\\[",
+  "^phi\\[", "^dphi\\[",
   "^alpha\\[", "^dalpha\\[",
   "^scaling\\[", "^dscaling\\[",
   "^tau\\[", "^dtau\\[",
