@@ -219,18 +219,18 @@ patterns <- c(
 pattern <- paste(patterns, collapse = "|")
 
 # Get subject parameters
-subjParameters_recovery1 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery1, pattern)
-subjParameters_recovery2 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery2, pattern)
-subjParameters_recovery3 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery3, pattern)
-subjParameters_recovery4 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery4, pattern)
-subjParameters_recovery5 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery5, pattern)
-subjParameters_recovery6 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery6, pattern)
-subjParameters_recovery7 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery7, pattern)
-subjParameters_recovery8 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery8, pattern)
-subjParameters_recovery9 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery9, pattern)
-subjParameters_recovery10 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery10, pattern)
+subjParameters_recovery1 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery1, pattern, 1)
+subjParameters_recovery2 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery2, pattern, 2)
+subjParameters_recovery3 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery3, pattern, 3)
+subjParameters_recovery4 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery4, pattern, 4)
+subjParameters_recovery5 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery5, pattern, 5)
+subjParameters_recovery6 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery6, pattern, 6)
+subjParameters_recovery7 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery7, pattern, 7)
+subjParameters_recovery8 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery8, pattern, 8)
+subjParameters_recovery9 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery9, pattern, 9)
+subjParameters_recovery10 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery10, pattern, 10)
 
-subjParameters_recoveries <- list(subjParameters_recovery1,
+subjParameters_recoveries <- rbind(subjParameters_recovery1,
                                   subjParameters_recovery2,
                                   subjParameters_recovery3,
                                   subjParameters_recovery4,
@@ -240,6 +240,17 @@ subjParameters_recoveries <- list(subjParameters_recovery1,
                                   subjParameters_recovery8,
                                   subjParameters_recovery9,
                                   subjParameters_recovery10)
+
+rm(subjParameters_recovery1,
+   subjParameters_recovery2,
+   subjParameters_recovery3,
+   subjParameters_recovery4,
+   subjParameters_recovery5,
+   subjParameters_recovery6,
+   subjParameters_recovery7,
+   subjParameters_recovery8,
+   subjParameters_recovery9,
+   subjParameters_recovery10)
 
 # save data
 saveRDS(subjParameters_recoveries, file = "data/subjParameters_recoveries.R")
