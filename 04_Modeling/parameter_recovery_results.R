@@ -280,3 +280,99 @@ rm(subjParameters_recovery1,
 # save data
 saveRDS(subjParameters_recoveries, file = "data/subjParameters_recoveries.rds")
 saveRDS(true_subject_parameters, file = "data/true_subject_parameters.rds")
+
+# 3 - Correlations between Parent Parameters ---------
+
+### Get parent parameters ---------
+
+# Write function that gets parent parameters
+getParents <- function(combined_mcmcfin, sim){
+  # keep only parent parameters
+  cols_to_keep <- c("mu_w1",
+                    "mu_w2",
+                    "mu_theta",
+                    "mu_phi",
+                    "mu_alpha",
+                    "mu_scaling",
+                    "mu_tau",
+                    "mu_sp")
+  parent_parameters <- combined_mcmcfin[, cols_to_keep]
+  # remove row names
+  rownames(parent_parameters) <- NULL
+  # # shape into long format
+  # parent_parameters <- parent_parameters %>%
+  #   pivot_longer(everything(),
+  #                names_to = "parameter",
+  #                values_to = "estimate")
+  # # add sim number to data frame
+  # parent_parameters$sim <- 1
+  return(parent_parameters)
+}
+
+parents_recovery1 <- getParents(combined_mcmcfin_recovery1, 1)
+parents_recovery2 <- getParents(combined_mcmcfin_recovery2, 2)
+parents_recovery3 <- getParents(combined_mcmcfin_recovery3, 3)
+parents_recovery4 <- getParents(combined_mcmcfin_recovery4, 4)
+parents_recovery5 <- getParents(combined_mcmcfin_recovery5, 5)
+parents_recovery6 <- getParents(combined_mcmcfin_recovery6, 6)
+parents_recovery7 <- getParents(combined_mcmcfin_recovery7, 7)
+parents_recovery8 <- getParents(combined_mcmcfin_recovery8, 8)
+parents_recovery9 <- getParents(combined_mcmcfin_recovery9, 9)
+parents_recovery10 <- getParents(combined_mcmcfin_recovery10, 10)
+
+
+### Calculate correlations -------
+
+cor_recovery1 <- cor(parents_recovery1, use = "pairwise.complete.obs")
+cor_recovery2 <- cor(parents_recovery2, use = "pairwise.complete.obs")
+cor_recovery3 <- cor(parents_recovery3, use = "pairwise.complete.obs")
+cor_recovery4 <- cor(parents_recovery4, use = "pairwise.complete.obs")
+cor_recovery5 <- cor(parents_recovery5, use = "pairwise.complete.obs")
+cor_recovery6 <- cor(parents_recovery6, use = "pairwise.complete.obs")
+cor_recovery7 <- cor(parents_recovery7, use = "pairwise.complete.obs")
+cor_recovery8 <- cor(parents_recovery8, use = "pairwise.complete.obs")
+cor_recovery9 <- cor(parents_recovery9, use = "pairwise.complete.obs")
+cor_recovery10 <- cor(parents_recovery10, use = "pairwise.complete.obs")
+
+# put into a list
+cors_list <- list(cor_recovery1,
+                  cor_recovery2,
+                  cor_recovery3,
+                  cor_recovery4,
+                  cor_recovery5,
+                  cor_recovery6,
+                  cor_recovery7,
+                  cor_recovery8,
+                  cor_recovery9,
+                  cor_recovery10)
+
+rm(cor_recovery1,
+   cor_recovery2,
+   cor_recovery3,
+   cor_recovery4,
+   cor_recovery5,
+   cor_recovery6,
+   cor_recovery7,
+   cor_recovery8,
+   cor_recovery9,
+   cor_recovery10)
+
+### Calculate mean and sd across simulations -----
+params <- colnames(cors_list[[1]]) # parameter names
+n_params <- length(params)
+
+cor_recoveries <- array(NA, dim = c(n_params, n_params, length(cors_list)),
+                        dimnames = list(params, params, NULL))
+
+# Fill array
+for (i in seq_along(cors_list)) {
+  cor_recoveries[, , i] <- cors_list[[i]]
+}
+
+# Compute mean and sd across third dimension (simulations)
+mean_cor <- apply(cor_recoveries, c(1,2), mean)
+sd_cor <- apply(cor_recoveries, c(1,2), sd)
+
+# Save data
+correlation_parents <- list(mean_cor, sd_cor)
+saveRDS(correlation_parents, file = "data/correlation_parents.rds")
