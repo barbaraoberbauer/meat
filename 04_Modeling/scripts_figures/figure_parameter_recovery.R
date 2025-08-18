@@ -62,6 +62,7 @@ hdi_recoveries <- readRDS("data/hdi_recoveries.rds")
 subjParameters_recoveries <- readRDS("data/subjParameters_recoveries.rds")
 true_parent_parameters <- readRDS("data/true_parent_parameters.rds")
 true_subject_parameters <- readRDS("data/true_subject_parameters.rds")
+correlation_parents <- readRDS("data/correlation_parents.rds")
 
 # 1 - Ability to correctly infer group mean -----------
 
@@ -282,4 +283,74 @@ rm(plot_subject_price, plot_subject_dprice,
    plot_subject_tau, plot_subject_dtau,
    plot_subject_sp, plot_subject_dsp)
 
+
+# 3 - Correlations between Parent Parameters ---------
+
+mean_cor <- correlation_parents[[1]]
+sd_cor <- correlation_parents[[2]]
+
+ggcorrplot(mean_cor,
+           type = "upper",
+           ggtheme = ggplot2::theme_bw,
+           colors = c("#6D9EC1", "white", "#E46726"),
+           lab = TRUE)
+
+
+
+ggplot(test, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "#6D9EC1", high = "#E46726", mid = "white",
+                       midpoint = 0, limit = c(-1, 1), name = "Correlation") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+  labs(x = NULL, y = NULL) +
+  geom_text(aes(label = round(value, 2)), color = "black", size=3) +
+  coord_fixed()
+
+# Alternative solution
+
+cor_df <- melt(mean_cor)
+sd_df <- melt(sd_cor)
+colnames(sd_df) <- c("Var1", "Var2", "sd")
+
+# merge data frames
+cor_sd_df <- merge(cor_df, sd_df, by = c("Var1", "Var2"))
+
+# Remove diagonal (where Var1 == Var2)
+cor_sd_df <- cor_sd_df %>%
+  filter(Var1 != Var2)
+
+# Create combined label
+cor_sd_df <- cor_sd_df %>%
+  mutate(label = paste0(round(value, 2), " (", round(sd, 2), ")"))
+
+# Filter for the upper triangle if desired (since correlation matrices are symmetric)
+cor_sd_df <- cor_sd_df %>%
+  filter(as.numeric(factor(Var1, levels=rownames(mean_cor))) <= as.numeric(factor(Var2, levels=colnames(mean_cor))))
+
+plot_parent_correlations <- 
+ggplot(cor_sd_df, aes(x = Var2, y = Var1, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "#6D9EC1", mid = "white", high = "#E46726", midpoint = 0, limits = c(-1, 1)) +
+  geom_text(aes(label = label), size = 3) +
+  scale_x_discrete(labels = c("mu_w2" = "Weight\nConsumption", 
+                              "mu_theta" = "Theta",
+                              "mu_phi" = "Phi", 
+                              "mu_alpha" = "Boundary\nSeparation",
+                              "mu_scaling" = "Drift Scaling",
+                              "mu_tau" = "Non-decision\ntime",
+                              "mu_sp" = "Starting point\nbias")) +
+  scale_y_discrete(labels = c("mu_w1" = "Weight Price",
+                              "mu_w2" = "Weight\nConsumption", 
+                              "mu_theta" = "Theta",
+                              "mu_phi" = "Phi", 
+                              "mu_alpha" = "Boundary\nSeparation",
+                              "mu_scaling" = "Drift Scaling",
+                              "mu_tau" = "Non-decision\ntime")) +
+  theme_bw() +
+  labs(x = NULL, y = NULL, title = NULL, fill = "Correlation") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Save plot
+ggsave("figures/plot_parent_correlations.png", plot_parent_correlations)
 
