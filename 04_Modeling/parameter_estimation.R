@@ -457,3 +457,5 @@ hdi$sp <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_sp),
                     hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_sp + combined_mcmcfin$mu_dsp),
                     hdi_change = HDIofMCMC(combined_mcmcfin$mu_dsp))
 
+filename <- paste0("data/hdi_", group_of_interest, file_extension, ".rds")
+saveRDS(hdi, file = filename)
