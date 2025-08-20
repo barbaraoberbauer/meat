@@ -90,14 +90,12 @@ consumption_re <-
 ### Theta -------
 
 # rating vs. control group
-theta_rc <- 
-  pnorm(combined_mcmcfin_environmental_friendliness$mu_dtheta) -
-  pnorm(combined_mcmcfin_control$mu_dtheta)
+theta_rc <- combined_mcmcfin_environmental_friendliness$mu_dtheta -
+  combined_mcmcfin_control$mu_dtheta
 
 # rating vs. carbon emission group
-theta_re <- 
-  pnorm(combined_mcmcfin_environmental_friendliness$mu_dtheta) -
-  pnorm(combined_mcmcfin_emissions$mu_dtheta)
+theta_re <- combined_mcmcfin_environmental_friendliness$mu_dtheta -
+  combined_mcmcfin_emissions$mu_dtheta
 
 ### Boundary separation -------
 
