@@ -87,14 +87,22 @@ rm(filename)
 # HPD = highest posterior density (HPD) credible interval 
 # see: https://cran.r-project.org/web/packages/runjags/runjags.pdf 
 summary_statistics <- add.summary(runJagsOut,
-                                  vars = c("mu_dalpha",    # boundary separation
-                                           "mu_dscaling",  # scaling
-                                           "mu_dtau",      # non-decision time
-                                           "mu_dtheta",    # theta
-                                           "mu_dphi",      # phi
-                                           "mu_dw1",       # weight price
-                                           "mu_dw2",       # weight sustainability
-                                           "mu_dsp"))      # starting point bias
+                                  vars = c("mu_alpha",    # boundary separation
+                                           "mu_dalpha",
+                                           "mu_scaling",  # scaling
+                                           "mu_dscaling",
+                                           "mu_tau",      # non-decision time
+                                           "mu_dtau",
+                                           "mu_theta",    # theta
+                                           "mu_dtheta",
+                                           "mu_phi",      # phi
+                                           "mu_dphi",
+                                           "mu_w1",       # weight price
+                                           "mu_dw1",
+                                           "mu_w2",       # weight sustainability
+                                           "mu_dw2",
+                                           "mu_sp",       # starting point bias
+                                           "mu_dsp"))      
 
 # Rhats (Gelman-Rubin statistic) --------
 
