@@ -6,10 +6,10 @@
 
 # function for plotting group means and hdis
 
-plot_group_means_hdis <- function(data, parameter, ytitle){
+plot_group_means_hdis <- function(data, param, ytitle){
   
   data  %>%
-    filter(parameters == parameter) %>%
+    filter(parameter == param) %>%
     ggplot(aes(x = sim, y = generating_value)) +
     geom_errorbar(aes(ymin = hdi_lower, ymax = hdi_upper), 
                   width = 0, 
