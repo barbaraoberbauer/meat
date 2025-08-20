@@ -363,7 +363,7 @@ group_differences <- plot_grid(# plots
 
 # Save plot -------
 
-ggsave("figures/group_differences_forest.png", group_differences, width = 10, height = 10)
+ggsave("figures/group_differences_forest.png", group_differences, width = 10, height = 8)
 
 
 
