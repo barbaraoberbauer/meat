@@ -289,13 +289,21 @@ saveRDS(true_subject_parameters, file = "data/true_subject_parameters.rds")
 getParents <- function(combined_mcmcfin, sim){
   # keep only parent parameters
   cols_to_keep <- c("mu_w1",
+                    "mu_dw1",
                     "mu_w2",
+                    "mu_dw2",
                     "mu_theta",
+                    "mu_dtheta",
                     "mu_phi",
+                    "mu_dphi",
                     "mu_alpha",
+                    "mu_dalpha",
                     "mu_scaling",
+                    "mu_dscaling",
                     "mu_tau",
-                    "mu_sp")
+                    "mu_dtau",
+                    "mu_sp",
+                    "mu_dsp")
   parent_parameters <- combined_mcmcfin[, cols_to_keep]
   # remove row names
   rownames(parent_parameters) <- NULL

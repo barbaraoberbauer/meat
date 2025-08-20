@@ -23,7 +23,8 @@ packages <- c("tidyverse",
               "ggplot2",
               "rjags",
               "cowplot",
-              "runjags")
+              "runjags",
+              "reshape2")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -45,6 +46,7 @@ library(ggplot2)
 library(rjags)
 library(cowplot)
 library(runjags)
+library(reshape2)
 
 # Load required functions
 source("functions/fun_plot_group_means_hdis.R")
@@ -289,25 +291,25 @@ rm(plot_subject_price, plot_subject_dprice,
 mean_cor <- correlation_parents[[1]]
 sd_cor <- correlation_parents[[2]]
 
-ggcorrplot(mean_cor,
-           type = "upper",
-           ggtheme = ggplot2::theme_bw,
-           colors = c("#6D9EC1", "white", "#E46726"),
-           lab = TRUE)
-
-
-
-ggplot(test, aes(x = Var1, y = Var2, fill = value)) +
-  geom_tile(color = "white") +
-  scale_fill_gradient2(low = "#6D9EC1", high = "#E46726", mid = "white",
-                       midpoint = 0, limit = c(-1, 1), name = "Correlation") +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
-  labs(x = NULL, y = NULL) +
-  geom_text(aes(label = round(value, 2)), color = "black", size=3) +
-  coord_fixed()
-
-# Alternative solution
+# ggcorrplot(mean_cor,
+#            type = "upper",
+#            ggtheme = ggplot2::theme_bw,
+#            colors = c("#6D9EC1", "white", "#E46726"),
+#            lab = TRUE)
+# 
+# 
+# 
+# ggplot(test, aes(x = Var1, y = Var2, fill = value)) +
+#   geom_tile(color = "white") +
+#   scale_fill_gradient2(low = "#6D9EC1", high = "#E46726", mid = "white",
+#                        midpoint = 0, limit = c(-1, 1), name = "Correlation") +
+#   theme_bw() +
+#   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
+#   labs(x = NULL, y = NULL) +
+#   geom_text(aes(label = round(value, 2)), color = "black", size=3) +
+#   coord_fixed()
+# 
+# # Alternative solution
 
 cor_df <- melt(mean_cor)
 sd_df <- melt(sd_cor)
@@ -333,20 +335,36 @@ ggplot(cor_sd_df, aes(x = Var2, y = Var1, fill = value)) +
   geom_tile(color = "white") +
   scale_fill_gradient2(low = "#6D9EC1", mid = "white", high = "#E46726", midpoint = 0, limits = c(-1, 1)) +
   geom_text(aes(label = label), size = 3) +
-  scale_x_discrete(labels = c("mu_w2" = "Weight\nConsumption", 
+  scale_x_discrete(labels = c("mu_dw1" = "Weight Price\nChange",
+                              "mu_w2" = "Weight\nConsumption",
+                              "mu_dw2" = "Weight \nConsumption \nChange",
                               "mu_theta" = "Theta",
+                              "mu_dtheta" = "Theta Change",
                               "mu_phi" = "Phi", 
+                              "mu_dphi" = "Phi Change",
                               "mu_alpha" = "Boundary\nSeparation",
+                              "mu_dalpha" = "Boundary\nSeparation\nChange",
                               "mu_scaling" = "Drift Scaling",
+                              "mu_dscaling" = "Drift Scaling\nChange",
                               "mu_tau" = "Non-decision\ntime",
-                              "mu_sp" = "Starting point\nbias")) +
+                              "mu_dtau" = "Non-decision\ntime\nChange",
+                              "mu_sp" = "Starting point\nbias",
+                              "mu_dsp" = "Starting point\nbias Change")) +
   scale_y_discrete(labels = c("mu_w1" = "Weight Price",
-                              "mu_w2" = "Weight\nConsumption", 
+                              "mu_dw1" = "Weight Price\nChange",
+                              "mu_w2" = "Weight\nConsumption",
+                              "mu_dw2" = "Weight \nConsumption \nChange",
                               "mu_theta" = "Theta",
+                              "mu_dtheta" = "Theta Change",
                               "mu_phi" = "Phi", 
+                              "mu_dphi" = "Phi Change",
                               "mu_alpha" = "Boundary\nSeparation",
+                              "mu_dalpha" = "Boundary\nSeparation\nChange",
                               "mu_scaling" = "Drift Scaling",
-                              "mu_tau" = "Non-decision\ntime")) +
+                              "mu_dscaling" = "Drift Scaling\nChange",
+                              "mu_tau" = "Non-decision\ntime",
+                              "mu_dtau" = "Non-decision\ntime\nChange",
+                              "mu_sp" = "Starting point\nbias")) +
   theme_bw() +
   labs(x = NULL, y = NULL, title = NULL, fill = "Correlation") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
