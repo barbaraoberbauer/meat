@@ -394,7 +394,7 @@ combined_mcmcfin$mu_w3_AT <- 1 -
   pnorm(combined_mcmcfin$mu_w1 + combined_mcmcfin$mu_dw1) - 
   pnorm(combined_mcmcfin$mu_w2 + combined_mcmcfin$mu_dw2)
 
-hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(pnorm(combined_mcmcfin$mu_w3)),
+hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_w3),
                           hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_w3_AT),
                           hdi_change = HDIofMCMC(combined_mcmcfin$mu_w3_AT - combined_mcmcfin$mu_w3))
 
