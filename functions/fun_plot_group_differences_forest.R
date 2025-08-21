@@ -28,10 +28,10 @@ data %>%
         axis.text.y = element_text(size = 12, margin = margin(t = 0, r = 5, b = 0, l = 0)),
         axis.title.y = element_blank(),
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14),
-        plot.margin = margin(t = 10,
-                             r = 10,
-                             b = 10,
-                             l = 10)
+        plot.margin = margin(t = 15,
+                             r = 15,
+                             b = 15,
+                             l = 15)
   ) 
 
 }

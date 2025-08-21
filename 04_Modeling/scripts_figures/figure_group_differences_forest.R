@@ -218,42 +218,55 @@ estimates$group <- as.factor(estimates$group)
 
 # Plot effects of group -----
 
-cols <- c("#331832", "#331832", "#6A66A3")
+cols <- c("black", "black", "#8896AB") 
+cols_ec <- c("black", "#8896AB", "black")
+
+# linewidth and sizes
+lwRegular <- 2.5
+lwDif <- 3.5
+
+sizeRegular <- 7
+sizeDif <- 10
+
+# labels
+groupLabelsRC <- c("rc" = "Rating -\nControl", "rating" = "Rating", "control" = "Control")
+valuesLinewidthRC <- c("rating" = lwRegular, "control" = lwRegular, "rc" = lwDif)
+valuesSizeRC <- c("rating" = sizeRegular, "control" = sizeRegular, "rc" = sizeDif)
+
+groupLabelsRE <- c("re" = "Rating -\nEmissions", "rating" = "Rating", "emissions" = "Emissions")
+valuesLinewidthRE <- c("rating" = lwRegular, "emissions" = lwRegular, "re" = lwDif)
+valuesSizeRE <- c("rating" = sizeRegular, "emissions" = sizeRegular, "re" = sizeDif)
+
+groupLabelsEC <- c("ec" = "Emissions -\nControl", "emissions" = "Emissions", "control" = "Control")
+valuesLinewidthEC <- c("emissions" = lwRegular, "control" = lwRegular, "ec" = lwDif)
+valuesSizeEC <- c("emissions" = sizeRegular, "control" = sizeRegular, "ec" = sizeDif)
 
 ### Consumption -------
 
 # rating - control
-
-groupLabels <- c("rc" = "Rating -\nControl", "rating" = "Rating", "control" = "Control")
-valuesLinewidth <- c("rating" = 3, "control" = 3, "rc" = 6)
-valuesSize <- c("rating" = 8, "control" = 8, "rc" = 12)
 
 plot_consumption_rc <- plot_group_differences_forest(estimates, 
                                                      "w2", 
                                                      "rating", 
                                                      "control", 
                                                      "rc",
-                                                     valuesLinewidth,
-                                                     valuesSize,
-                                                     groupLabels, 
+                                                     valuesLinewidthRC,
+                                                     valuesSizeRC,
+                                                     groupLabelsRC, 
                                                      "Effects on Weight Consumption", 
                                                      "Rating - Control",
                                                      cols)
 
 # rating - emissions
 
-groupLabels <- c("re" = "Rating -\nEmissions", "rating" = "Rating", "emissions" = "Emissions")
-valuesLinewidth <- c("rating" = 3, "emissions" = 3, "re" = 6)
-valuesSize <- c("rating" = 8, "emissions" = 8, "re" = 12)
-
 plot_consumption_re <- plot_group_differences_forest(estimates, 
                                                      "w2", 
                                                      "rating", 
                                                      "emissions", 
                                                      "re",
-                                                     valuesLinewidth,
-                                                     valuesSize,
-                                                     groupLabels, 
+                                                     valuesLinewidthRE,
+                                                     valuesSizeRE,
+                                                     groupLabelsRE, 
                                                      "Effects on Weight Consumption",
                                                      "Rating - Emissions",
                                                      cols)
@@ -264,36 +277,28 @@ plot_consumption_re <- plot_group_differences_forest(estimates,
 
 # rating - control
 
-groupLabels <- c("rc" = "Rating -\nControl", "rating" = "Rating", "control" = "Control")
-valuesLinewidth <- c("rating" = 3, "control" = 3, "rc" = 6)
-valuesSize <- c("rating" = 8, "control" = 8, "rc" = 12)
-
 plot_theta_rc <- plot_group_differences_forest(estimates, 
                                                "theta", 
                                                "rating", 
                                                "control", 
                                                "rc",
-                                               valuesLinewidth,
-                                               valuesSize,
-                                               groupLabels, 
+                                               valuesLinewidthRC,
+                                               valuesSizeRC,
+                                               groupLabelsRC, 
                                                "Effects on Discounting \nUnattended Option (theta)", 
                                                "Rating - Control",
                                                cols)
 
 # rating - emissions
 
-groupLabels <- c("re" = "Rating -\nEmissions", "rating" = "Rating", "emissions" = "Emissions")
-valuesLinewidth <- c("rating" = 3, "emissions" = 3, "re" = 6)
-valuesSize <- c("rating" = 8, "emissions" = 8, "re" = 12)
-
 plot_theta_re <- plot_group_differences_forest(estimates, 
                                                "theta", 
                                                "rating", 
                                                "emissions", 
                                                "re",
-                                               valuesLinewidth,
-                                               valuesSize,
-                                               groupLabels, 
+                                               valuesLinewidthRE,
+                                               valuesSizeRE,
+                                               groupLabelsRE, 
                                                "Effects on Discounting \nUnattended Option (theta)", 
                                                "Rating - Emissions",
                                                cols)
@@ -302,37 +307,28 @@ plot_theta_re <- plot_group_differences_forest(estimates,
 
 # rating - control
 
-groupLabels <- c("rc" = "Rating -\nControl", "rating" = "Rating", "control" = "Control")
-valuesLinewidth <- c("rating" = 3, "control" = 3, "rc" = 6)
-valuesSize <- c("rating" = 8, "control" = 8, "rc" = 12)
-
 plot_boundary_rc <- plot_group_differences_forest(estimates, 
                                                   "alpha", 
                                                   "rating", 
                                                   "control", 
                                                   "rc",
-                                                  valuesLinewidth,
-                                                  valuesSize,
-                                                  groupLabels, 
+                                                  valuesLinewidthRC,
+                                                  valuesSizeRC,
+                                                  groupLabelsRC, 
                                                   "Effects on Boundary Separation", 
                                                   "Rating - Control",
                                                   cols)
 
 # emissions - control
 
-groupLabels <- c("ec" = "Emissions -\nControl", "emissions" = "Emissions", "control" = "Control")
-valuesLinewidth <- c("emissions" = 3, "control" = 3, "ec" = 6)
-valuesSize <- c("emissions" = 8, "control" = 8, "ec" = 12)
-cols_ec <- c("#331832", "#6A66A3", "#331832")
-
 plot_boundary_ec <- plot_group_differences_forest(estimates, 
                                                   "alpha", 
                                                   "emissions", 
                                                   "control", 
                                                   "ec",
-                                                  valuesLinewidth,
-                                                  valuesSize,
-                                                  groupLabels, 
+                                                  valuesLinewidthEC,
+                                                  valuesSizeEC,
+                                                  groupLabelsEC, 
                                                   "Effects on Boundary Separation",
                                                   "Emissions - Control",
                                                   cols_ec)
@@ -363,7 +359,7 @@ group_differences <- plot_grid(# plots
 
 # Save plot -------
 
-ggsave("figures/group_differences_forest.png", group_differences, width = 10, height = 8)
+ggsave("figures/group_differences_forest.png", group_differences, width = 10, height = 9)
 
 
 
