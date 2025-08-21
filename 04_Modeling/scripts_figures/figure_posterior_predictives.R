@@ -207,6 +207,9 @@ frequency <- frequency %>%
 
 # Plot Frequencies of Empirical and Simulated Data ------
 
+# plot only subset of frequeny (get rid of long tails that model overfits)
+frequency <- subset(frequency, !(count_emp < 1 & mid_bins > 10))
+
 ### Set Prerequisites -----
 
 # set colors
