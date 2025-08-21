@@ -76,16 +76,19 @@ combined_mcmcfin_emissions <- as.data.frame(do.call(rbind, mcmcfin_emissions))
 ###### Rating vs. Control ------
 
 # price
-price_rc <- 
-pnorm(combined_mcmcfin_environmental_friendliness$mu_dw1) -
-  pnorm(combined_mcmcfin_control$mu_dw1)
+price_rc <- (pnorm(combined_mcmcfin_environmental_friendliness$mu_w1 + combined_mcmcfin_environmental_friendliness$mu_dw1) -
+  pnorm(combined_mcmcfin_environmental_friendliness$mu_w1)) - 
+  (pnorm(combined_mcmcfin_control$mu_w1 + combined_mcmcfin_control$mu_dw1) -
+     pnorm(combined_mcmcfin_control$mu_w1))
 
 HDIofMCMC(price_rc)
 
 # consumption
 consumption_rc <- 
-  pnorm(combined_mcmcfin_environmental_friendliness$mu_dw2) -
-  pnorm(combined_mcmcfin_control$mu_dw2)
+  (pnorm(combined_mcmcfin_environmental_friendliness$mu_w2 + combined_mcmcfin_environmental_friendliness$mu_dw2) -
+     pnorm(combined_mcmcfin_environmental_friendliness$mu_w2)) - 
+  (pnorm(combined_mcmcfin_control$mu_w2 + combined_mcmcfin_control$mu_dw2) -
+     pnorm(combined_mcmcfin_control$mu_w2))
 
 HDIofMCMC(consumption_rc)
 
@@ -124,16 +127,19 @@ HDIofMCMC(popularity_rc)
 ###### Rating vs. Carbon Emissions ------
 
 # price
-price_re <- 
-  pnorm(combined_mcmcfin_environmental_friendliness$mu_dw1) -
-  pnorm(combined_mcmcfin_emissions$mu_dw1)
+price_re <- (pnorm(combined_mcmcfin_environmental_friendliness$mu_w1 + combined_mcmcfin_environmental_friendliness$mu_dw1) -
+               pnorm(combined_mcmcfin_environmental_friendliness$mu_w1)) - 
+  (pnorm(combined_mcmcfin_emissions$mu_w1 + combined_mcmcfin_emissions$mu_dw1) -
+     pnorm(combined_mcmcfin_emissions$mu_w1))
 
 HDIofMCMC(price_re)
 
 # consumption
 consumption_re <- 
-  pnorm(combined_mcmcfin_environmental_friendliness$mu_dw2) -
-  pnorm(combined_mcmcfin_emissions$mu_dw2)
+  (pnorm(combined_mcmcfin_environmental_friendliness$mu_w2 + combined_mcmcfin_environmental_friendliness$mu_dw2) -
+     pnorm(combined_mcmcfin_environmental_friendliness$mu_w2)) - 
+  (pnorm(combined_mcmcfin_emissions$mu_w2 + combined_mcmcfin_emissions$mu_dw2) -
+     pnorm(combined_mcmcfin_emissions$mu_w2))
 
 HDIofMCMC(consumption_re)
 
