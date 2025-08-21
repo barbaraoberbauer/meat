@@ -148,7 +148,7 @@ infer_subject_parameter$parameter <- as.factor(infer_subject_parameter$parameter
 
 subject_parameter_correlations <- infer_subject_parameter %>%
   group_by(parameter) %>%
-  summarize(cor_mean = cor(generating_value, means, method = 'pearson'),
+  summarize(#cor_mean = cor(generating_value, means, method = 'pearson'),
             cor_median = cor(generating_value, medians, method = 'pearson'))
 
 ### Create plots ---------
@@ -251,7 +251,7 @@ plot_subject_dsp <- plot_subject_parameter_recovery(infer_subject_parameter,
 
 ### Combine plots ------
 
-plot_recovery_subject_parameter_all <- plot_grid(plot_subject_price, plot_subject_dprice,
+plot_recovery_subject_parameter <- plot_grid(plot_subject_price, plot_subject_dprice,
                                plot_subject_consumption, plot_subject_dconsumption,
                                plot_subject_theta, plot_subject_dtheta,
                                plot_subject_phi, plot_subject_dphi,
@@ -261,19 +261,9 @@ plot_recovery_subject_parameter_all <- plot_grid(plot_subject_price, plot_subjec
                                plot_subject_sp, plot_subject_dsp,
                                ncol = 2)
 
-plot_recovery_subject_parameter <- plot_grid(plot_subject_price,
-                               plot_subject_consumption,
-                               plot_subject_theta,
-                               plot_subject_phi,
-                               plot_subject_alpha,
-                               plot_subject_scaling,
-                               plot_subject_tau,
-                               plot_subject_sp,
-                               ncol = 2)
 
 
 # Save plot 
-ggsave("figures/plot_recovery_subject_parameter_all.png", plot_recovery_subject_parameter_all, width = 12, height = 17)
 ggsave("figures/plot_recovery_subject_parameter.png", plot_recovery_subject_parameter, width = 12, height = 17)
 
 rm(plot_subject_price, plot_subject_dprice,
