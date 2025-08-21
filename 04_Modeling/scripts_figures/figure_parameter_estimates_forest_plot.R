@@ -305,7 +305,7 @@ psp <- plot_params_forest(estimates, "sp", "Starting Point Bias", cols_sess)
 
 # Plot change parameters -------
 
-cols_change <- "#331832"
+cols_change <-"black" #"#331832"
 
 # x-axis of change plots
 if (group_of_interest == "control") {
@@ -394,7 +394,7 @@ group_param_estimates <- plot_grid(# plots
              "i", ""
   ),
   label_size = 20,
-  vjust = 0.9
+  vjust = 1.2
 )
 
 # # get legend

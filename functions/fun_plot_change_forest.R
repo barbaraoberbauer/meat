@@ -13,7 +13,7 @@ plot_change_param_forest <- function(data, param, xtitle, cols){
     filter(parameter == param & session == "change") %>%
     ggplot(aes(x = mode, y = session, color = session)) +
     geom_vline(xintercept = 0, color = "#CB181D", linetype = "dashed", linewidth = 2) +
-    geom_errorbar(aes(xmin=lowerHDI, xmax=upperHDI), width = 0, linewidth = 3, show.legend = FALSE) +
+    geom_errorbar(aes(xmin=lowerHDI, xmax=upperHDI), width = 0, linewidth = 2.5, show.legend = FALSE) +
     geom_point(aes(fill = session), size = 8, shape = 22, color = "white", show.legend = FALSE) +
     scale_color_manual(values = cols) +
     scale_fill_manual(values = cols) +

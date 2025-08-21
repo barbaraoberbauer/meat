@@ -13,7 +13,7 @@ data %>%
   filter(parameter == param & session != "change") %>%
   ggplot(aes(x = mode, y = session, color = session)) +
   #geom_errorbar(aes(xmin=lowerHDI, xmax=upperHDI), width = 0, linewidth = 4, color = "black") +
-  geom_errorbar(aes(xmin=lowerHDI, xmax=upperHDI), width = 0, linewidth = 3) +
+  geom_errorbar(aes(xmin=lowerHDI, xmax=upperHDI), width = 0, linewidth = 2.5) +
   geom_point(aes(fill = session), size = 8, shape = 22, color = "white") +
   scale_y_discrete(limits=rev) +
   scale_color_manual(values = cols, labels = c("1", "2")) +
@@ -27,8 +27,8 @@ data %>%
         axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0), size = 14),
         axis.text.y = element_blank(),
         axis.ticks.y = element_blank(),
-        legend.title = element_text(size = 22),
-        legend.text = element_text(size = 22),
+        legend.title = element_text(size = 16),
+        legend.text = element_text(size = 16),
         legend.position = "top",
         plot.margin = margin(t = 10,
                              r = 10,
