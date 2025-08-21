@@ -8,31 +8,31 @@
 
 plot_subject_parameter_recovery <- function(data, param, xtitle, ytitle, correlation){
   
-  cols <- c("black", "#E29501")
+  #cols <- c("black", "#E29501")
   
-  cor_mean <- correlation %>%
-    filter(parameter == param) %>%
-    pull(cor_mean)
-  
+  # cor_mean <- correlation %>%
+  #   filter(parameter == param) %>%
+  #   pull(cor_mean)
+
   cor_median <- correlation %>%
     filter(parameter == param) %>%
     pull(cor_median)
   
   cor_label <- paste0(
-    "Cor mean = ", signif(cor_mean, 3), "\n",
+    #"Cor mean = ", signif(cor_mean, 3), "\n",
     "Cor median = ", signif(cor_median, 3)
   )
   
   data %>%
     filter(parameter == param) %>%
     ggplot(aes(x = generating_value)) +
-    geom_point(aes(y = means), color = cols[1]) +
-    geom_point(aes(y = medians), color = alpha(cols[2], 0.5)) +
+    #geom_point(aes(y = means), color = cols[1]) +
+    geom_point(aes(y = medians), color = alpha("darkgrey", 0.5)) +
     geom_abline(slope = 1,
                 intercept = 0,
                 color = "black",
                 linetype = "dashed",
-                linewidth = 2) +
+                linewidth = 1.5) +
     labs(x = xtitle,
          y = ytitle) +
     theme_bw() +
@@ -45,7 +45,7 @@ plot_subject_parameter_recovery <- function(data, param, xtitle, ytitle, correla
              y = -Inf,
              label = cor_label,
              hjust = 1.1,  # Adjust as needed for alignment
-             vjust = -0.3,
+             vjust = -0.5,
              size = 4)
   
 }
