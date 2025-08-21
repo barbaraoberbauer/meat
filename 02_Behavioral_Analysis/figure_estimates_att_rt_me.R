@@ -88,7 +88,7 @@ ggplot(data = results_att_red,
                               "operating_costs" = "Operating\nCosts",
                               "emissions" = "Carbon\nEmissions",
                               "environmental_friendliness" = "Rating")) +
-  theme_light() +
+  theme_bw() +
   theme(axis.title.x = element_text(size = 14,
                                     margin = margin(t = 15, r = 0, b = 0 ,l = 0)),
         axis.title.y = element_text(size = 14,
@@ -120,7 +120,7 @@ p_rt <-
                               "operating_costs" = "Operating\nCosts",
                               "emissions" = "Carbon\nEmissions",
                               "environmental_friendliness" = "Rating")) +
-  theme_light() +
+  theme_bw() +
   theme(axis.title.x = element_text(size = 14,
                                     margin = margin(t = 15, r = 0, b = 0 ,l = 0)),
         axis.title.y = element_text(size = 14,
