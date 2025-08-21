@@ -70,10 +70,11 @@ fig_choice_prob <-
 df_agg_id %>%
   ggplot(aes(x = consumption_translation, y = p_choice, fill = session)) +
   geom_point(aes(color = session),
-             position = position_jitterdodge(dodge.width = 0.5, jitter.width = 0.2),
+             position = position_jitterdodge(dodge.width = 0.5, jitter.width = 0.2, jitter.height = 0),
              size = 1.1, alpha = 0.7, show.legend = FALSE) +
   stat_summary(fun = mean, 
-               geom = "bar", 
+               geom = "bar",
+               linewidth = 1.2,
                position = "dodge",
                width = 0.6, 
                color = "black") +
