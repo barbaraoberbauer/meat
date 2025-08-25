@@ -339,12 +339,12 @@ plot_boundary_ec <- plot_group_differences_forest(estimates,
 # Arrange plots --------
 
 group_differences <- plot_grid(# plots
-  plot_boundary_rc,
-  plot_boundary_ec,
   plot_consumption_rc,
   plot_consumption_re,
   plot_theta_rc,
   plot_theta_re,
+  plot_boundary_rc,
+  plot_boundary_ec,
   
   
   # settings
