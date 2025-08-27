@@ -51,5 +51,7 @@ Model fitting is performed using [JAGS](https://mcmc-jags.sourceforge.io/).
 
 Barbara Oberbauer, barbara.oberbauer@uni-hamburg.de
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16962465.svg)](https://doi.org/10.5281/zenodo.16962465)
+
 
 
