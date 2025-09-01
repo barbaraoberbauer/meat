@@ -17,10 +17,10 @@ We have estimated parameters for two versions of the model: one version bounds t
 
 Overview of the repositorys contents:
 - **01_Preprocessing** - contains the script for preprocessing the behavioral data
-- **02_Behavioral_Analysis** - contains scripts for analysizing the behavioral and process-tracing data as well es for Figure 3 - Choice Probabilities and Figure 4 - Effects on Dwell Time and RT. 
+- **02_Behavioral_Analysis** - contains scripts for analysizing the behavioral and process-tracing data as well es for Figure 3 - Choice Probabilities and Effects on Dwell Time and RT. 
 - **04_Modeling** - contains scripts for estimating parameters, simulating data based on estimations, performing model comparison and parameter recovery as well as for several figures
     - **bayes_models** - contains text files specifying the models (_bounds refers to a model version in which the attentional parameters theta and phi are bounded between 0 and 1; _nobounds refers to the model verison without bounds)
-    - **scripts_figures** - contains scripts for creating the figures 5, 6, and 7
+    - **scripts_figures** - contains scripts for creating the figures 4, 5, and 6
     - **parameter estimation** is performed using two scripts, *parameter_estimation_sim* to simulate data sets based on the ten most likely parameter sets and *parameter_estimation_fit* to fit parameters to the simulated data
 
 Model fitting is performed using [JAGS](https://mcmc-jags.sourceforge.io/). 
