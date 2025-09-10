@@ -1,6 +1,6 @@
 # Computational Mechanisms of Attribute Translations
 This repository contains the code for the project "Computational Mechanisms of Attribute Translations". 
-The results are published in the article: **TBA**. 
+The results are reported in our [preprint](https://dx.doi.org/10.21203/rs.3.rs-7471672/v1.)
 Authors are Barbara Oberbauer, Ulf J.J. Hahnel, and Sebastian Gluth.
 
 The dataset used here was collected by Mertens et al. (2020) and results on choice behavior and information acquisition are reported as Study 2 in their [publication](https://doi.org/10.1017/S1930297500006896). The raw data set was publicly made available on the Open Science Framework (https://osf.io/fqdra/). The preprocessed behavioral data, all parameter estimation results as well as simulated behavioral data of our study are available at https://doi.org/10.5281/zenodo.16942102. These data allow reproducing all results figures provided with this paper.
