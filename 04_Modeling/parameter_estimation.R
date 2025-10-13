@@ -63,11 +63,36 @@ df <- readRDS("data/df.rds")
 
 ### Specify subset of data ----
 
-group_of_interest <- "emissions"
-# groups: "control", "emissions", "operating_costs", "environmental_friendliness"
+translation_of_interest <- "control"
+# translations: "control", "emissions", "operating_costs", "environmental_friendliness"
 
-df_subset <- df %>%
-  filter(consumption_translation == group_of_interest)
+run_subgroups_separately <- TRUE
+# if set to TRUE, estimates parameters separately for participants that did receive an additional price translation at t2 and those who did not 
+
+group_of_interest <- "price_translation_absent"
+# groups: "price_translation_absent", "price_translation_present"
+
+
+if (run_subgroups_separately == FALSE) {
+  
+  df_subset <- df %>%
+    filter(consumption_translation == translation_of_interest)
+  
+} else if (run_subgroups_separately == TRUE) {
+  
+  if (group_of_interest == "price_translation_absent") {
+    
+    df_subset <- df %>%
+      filter(consumption_translation == translation_of_interest & price_translation == 0)
+    
+  } else if (group_of_interest == "price_translation_present") {
+    
+    df_subset <- df %>%
+        filter(consumption_translation == translation_of_interest & price_translation == 1)
+    
+  }
+  
+}
 
 # assign new ids that are starting from 1 and increment by 1
 df_subset <- df_subset %>%
@@ -354,7 +379,16 @@ runJagsOut <- run.jags(method = "parallel",
 
 ### Save model output ------
 
-filename <- paste0("data/runJagsOut_", group_of_interest, file_extension, ".rds")
+if (run_subgroups_separately == FALSE) {
+  
+  filename <- paste0("data/runJagsOut_", translation_of_interest, file_extension, ".rds")
+  
+} else if (run_subgroups_separately == TRUE) {
+  
+  filename <- paste0("data/runJagsOut_", translation_of_interest, "_", group_of_interest, file_extension, ".rds")
+  
+}
+
 saveRDS(runJagsOut, file = filename)
 
 
