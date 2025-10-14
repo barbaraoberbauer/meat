@@ -69,7 +69,7 @@ translation_of_interest <- "control"
 run_subgroups_separately <- TRUE
 # if set to TRUE, estimates parameters separately for participants that did receive an additional price translation at t2 and those who did not 
 
-group_of_interest <- "price_translation_absent"
+group_of_interest <- "price_translation_present"
 # groups: "price_translation_absent", "price_translation_present"
 
 
@@ -491,5 +491,14 @@ hdi$sp <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_sp),
                     hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_sp + combined_mcmcfin$mu_dsp),
                     hdi_change = HDIofMCMC(combined_mcmcfin$mu_dsp))
 
-filename <- paste0("data/hdi_", group_of_interest, file_extension, ".rds")
+if (run_subgroups_separately == FALSE) {
+  
+  filename <- paste0("data/hdi_", translation_of_interest, file_extension, ".rds")
+  
+} else if (run_subgroups_separately == TRUE) {
+  
+  filename <- paste0("data/hdi_", translation_of_interest, "_", group_of_interest, file_extension, ".rds")
+
+}
+
 saveRDS(hdi, file = filename)
