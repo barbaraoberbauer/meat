@@ -63,13 +63,13 @@ df <- readRDS("data/df.rds")
 
 ### Specify subset of data ----
 
-translation_of_interest <- "control"
+translation_of_interest <- "environmental_friendliness"
 # translations: "control", "emissions", "operating_costs", "environmental_friendliness"
 
 run_subgroups_separately <- TRUE
 # if set to TRUE, estimates parameters separately for participants that did receive an additional price translation at t2 and those who did not 
 
-group_of_interest <- "price_translation_present"
+group_of_interest <- "price_translation_absent"
 # groups: "price_translation_absent", "price_translation_present"
 
 
