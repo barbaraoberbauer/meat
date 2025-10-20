@@ -127,17 +127,28 @@ ggplot(chooseEcoProbability, aes(x = binMean, y = ecoProb, color = session)) +
 
 # Normalized Probability Choosing Eco - Dwell Time Differences --------
 
-# create breakpoints
-break_points <- seq(from = min(df_subset$ddt_eco_noneco_norm),
-                    to = max(df_subset$ddt_eco_noneco_norm),
-                    by = 0.2)
+# # create breakpoints
+# break_points <- seq(from = min(df_subset$ddt_eco_noneco_norm),
+#                     to = max(df_subset$ddt_eco_noneco_norm),
+#                     by = 0.2)
+# 
+# chooseEcoProbabilityNorm <- df_subset %>%
+#   group_by(session) %>%
+#   mutate(bins = cut(ddt_eco_noneco_norm, 
+#                     breaks = break_points, 
+#                     include.lowest = TRUE)) %>% 
+#   group_by(session, bins) %>%
+#   summarize(binMean = mean(ddt_eco_noneco_norm),
+#             ecoProb = mean(choice == 1),
+#             seEcoProb = sqrt(mean(choice == 1) * (1 - mean(choice == 1)) / n()))
+
+# number of bins
+n_bins <- 10
 
 chooseEcoProbabilityNorm <- df_subset %>%
   group_by(session) %>%
-  mutate(bins = cut(ddt_eco_noneco_norm, 
-                    breaks = break_points, 
-                    include.lowest = TRUE)) %>% 
-  group_by(session, bins) %>%
+  mutate(bin = ntile(ddt_eco_noneco_norm, n_bins)) %>%
+  group_by(session, bin) %>%
   summarize(binMean = mean(ddt_eco_noneco_norm),
             ecoProb = mean(choice == 1),
             seEcoProb = sqrt(mean(choice == 1) * (1 - mean(choice == 1)) / n()))
