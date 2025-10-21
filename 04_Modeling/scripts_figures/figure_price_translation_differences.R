@@ -57,7 +57,7 @@ rm(package, packages, is_package_installed)
 
 ### Load data ------
 
-translation_of_interest <- "environmental_friendliness"
+translation_of_interest <- "emissions"
 # translations: "control", "emissions", "operating_costs", "environmental_friendliness"
 
 bounded <- FALSE # set to TRUE for bounded model, set to FALSE for unbounded model
