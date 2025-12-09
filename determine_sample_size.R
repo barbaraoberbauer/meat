@@ -255,3 +255,17 @@ powC.sim_attention.effectsize <- rbind(
     mutate(type = "effectsize.minus50%")
 )
 
+# save simulation results in a data frame
+time <- format(Sys.time(), "%Y%m%d_%H%M")
+fileName <- paste0("powC.sim_attention.effectsize", "_", time, ".RData")
+
+save(
+  powC.sim_attention_minus10prcnt,
+  powC.sim_attention_minus20prcnt,
+  powC.sim_attention_minus30prcnt,
+  powC.sim_attention_minus40prcnt,
+  powC.sim_attention_minus50prcnt,
+  powC.sim_attention.effectsize,
+  file = file.path("data/", fileName)
+)
+
