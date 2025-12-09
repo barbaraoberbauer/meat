@@ -63,7 +63,7 @@ df <- readRDS("data/df.rds")
 
 ### Specify subset of data ----
 
-translation_of_interest <- "environmental_friendliness"
+translation_of_interest <- "emissions"
 # translations: "control", "emissions", "operating_costs", "environmental_friendliness"
 
 run_subgroups_separately <- TRUE
