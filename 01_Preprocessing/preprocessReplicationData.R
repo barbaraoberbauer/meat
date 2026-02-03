@@ -70,9 +70,9 @@ df <- df %>% rename(task = fixedTrialNum,
 ### Exclude non-conflicting trials ---
 df <- filter(df, task != 5 & task != 8 & task != 10)
 
-### Re-code to non-eco vs. eco (0 vs. 1)
+### Re-code to non-eco vs. eco (0 vs. 1) ----
 
-# Choice
+###### Choice ------
   
 # A has less emissions and is more ecological option
 df$choice[df$cons_A < df$cons_B & df$choice == "A"] <- 1
@@ -81,8 +81,9 @@ df$choice[df$cons_A < df$cons_B & df$choice == "B"] <- 0
 # B has less emissions and is more ecological option
 df$choice[df$cons_B < df$cons_A & df$choice == "B"] <- 1
 df$choice[df$cons_B < df$cons_A & df$choice == "A"] <- 0
-  
-# Attribute values
+
+###### Attribute values -----
+
 df$priceEco <- NaN
 df$priceNonEco <- NaN
 df$energyEco <- NaN
@@ -111,16 +112,60 @@ df$popularityEco[df$cons_B < df$cons_A] <- df$pop_B[df$cons_B < df$cons_A]
 df$popularityNonEco[df$cons_A < df$cons_B] <- df$pop_B[df$cons_A < df$cons_B]
 df$popularityNonEco[df$cons_B < df$cons_A] <- df$pop_A[df$cons_B < df$cons_A]
 
-# Colord
+###### Event targets -----
+
+# price
+df$name[df$cons_A < df$cons_B & df$name == "A1"] <- "priceEco"
+df$name[df$cons_A < df$cons_B & df$name == "B1"] <- "priceNonEco"
+
+df$name[df$cons_A > df$cons_B & df$name == "A1"] <- "priceNonEco"
+df$name[df$cons_A > df$cons_B & df$name == "B1"] <- "priceEco"
+
+# consumption
+df$name[df$cons_A < df$cons_B & df$name == "A2"] <- "energyEco"
+df$name[df$cons_A < df$cons_B & df$name == "B2"] <- "energyNonEco"
+
+df$name[df$cons_A > df$cons_B & df$name == "A2"] <- "energyNonEco"
+df$name[df$cons_A > df$cons_B & df$name == "B2"] <- "energyEco"
+
+# popularity
+df$name[df$cons_A < df$cons_B & df$name == "A3"] <- "popularityEco"
+df$name[df$cons_A < df$cons_B & df$name == "B3"] <- "popularityNonEco"
+
+df$name[df$cons_A > df$cons_B & df$name == "A3"] <- "popularityNonEco"
+df$name[df$cons_A > df$cons_B & df$name == "B3"] <- "popularityEco"
+
+df$name[df$name == "A"] <- df$choice[df$name == "A"]
+df$name[df$name == "B"] <- df$choice[df$name == "B"]
+
+###### Colord -----
+
 df$colord[df$cons_A < df$cons_B & df$colord == "A-B"] <- "1_0"
 df$colord[df$cons_A < df$cons_B & df$colord == "B-A"] <- "0_1"
 df$colord[df$cons_A > df$cons_B & df$colord == "A-B"] <- "0_1"
 df$colord[df$cons_A > df$cons_B & df$colord == "B-A"] <- "1_0"
+
 
 # drop A-B coded variables
 drops <- c("price_A", "price_B", "cons_A", "cons_B", "pop_A", "pop_B",  
            "emission_A", "emission_B", "rating_A", "rating_B")
 df <- df[ , !(names(df) %in% drops)]
 rm(drops)
+
+
+# Calculate response times ------
+
+rts <- df %>%
+  group_by(subject, task) %>%
+  summarise(t_decision = time[event == "btnClick"] - time[event == "onload"])
+
+# add to data frame
+df <- df %>%
+  left_join(rts, by = c("subject", "task"))
+
+# remove rts
+rm(rts)
+
+
 
   
