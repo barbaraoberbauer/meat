@@ -1,8 +1,7 @@
 #---
 # title: "Computational Mechanisms of Attribute Translations" 
 # author: Barbara Oberbauer (barbara.oberbauer@uni-hamburg.de)
-# last update: "2025-01-15"
-# produced under R version: 2024.09.0
+# purpose of script: preprocessing
 #---
 
 # Preprocessing was largley adapted from Mertens et al. (2020): https://osf.io/jdep3 
@@ -300,14 +299,13 @@ saveRDS(taskVariablesNormalized, file = "data/taskVariablesNormalized.rds")
 ### Select relevant choice problems 
 # --> energy & water consumption were of equal amount in choice problems 5, 8, and 10
 
-#data frame with all trials
-dfAllTrials <- df
+# data frame with all trials
+dfAllTrialsOriginal <- df
 
-#exclude non-conflicting trials
-df <- filter(df, task != 5 & task != 8 & task != 10)
+# exclude non-conflicting trials
+dfOriginal <- filter(df, task != 5 & task != 8 & task != 10)
 
 
 # Save data ----------
 
-saveRDS(df, file = "data/df.rds")
-saveRDS(dfAllTrials, file = "data/dfAllTrials.rds")
+save(dfAllTrialsOriginal, dfOriginal, file = "data/preprocessedDataOriginal.RData")
