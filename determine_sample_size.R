@@ -445,7 +445,7 @@ powC.sim_choice <- simr::powerCurve(
   fit = sim_m.choice,
   test = fixed(xname = "session2:conditionrating_add", method = "z"),
   along = "id",
-  breaks = c(200, 300, 400, 500, 600, 700),
+  breaks = c(5, 10, 20, 25, 30, 60),
   nsim = nSims,
   progress = TRUE
 )
