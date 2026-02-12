@@ -1,22 +1,69 @@
-# Inspect process tracing data ------
+#---
+# title: "Computational Mechanisms of Attribute Translations" 
+# author: Barbara Oberbauer (barbara.oberbauer@uni-hamburg.de)
+# purpose of script: preprocessing
+#---
+
+# Load packages and read data ------------
+
+#clear working environment
+rm(list=ls())
+
+#clear all plots
+if(!is.null(dev.list())) dev.off()
+
+
+### Install packages -------
+
+# List of packages to check and install if necessary
+packages <- c("tidyverse",
+              "psych",
+              "dplyr"
+)
+
+# Function to check if a package is installed
+is_package_installed <- function(package_name) {
+  is.element(package_name, installed.packages()[, "Package"])
+}
+
+# Iterate through the list of packages
+for (package in packages) {
+  if (!is_package_installed(package)) {
+    # Install the package
+    install.packages(package)
+  }
+}
+
+# Load required libraries
+library(tidyverse)
+library(psych)
+library(dplyr)
+
+
+rm(package, packages, is_package_installed)
+
+### Load data ---------
+
+df_process <- read_csv("data/process_data_replication.csv")
 
 # Create aggregated data frame ------
 
-df_aggregate <- df[df$event == "btnClick",]
+df <- df[df$event == "btnClick",]
 
 # remove event columns
 drops <- c("event", "name", "time")
-df_aggregate <- df_aggregate[ , !(names(df_aggregate) %in% drops)]
+df <- df[ , !(names(df) %in% drops)]
 rm(drops)
 
+# Inspect process tracing data ------
 
 ### Fixation duration -----
 
-events_fixations <- df$event == "mouseover"
-events_fixationends <- df$event == "mouseout"
+events_fixations <- df_process$event == "mouseover"
+events_fixationends <- df_process$event == "mouseout"
 
-time_onset_fixation = df$time[events_fixations]
-time_offset_fixation = df$time[events_fixationends]
+time_onset_fixation = df_process$time[events_fixations]
+time_offset_fixation = df_process$time[events_fixationends]
 
 # mark fixation events with their fixation number
 fixNum <- cumsum(events_fixations)*events_fixations
@@ -28,12 +75,12 @@ fixation_duration <- time_offset_fixation - time_onset_fixation
 
 ### Number of fixations -----
 
-numFixations <- df %>%
-  group_by(subject) %>%
+numFixations <- df_process %>%
+  group_by(id) %>%
   summarize(nFixations = sum(event == "mouseover"))
 
-numFixationsPerAttribute <- df %>%
-  group_by(name, subject, task) %>%
+numFixationsPerAttribute <- df_process %>%
+  group_by(name, id, task) %>%
   summarize(nFixations = sum(event == "mouseover"))
 
 
@@ -61,32 +108,14 @@ numFixationsPerAttribute <- numFixationsPerAttribute %>%
          f_popularity0 = popularityNonEco)
 
 # add to data frame
-df_aggregate <- df_aggregate %>%
-  left_join(numFixationsPerAttribute, by = c("subject", "task"))
+df <- df %>%
+  left_join(numFixationsPerAttribute, by = c("id", "task"))
 
 ### Calculate total number of fixations ----
 
 # Overall acquisition frequency excluding choice buttons.
-tmp <- df_aggregate %>%
+tmp <- df %>%
   dplyr::select(starts_with('f_')) %>%
   dplyr::mutate(f_total = rowSums(., na.rm = TRUE))
-df_aggregate$f_total <- tmp$f_total
+df$f_total <- tmp$f_total
 
-# Expand df_aggregate to time_within_trial
-expanded_df <- df %>%
-  mutate(
-    time_within_trial = purrr::map(t_decision,
-                                   ~ seq(0, .x, by = 100))
-  ) %>%
-  unnest(time_within_trial)
-
-# give subjects a new id
-expanded_df$id <- NA
-
-expanded_df <- expanded_df %>%
-  mutate(id = dense_rank(subject))
-
-# remove columns
-drops <- c("subject")
-expanded_df <- expanded_df[ , !(names(expanded_df) %in% drops)]
-rm(drops)
