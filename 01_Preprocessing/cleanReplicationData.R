@@ -44,7 +44,7 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-df <- read_csv("data/meat_session1_450_wodatalyser.csv")
+df <- read_csv("data/meat_session1_first550.csv")
 
 df <- df[df$expname == "trial", ]
 
@@ -270,7 +270,8 @@ rm(rts)
 nSubjects <- length(unique(df$subject))
 
 # get data for prolific submission
-# cutoff <- as.POSIXct("2026-02-09 13:00:00", tz = tz(df$submitted))
+# cutoff <- as.POSIXct("2026-02-10 10:00:00", 
+#                      tz = tz(df$submitted))
 # submitIds <- unique(df$subject[df$submitted > cutoff])
 # write.csv(submitIds, "submission_ids.csv", row.names = FALSE)
 
