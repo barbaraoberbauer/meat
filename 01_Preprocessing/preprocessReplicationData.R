@@ -48,7 +48,7 @@ df_process <- read_csv("data/process_data_replication.csv")
 
 # Create aggregated data frame ------
 
-df <- df[df$event == "btnClick",]
+df <- df_process[df_process$event == "btnClick",]
 
 # remove event columns
 drops <- c("event", "name", "time")
