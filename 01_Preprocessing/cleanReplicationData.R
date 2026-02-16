@@ -44,16 +44,92 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-df <- read_csv("data/meat_session1_first550.csv")
+# load pilot data and change variable types
+df_pilot <- read_csv("data/meat_pilot.csv",
+                     col_types = (cols('id' = col_integer(),
+                                       'expname' = col_character(),
+                                       'subject' = col_character(),
+                                       'session' = col_factor(levels = c('1', '2')),
+                                       'ip' = col_character(),
+                                       'condnum' = col_factor(levels = c('1', '2', '3')),
+                                       'condvar' = col_factor(levels = c('control', 'emission', ' rating')),
+                                       'trial' = col_integer(),
+                                       'fixedTrialNum' = col_factor(NULL),
+                                       'condPermutation' = col_character(),
+                                       'price_A' = col_integer(),
+                                       'price_B' = col_integer(),
+                                       'cons_A' = col_integer(),
+                                       'cons_B' = col_integer(),
+                                       'pop_A' = col_integer(),
+                                       'pop_B' = col_integer(),
+                                       'emission_A' = col_integer(),
+                                       'emission_B' = col_integer(),
+                                       'rating_A' = col_character(),
+                                       'rating_B' = col_character(),
+                                       'optionOrder' = col_character(),
+                                       'attributeOrder' = col_character(),
+                                       'choice' = col_character(),
+                                       'correctChoice' = col_character(),
+                                       'submitted' = col_datetime(),
+                                       'event' = col_character(),
+                                       'name' = col_character(),
+                                       'value' = col_character(),
+                                       'time' = col_integer(),
+                                       'jsonfile' = col_character(),
+                                       'set' = col_character())))
+
+
+df <- read_csv("data/meat_session1_720.csv",
+               col_types = (cols('id' = col_integer(),
+                                 'expname' = col_character(),
+                                 'subject' = col_character(),
+                                 'session' = col_factor(levels = c('1', '2')),
+                                 'ip' = col_character(),
+                                 'condnum' = col_factor(levels = c('1', '2', '3')),
+                                 'condvar' = col_factor(levels = c('control', 'emission', ' rating')),
+                                 'trial' = col_integer(),
+                                 'fixedTrialNum' = col_factor(NULL),
+                                 'condPermutation' = col_character(),
+                                 'price_A' = col_integer(),
+                                 'price_B' = col_integer(),
+                                 'cons_A' = col_integer(),
+                                 'cons_B' = col_integer(),
+                                 'pop_A' = col_integer(),
+                                 'pop_B' = col_integer(),
+                                 'emission_A' = col_integer(),
+                                 'emission_B' = col_integer(),
+                                 'rating_A' = col_character(),
+                                 'rating_B' = col_character(),
+                                 'optionOrder' = col_character(),
+                                 'attributeOrder' = col_character(),
+                                 'choice' = col_character(),
+                                 'correctChoice' = col_character(),
+                                 'submitted' = col_datetime(),
+                                 'procdata' = col_character(),
+                                 'addvar' = col_character(),
+                                 'adddata' = col_character())))
 
 df <- df[df$expname == "trial", ]
+
+### Unfold process data -----
+
+df <- df %>%
+  mutate(parsed = purrr::map(procdata, 
+                             ~ read.csv(text = .x, 
+                                        stringsAsFactors = FALSE))) %>%
+  unnest(parsed)
+
+### Combine data frames -----
+df <- bind_rows(df_pilot, df)
+rm(df_pilot)
 
 # Clean up data frame -----
 
 ### Remove variables that are not needed ------
 
 # variables to drop
-drops <- c("id", "expname", "ip", "attributeOrder",  "correctChoice", "value", "jsonfile", "set")
+drops <- c("id", "expname", "ip", "attributeOrder",  "correctChoice", "value", "jsonfile", "set", "NA.",
+           "procdata", "addvar", "adddata")
 df <- df[ , !(names(df) %in% drops)]
 rm(drops)
 
@@ -71,19 +147,20 @@ df <- filter(df, task != 5 & task != 8 & task != 10)
 
 ### Exclude anonymous participants ----
 # Anonymous is assigned as subject if no prolific id is provided
+# Also, exclude test subject names and NAs
 
 df <- df %>%
   filter(
-    subject != 'anonymous'
+    !subject %in% c(
+      "anonymous",
+      "control1",
+      "rating2",
+      "rating3",
+      "emission2",
+      "emission3"
+    ) &
+      !is.na(subject)
   )
-
-### Unfold process data -----
-
-df <- df %>%
-  mutate(parsed = purrr::map(procdata, 
-                             ~ read.csv(text = .x, 
-                                        stringsAsFactors = FALSE))) %>%
-  unnest(parsed)
 
 
 ### Re-code to non-eco vs. eco (0 vs. 1) ----
@@ -151,26 +228,42 @@ df$name[df$cons_A < df$cons_B & df$name == "pop_B"] <- "popularityNonEco"
 df$name[df$cons_A > df$cons_B & df$name == "pop_A"] <- "popularityNonEco"
 df$name[df$cons_A > df$cons_B & df$name == "pop_B"] <- "popularityEco"
 
+# emission
+df$name[df$cons_A < df$cons_B & df$name == "emission_A"] <- "emissionEco"
+df$name[df$cons_A < df$cons_B & df$name == "emission_B"] <- "emissionNonEco"
+
+df$name[df$cons_A > df$cons_B & df$name == "emission_A"] <- "emissionNonEco"
+df$name[df$cons_A > df$cons_B & df$name == "emission_B"] <- "emissionEco"
+
+# rating
+df$name[df$cons_A < df$cons_B & df$name == "rating_A"] <- "ratingEco"
+df$name[df$cons_A < df$cons_B & df$name == "rating_B"] <- "ratingNonEco"
+
+df$name[df$cons_A > df$cons_B & df$name == "rating_A"] <- "ratingNonEco"
+df$name[df$cons_A > df$cons_B & df$name == "rating_B"] <- "ratingEco"
+
+
+# Recodings for pilot participants
 # price
-# df$name[df$cons_A < df$cons_B & df$name == "A1"] <- "priceEco"
-# df$name[df$cons_A < df$cons_B & df$name == "B1"] <- "priceNonEco"
-# 
-# df$name[df$cons_A > df$cons_B & df$name == "A1"] <- "priceNonEco"
-# df$name[df$cons_A > df$cons_B & df$name == "B1"] <- "priceEco"
-# 
-# # consumption
-# df$name[df$cons_A < df$cons_B & df$name == "A2"] <- "energyEco"
-# df$name[df$cons_A < df$cons_B & df$name == "B2"] <- "energyNonEco"
-# 
-# df$name[df$cons_A > df$cons_B & df$name == "A2"] <- "energyNonEco"
-# df$name[df$cons_A > df$cons_B & df$name == "B2"] <- "energyEco"
-# 
-# # popularity
-# df$name[df$cons_A < df$cons_B & df$name == "A3"] <- "popularityEco"
-# df$name[df$cons_A < df$cons_B & df$name == "B3"] <- "popularityNonEco"
-# 
-# df$name[df$cons_A > df$cons_B & df$name == "A3"] <- "popularityNonEco"
-# df$name[df$cons_A > df$cons_B & df$name == "B3"] <- "popularityEco"
+df$name[df$cons_A < df$cons_B & df$name == "A1"] <- "priceEco"
+df$name[df$cons_A < df$cons_B & df$name == "B1"] <- "priceNonEco"
+
+df$name[df$cons_A > df$cons_B & df$name == "A1"] <- "priceNonEco"
+df$name[df$cons_A > df$cons_B & df$name == "B1"] <- "priceEco"
+
+# consumption
+df$name[df$cons_A < df$cons_B & df$name == "A2"] <- "energyEco"
+df$name[df$cons_A < df$cons_B & df$name == "B2"] <- "energyNonEco"
+
+df$name[df$cons_A > df$cons_B & df$name == "A2"] <- "energyNonEco"
+df$name[df$cons_A > df$cons_B & df$name == "B2"] <- "energyEco"
+
+# popularity
+df$name[df$cons_A < df$cons_B & df$name == "A3"] <- "popularityEco"
+df$name[df$cons_A < df$cons_B & df$name == "B3"] <- "popularityNonEco"
+
+df$name[df$cons_A > df$cons_B & df$name == "A3"] <- "popularityNonEco"
+df$name[df$cons_A > df$cons_B & df$name == "B3"] <- "popularityEco"
 
 df$name[df$name == "A"] <- df$choice[df$name == "A"]
 df$name[df$name == "B"] <- df$choice[df$name == "B"]
@@ -185,8 +278,7 @@ df$colord[df$cons_A > df$cons_B & df$colord == "B-A"] <- "1_0"
 
 # drop A-B coded variables
 drops <- c("price_A", "price_B", "cons_A", "cons_B", "pop_A", "pop_B",  
-           "emission_A", "emission_B", "rating_A", "rating_B",
-           "procdata", "addvar", "adddata", "value")
+           "emission_A", "emission_B", "rating_A", "rating_B")
 df <- df[ , !(names(df) %in% drops)]
 rm(drops)
 
@@ -211,7 +303,7 @@ df <- df %>%
 
 # check number of trials
 nTrials <- df %>%
-  group_by(subject) %>%
+  group_by(subject, session) %>%
   summarize(nTrials = length(unique(task)))
 
 # get subject ids of those who have less than 12 trials
@@ -226,14 +318,14 @@ if (length(ids) > 0) {
 # remove subjects
 df <- df %>%
   filter(
-    !subject %in% exclSubjects$subject
+    !subject %in% c(exclSubjects$subject)
   )
 
 rm(ids)
 
 # Exclude subjects who have refreshed
 btnClicksPerTrial <- df %>%
-  group_by(subject, task) %>%
+  group_by(subject, task, session) %>%
   summarize(nBttnClicks = sum(event == "btnClick"))
 
 ids <- unique(btnClicksPerTrial$subject[btnClicksPerTrial$nBttnClicks > 1])
@@ -256,12 +348,12 @@ rm(ids)
 # Calculate response times ------
 
 rts <- df %>%
-  group_by(subject, task) %>%
+  group_by(subject, task, session) %>%
   summarise(t_decision = time[event == "btnClick"] - time[event == "onload"])
 
 # add to data frame
 df <- df %>%
-  left_join(rts, by = c("subject", "task"))
+  left_join(rts, by = c("subject", "task", "session"))
 
 # remove rts
 rm(rts)
@@ -269,10 +361,10 @@ rm(rts)
 # calculate number of subjects
 nSubjects <- length(unique(df$subject))
 
-# get data for prolific submission
-# cutoff <- as.POSIXct("2026-02-10 10:00:00", 
+#get data for prolific submission
+# cutoff <- as.POSIXct("2026-02-16 07:00:00",
 #                      tz = tz(df$submitted))
-# submitIds <- unique(df$subject[df$submitted > cutoff])
+# submitIds <- unique(df$subject[df$submitted > cutoff & df$session == 1])
 # write.csv(submitIds, "submission_ids.csv", row.names = FALSE)
 
 # Remove prolific ids -----
