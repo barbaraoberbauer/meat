@@ -111,6 +111,39 @@ df <- read_csv("data/meat_session1_720.csv",
 
 df <- df[df$expname == "trial", ]
 
+# Demographic data
+demographics1 <- read_csv("data/prolific_demographic_export_session1.csv")
+demographics2 <- read_csv("data/prolific_demographic_export_session1_pilot.csv")
+demographics3 <- read_csv("data/prolific_demographic_export_session1_first10.csv")
+
+# filter for age and sex
+demographics1 <- demographics1 %>%
+  filter(Status == "APPROVED") %>%
+  select("Participant id", "Age", "Sex")
+
+demographics2 <- demographics2 %>%
+  filter(Status == "APPROVED") %>%
+  select("Participant id", "Age", "Sex")
+
+demographics2$Age <- as.character(demographics2$Age)
+
+demographics3 <- demographics3 %>%
+  filter(Status == "APPROVED") %>%
+  select("Participant id", "Age", "Sex")
+
+# bind and remove individual data frames
+demographics <- bind_rows(demographics1, demographics2, demographics3)
+
+rm(demographics1, demographics2, demographics3)
+
+demographics$Age <- as.integer(demographics$Age)
+
+# rename columns
+demographics <- demographics %>% rename("subject" = "Participant id",
+                                        "gender" = "Sex",
+                                        "age" = "Age")
+
+
 ### Unfold process data -----
 
 df <- df %>%
@@ -367,6 +400,11 @@ nSubjects <- length(unique(df$subject))
 # submitIds <- unique(df$subject[df$submitted > cutoff & df$session == 1])
 # write.csv(submitIds, "submission_ids.csv", row.names = FALSE)
 
+# Add demographic information -----
+
+df <- df %>%
+  left_join(demographics, by = c("subject"))
+
 # Remove prolific ids -----
 
 df$id <- NA
@@ -383,6 +421,8 @@ df <- df %>%
 drops <- c("subject")
 df <- df[ , !(names(df) %in% drops)]
 rm(drops)
+
+
 
 # Save data frames -----
 write_csv(df, "data/process_data_replication.csv")
