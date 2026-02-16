@@ -4,6 +4,8 @@
 # purpose of script: preprocessing
 #---
 
+# TODO: fix sample characteristics
+
 # Load packages and read data ------------
 
 #clear working environment
@@ -44,7 +46,29 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-df_process <- read_csv("data/process_data_replication.csv")
+df_process <- read_csv("data/process_data_replication.csv",
+                       col_types = (cols('id' = col_integer(),
+                                         'session' = col_factor(levels = c('1', '2')),
+                                         'condition' = col_factor(levels = c('1', '2', '3')),
+                                         'group' = col_factor(levels = c('control', 'emission', ' rating')),
+                                         'trial' = col_integer(),
+                                         'task' = col_factor(NULL),
+                                         'roword' = col_character(),
+                                         'colord' = col_character(),
+                                         'choice' = col_integer(),
+                                         'submitted' = col_datetime(),
+                                         'event' = col_character(),
+                                         'name' = col_character(),
+                                         'time' = col_integer(),
+                                         'priceEco' = col_integer(),
+                                         'priceNonEco' = col_integer(),
+                                         'energyEco' = col_integer(),
+                                         'energyNonEco' = col_integer(),
+                                         'popularityEco' = col_integer(),
+                                         'popularityNonEco' = col_integer(),
+                                         't_decision' = col_double(),
+                                         'age' = col_integer(),
+                                         'gender' = col_factor(NULL))))
 
 # Create aggregated data frame ------
 
@@ -83,7 +107,7 @@ df_process <- df_process %>%
 
 # aggregate duration per attribute
 durationFixations <- df_process %>%
-  group_by(name, id, task) %>%
+  group_by(name, id, task, session) %>%
   summarize(tFixations = round(mean(fix_duration)))
 
 # wide format
@@ -91,7 +115,17 @@ durationFixations <- durationFixations %>%
   pivot_wider(names_from = name, values_from = tFixations)
 
 # replace NA with 0 as they indicate no fixations
-durationFixations[is.na(durationFixations)] <- 0
+#durationFixations[is.na(durationFixations)] <- 0
+
+# generate new columns for consumption translation
+durationFixations <- durationFixations %>%
+  mutate(consumptionTranslationEco = coalesce(emissionEco, ratingEco),
+         consumptionTranslationNonEco = coalesce(emissionNonEco, ratingNonEco))
+
+# drop unnecessary columns
+drops <- c("emissionEco", "emissionNonEco", "ratingEco", "ratingNonEco")
+durationFixations <- durationFixations[ , !(names(durationFixations) %in% drops)]
+rm(drops)
 
 # rename columns
 durationFixations <- durationFixations %>% 
@@ -100,11 +134,13 @@ durationFixations <- durationFixations %>%
          t_consumption1 = energyEco,
          t_consumption0 = energyNonEco,
          t_popularity1 = popularityEco,
-         t_popularity0 = popularityNonEco)
+         t_popularity0 = popularityNonEco,
+         t_consumption_translation1 = consumptionTranslationEco,
+         t_consumption_translation0 = consumptionTranslationNonEco)
 
 # add to data frame
 df <- df %>%
-  left_join(durationFixations, by = c("id", "task"))
+  left_join(durationFixations, by = c("id", "task", "session"))
 
 rm(fixation_duration, 
    events_fixationends, 
@@ -118,7 +154,7 @@ rm(fixation_duration,
 
 # calculate number of fixations 
 numFixations <- df_process %>%
-  group_by(name, id, task) %>%
+  group_by(name, id, task, session) %>%
   summarize(nFixations = sum(event == "mouseover"))
 
 
@@ -127,7 +163,17 @@ numFixations <- numFixations %>%
   pivot_wider(names_from = name, values_from = nFixations)
 
 # replace NA with 0 as they indicate no fixations
-numFixations[is.na(numFixations)] <- 0
+#numFixations[is.na(numFixations)] <- 0
+
+# generate new columns for consumption translation
+numFixations <- numFixations %>%
+  mutate(consumptionTranslationEco = coalesce(emissionEco, ratingEco),
+         consumptionTranslationNonEco = coalesce(emissionNonEco, ratingNonEco))
+
+# drop unnecessary columns
+drops <- c("emissionEco", "emissionNonEco", "ratingEco", "ratingNonEco")
+numFixations <- numFixations[ , !(names(numFixations) %in% drops)]
+rm(drops)
 
 # rename columns
 numFixations <- numFixations %>% 
@@ -136,11 +182,13 @@ numFixations <- numFixations %>%
          f_consumption1 = energyEco,
          f_consumption0 = energyNonEco,
          f_popularity1 = popularityEco,
-         f_popularity0 = popularityNonEco)
+         f_popularity0 = popularityNonEco,
+         f_consumption_translation1 = consumptionTranslationEco,
+         f_consumption_translation0 = consumptionTranslationNonEco)
 
 # add to data frame
 df <- df %>%
-  left_join(numFixations, by = c("id", "task"))
+  left_join(numFixations, by = c("id", "task", "session"))
 
 rm(numFixations)
 
@@ -148,8 +196,20 @@ rm(numFixations)
 # Sample Characteristics ---------
 sample <- df[!duplicated(df$id),]
 length(sample$id)
+prop.table(table(sample$gender))
+describe(sample$age)
 
-remove(sample)
+# check sample characteristics for each condition separately 
+sample %>%
+  group_by(condition) %>%
+  do(describe(.$age))
+
+# check sample characteristics for final sample
+sample_final <- sample %>% filter(!is.na(condition))
+prop.table(table(sample_final$gender))
+describe(sample_final$age)
+
+remove(sample, sample_final)
 
 # Computation of Information Acquisition Variables ---------
 
@@ -168,12 +228,12 @@ df$t_total <- tmp$t_total
 
 # Overall acquisition duration per choice option.
 tmp <- df %>%
-  dplyr::select(t_price0, t_consumption0, t_popularity0) %>%
+  dplyr::select(t_price0, t_consumption0, t_popularity0, t_consumption_translation0) %>%
   dplyr::mutate(t_option0 = rowSums(., na.rm = TRUE))
 df$t_option0 <- tmp$t_option0
 
 tmp <- df %>%
-  dplyr::select(t_price1, t_consumption1, t_popularity1) %>%
+  dplyr::select(t_price1, t_consumption1, t_popularity1, t_consumption_translation1) %>%
   dplyr::mutate(t_option1 = rowSums(., na.rm = TRUE))
 df$t_option1 <- tmp$t_option1
 
