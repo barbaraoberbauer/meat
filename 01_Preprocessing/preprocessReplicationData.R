@@ -50,7 +50,7 @@ df_process <- read_csv("data/process_data_replication.csv",
                        col_types = (cols('id' = col_integer(),
                                          'session' = col_factor(levels = c('1', '2')),
                                          'condition' = col_factor(levels = c('1', '2', '3')),
-                                         'group' = col_factor(levels = c('control', 'emission', ' rating')),
+                                         'group' = col_factor(levels = c('control', 'emission', 'rating')),
                                          'trial' = col_integer(),
                                          'task' = col_factor(NULL),
                                          'roword' = col_character(),
@@ -271,3 +271,6 @@ remove(df_1, df_2)
 n_trials_after <- nrow(df)
 
 rm(n_trials_before, n_trials_after)
+
+
+
