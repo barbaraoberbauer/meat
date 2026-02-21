@@ -405,6 +405,42 @@ nSubjects <- length(unique(df$subject))
 df <- df %>%
   left_join(demographics, by = c("subject"))
 
+# Assign conditions ------
+
+# conditions <- data.frame(condnum = c(1, 2, 2, 3, 3),
+#                          condvar = c('control', 'rating', 'emission', 'rating', 'emission'))
+# 
+# condition_assignment <- df[,c("subject", "submitted")]
+# 
+# condition_assignment <- condition_assignment[!duplicated(condition_assignment$subject),]
+# 
+# subjectsSession2 <- unique(df$subject[df$session == 2])
+# 
+# # exclude subjects who have already participated in session 2
+# condition_assignment <- condition_assignment %>%
+#   filter(
+#     !subject %in% c(subjectsSession2)
+#   )
+# 
+# # check how many participants we can assign each group
+# numRepmat <- ceiling(nrow(condition_assignment)/nrow(conditions))
+# 
+# # replicate conditions 
+# conditions <- do.call(rbind, replicate(numRepmat, conditions, simplify = FALSE))
+# 
+# # cut off conditions that exceed number of participants
+# conditions <- conditions[1:nrow(condition_assignment),]
+# 
+# # shuffle conditions across columns
+# set.seed(123)  
+# conditions <- conditions[sample(nrow(conditions)), ]
+# 
+# # add to condition_assignment
+# condition_assignment <- cbind(condition_assignment, conditions)
+# 
+# write_csv(condition_assignment, "data/reinvitation_subjects.csv")
+
+
 # Remove prolific ids -----
 
 df$id <- NA
