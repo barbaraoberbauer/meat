@@ -4,8 +4,6 @@
 # purpose of script: preprocessing
 #---
 
-# TODO: fix sample characteristics
-
 # Load packages and read data ------------
 
 #clear working environment
@@ -201,15 +199,10 @@ describe(sample$age)
 
 # check sample characteristics for each condition separately 
 sample %>%
-  group_by(condition) %>%
+  group_by(condition, group) %>%
   do(describe(.$age))
 
-# check sample characteristics for final sample
-sample_final <- sample %>% filter(!is.na(condition))
-prop.table(table(sample_final$gender))
-describe(sample_final$age)
-
-remove(sample, sample_final)
+remove(sample)
 
 # Computation of Information Acquisition Variables ---------
 
@@ -243,9 +236,6 @@ remove(tmp)
 
 # Data Cleaning ---------
 
-# Exclude participants who only completed session 1.
-# TODO
-
 # Count trials before data cleaning
 n_trials_before <- nrow(df)
 
@@ -271,6 +261,10 @@ remove(df_1, df_2)
 n_trials_after <- nrow(df)
 
 rm(n_trials_before, n_trials_after)
+
+# Save data ----------
+
+save(df, df_process, file = "data/preprocessedDataReplication.RData")
 
 
 
