@@ -315,6 +315,23 @@ drops <- c("price_A", "price_B", "cons_A", "cons_B", "pop_A", "pop_B",
 df <- df[ , !(names(df) %in% drops)]
 rm(drops)
 
+# ### Exclude participants who have only completed session 1 ------
+# ids <- unique(df$subject[df$session == 2])
+# 
+# df <- df %>%
+#   filter(subject %in% ids)
+# 
+# rm(ids)
+# 
+# # update condition and group
+# df <- df %>%
+#   group_by(subject) %>%
+#   mutate(
+#     condition = condition[session == 2][1],
+#     group = group[session == 2][1]
+#   ) %>%
+#   ungroup()
+
 ### Exclude participants who used a touchscreen -------
 
 # get subject ids of those who have used touch screen
