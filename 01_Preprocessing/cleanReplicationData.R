@@ -79,7 +79,7 @@ df_pilot <- read_csv("data/meat_pilot.csv",
                                        'set' = col_character())))
 
 
-df <- read_csv("data/meat_session1_720.csv",
+df <- read_csv("data/meat_session1_final.csv",
                col_types = (cols('id' = col_integer(),
                                  'expname' = col_character(),
                                  'subject' = col_character(),
@@ -425,14 +425,14 @@ df <- df %>%
 # # check how many participants we can assign each group
 # numRepmat <- ceiling(nrow(condition_assignment)/nrow(conditions))
 # 
-# # replicate conditions 
+# # replicate conditions
 # conditions <- do.call(rbind, replicate(numRepmat, conditions, simplify = FALSE))
 # 
 # # cut off conditions that exceed number of participants
 # conditions <- conditions[1:nrow(condition_assignment),]
 # 
 # # shuffle conditions across columns
-# set.seed(123)  
+# set.seed(123)
 # conditions <- conditions[sample(nrow(conditions)), ]
 # 
 # # add to condition_assignment
@@ -457,7 +457,6 @@ df <- df %>%
 drops <- c("subject")
 df <- df[ , !(names(df) %in% drops)]
 rm(drops)
-
 
 
 # Save data frames -----
