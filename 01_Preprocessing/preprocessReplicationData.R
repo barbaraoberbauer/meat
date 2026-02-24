@@ -262,9 +262,28 @@ n_trials_after <- nrow(df)
 
 rm(n_trials_before, n_trials_after)
 
+# Create consumption_translation variable for compatability w original df ----
+
+df$consumption_translation <- NA
+df$consumption_translation[df$condition == 1] <- "control"
+df$consumption_translation[df$condition == 2 & df$group == "rating"] <- "rating_replace"
+df$consumption_translation[df$condition == 3 & df$group == "rating"] <- "rating_add"
+df$consumption_translation[df$condition == 2 & df$group == "emission"] <- "emission_replace"
+df$consumption_translation[df$condition == 3 & df$group == "emission"] <- "emission_add"
+
+df_process <- df_process %>%
+  mutate(
+    consumption_translation = 
+      df$consumption_translation[match(id, df$id)]
+  ) 
+
+
 # Save data ----------
 
-save(df, df_process, file = "data/preprocessedDataReplication.RData")
+dfReplication <- df
+dfReplicationProcess <- df_process
+
+save(dfReplication, dfReplicationProcess, file = "data/preprocessedDataReplication.RData")
 
 
 
