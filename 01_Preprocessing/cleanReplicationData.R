@@ -79,9 +79,9 @@ df_pilot <- read_csv("data/meat_pilot.csv",
                                        'set' = col_character())))
 
 
-df <- read_csv("data/meat_session1_final.csv",
+df <- read_csv("data/meat_session2_250.csv",
                col_types = (cols('id' = col_integer(),
-                                 'expname' = col_character(),
+                                 'expame' = col_character(),
                                  'subject' = col_character(),
                                  'session' = col_factor(levels = c('1', '2')),
                                  'ip' = col_character(),
@@ -315,22 +315,22 @@ drops <- c("price_A", "price_B", "cons_A", "cons_B", "pop_A", "pop_B",
 df <- df[ , !(names(df) %in% drops)]
 rm(drops)
 
-# ### Exclude participants who have only completed session 1 ------
-# ids <- unique(df$subject[df$session == 2])
-# 
-# df <- df %>%
-#   filter(subject %in% ids)
-# 
-# rm(ids)
-# 
-# # update condition and group
-# df <- df %>%
-#   group_by(subject) %>%
-#   mutate(
-#     condition = condition[session == 2][1],
-#     group = group[session == 2][1]
-#   ) %>%
-#   ungroup()
+### Exclude participants who have only completed session 1 ------
+ids <- unique(df$subject[df$session == 2])
+
+df <- df %>%
+  filter(subject %in% ids)
+
+rm(ids)
+
+# update condition and group
+df <- df %>%
+  group_by(subject) %>%
+  mutate(
+    condition = condition[session == 2][1],
+    group = group[session == 2][1]
+  ) %>%
+  ungroup()
 
 ### Exclude participants who used a touchscreen -------
 
@@ -412,9 +412,9 @@ rm(rts)
 nSubjects <- length(unique(df$subject))
 
 #get data for prolific submission
-# cutoff <- as.POSIXct("2026-02-16 07:00:00",
+# cutoff <- as.POSIXct("2026-02-23 09:00:00",
 #                      tz = tz(df$submitted))
-# submitIds <- unique(df$subject[df$submitted > cutoff & df$session == 1])
+# submitIds <- unique(df$subject[df$submitted > cutoff & df$session == 2])
 # write.csv(submitIds, "submission_ids.csv", row.names = FALSE)
 
 # Add demographic information -----
