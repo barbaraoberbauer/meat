@@ -1,12 +1,12 @@
 #---
 # title: "Computational Mechanisms of Attribute Translations" 
 # author: Barbara Oberbauer (barbara.oberbauer@uni-hamburg.de)
-# last update: "2025-01-15"
-# produced under R version: 2024.09.0
+# purpose of script: analysis of behaviorl data
 #---
 
 # Reproduce behavioral results by adapting the script from Mertens et al. (2020): https://osf.io/jdep3 
 # Only reproduce main effects of consumption translation 
+# Adapt script for replication data
 
 # Load packages and read data ------------
 
@@ -58,54 +58,96 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-df <- readRDS("data/df.rds")
-
+load("data/preprocessedDataOriginal.RData")
+load("data/preprocessedDataReplication.RData")
 
 # Product Choice -----
 
 ### Descriptives  ---------
 
-# aggregate data on subject level
-choice_prob_id <- df %>%
-  group_by(session, consumption_translation, id) %>%
-  summarise(mean_choice_id = mean(choice, na.rm = TRUE), 
-            se_choice_id = sd(choice, na.rm = TRUE)/sqrt(sum(!is.na(choice)))
-            ) %>%
-  arrange(consumption_translation)
+# function for running descriptives
 
-# aggregate data on group level
-choice_prob_group <- choice_prob_id %>%
-  group_by(session, consumption_translation) %>%
-  summarise(mean_choice = mean(mean_choice_id, na.rm = TRUE), 
-            se_choice = sd(mean_choice_id, na.rm = TRUE)/sqrt(sum(!is.na(mean_choice_id)))
-            ) %>%
-  arrange(consumption_translation)
+descriptives_function <- function(data){
+  
+  # aggregate data on subject level
+  choice_prob_id <- data %>%
+    group_by(session, consumption_translation, id) %>%
+    summarise(mean_choice_id = mean(choice, na.rm = TRUE), 
+              se_choice_id = sd(choice, na.rm = TRUE)/sqrt(sum(!is.na(choice)))
+    ) %>%
+    arrange(consumption_translation)
+  
+  # aggregate data on group level
+  choice_prob_group <- choice_prob_id %>%
+    group_by(session, consumption_translation) %>%
+    summarise(mean_choice = mean(mean_choice_id, na.rm = TRUE), 
+              se_choice = sd(mean_choice_id, na.rm = TRUE)/sqrt(sum(!is.na(mean_choice_id)))
+    ) %>%
+    arrange(consumption_translation)
+  
+  return(list(
+    id_level = choice_prob_id,
+    group_level = choice_prob_group
+  ))
+  
+}
 
+descriptivesOriginal <- descriptives_function(dfOriginal)
+descriptivesReplication <- descriptives_function(dfReplication)
 
 ### Choice Consistency in Session 1 between Consumption Translations ------
 
-# Subset the data for session 1
-df_session1 <- subset(df, session == 1)
+baseline_choice <- function(data){
+  
+  # Subset the data for session 1
+  data_session1 <- subset(data, session == 1)
+  
+  # Fit a model without the session interaction
+  choice_model_session1 <- glmer(choice ~ consumption_translation + (1 | id) + (1 | task), 
+                                 data = data_session1, 
+                                 family = binomial(link = "logit"),
+                                 control = glmerControl(optimizer="bobyqa", 
+                                                        optCtrl = list(maxfun=2e5))
+                                 )
+  
+  return(choice_model_session1)
+  
+}
 
-# Fit a model without the session interaction
-choice_model_session1 <- glmer(choice ~ consumption_translation + (1 | id) + (1 | task), 
-                               data = df_session1, 
-                               family = binomial(link = "logit"),
-                               control = glmerControl(optimizer="bobyqa", optCtrl = list(maxfun=2e5)))
+baselineChoiceOriginal <- baseline_choice(dfOriginal)
+baselineChoiceReplication <- baseline_choice(dfReplication)
 
 # Perform an ANOVA to see if consumption translation has a significant effect
-Anova(choice_model_session1)
+Anova(baselineChoiceOriginal)
+Anova(baselineChoiceReplication)
 
 
 ### Check for Significant Fixed Effects -------
-fixed_effects_choice <- afex::mixed(choice ~ (session | id) + (1 | task) + session * consumption_translation, 
-                    data = df, 
-                    family = binomial(link = "logit"), 
-                    control = glmerControl(optimizer="bobyqa", 
-                                           optCtrl = list(maxfun=2e5)),
-                    method = 'LRT')
 
+fixed_effects_function <- function(data){
+  
+  fixed_effects_choice <- afex::mixed(choice ~ (session | id) + (1 | task) + session * consumption_translation, 
+                                      data = data, 
+                                      family = binomial(link = "logit"), 
+                                      control = glmerControl(optimizer="bobyqa", 
+                                                             optCtrl = list(maxfun=2e5)),
+                                      method = 'LRT')
+  
+  return(fixed_effects_choice)
+  
+}
 
+fixedEffectsOriginal <- fixed_effects_function(dfOriginal)
+fixedEffectsReplication <- fixed_effects_function(dfReplication)
+
+# also look at significant fixed effects for conditions which are a direct replication
+# of the original study (control, emission add, rating add)
+fixedEffectsDirectReplication <- fixed_effects_function(dfReplication %>%
+                                                          filter(consumption_translation == "control" |
+                                                                   consumption_translation == "emission_add" |
+                                                                   consumption_translation == "rating_add"))
+
+# TODO - CONTINUE
 
 ### Set up model ----
 
