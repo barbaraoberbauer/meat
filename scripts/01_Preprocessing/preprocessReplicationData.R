@@ -277,9 +277,24 @@ df_process <- df_process %>%
       df$consumption_translation[match(id, df$id)]
   ) 
 
-df$consumption_translation <- as.factor(df$consumption_translation)
-df_process$consumption_translation <- as.factor(df_process$consumption_translation)
-
+df$consumption_translation <- factor(df$consumption_translation, 
+                                        levels = c(
+                                          "control",
+                                          "emission_replace",
+                                          "rating_replace",
+                                          "emission_add",
+                                          "rating_add"
+                                          )
+                                        )
+df_process$consumption_translation <- factor(df_process$consumption_translation,
+                                                levels = c(
+                                                  "control",
+                                                  "emission_replace",
+                                                  "rating_replace",
+                                                  "emission_add",
+                                                  "rating_add"
+                                                  )
+                                                )
 
 # Save data ----------
 
