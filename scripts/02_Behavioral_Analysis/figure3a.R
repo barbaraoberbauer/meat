@@ -48,8 +48,8 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-df <- readRDS("data/df.rds")
-
+load("data/preprocessedDataOriginal.RData")
+load("data/preprocessedDataReplication.RData")
 
 # Aggregate choice probabilities ------
 
