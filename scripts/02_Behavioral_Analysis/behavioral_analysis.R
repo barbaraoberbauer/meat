@@ -57,8 +57,9 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-df <- readRDS("data/df.rds")
+load("data/preprocessedDataOriginal.RData")
 
+df <- dfOriginal
 
 # Product Choice -----
 
@@ -369,5 +370,4 @@ results_att_rt <- list(results_att = results_att,
 
 results_att_rt$readme <- "att = effects on dwell time; rt = effects on attention; red = reduced model (without price translation as fixed effect)"
 
-
-saveRDS(results_att_rt, file = "data/results_att_rt.rds")
+save(results_att_rt, file = "data/behavioralResultsOriginalSupplements.RData")
