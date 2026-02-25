@@ -277,6 +277,9 @@ df_process <- df_process %>%
       df$consumption_translation[match(id, df$id)]
   ) 
 
+df$consumption_translation <- as.factor(df$consumption_translation)
+df_process$consumption_translation <- as.factor(df_process$consumption_translation)
+
 
 # Save data ----------
 
