@@ -21,7 +21,7 @@ if(!is.null(dev.list())) dev.off()
 packages <- c("tidyverse",
               "dplyr",
               "ggplot2",
-              "cowplot")
+              "patchwork")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -40,8 +40,14 @@ for (package in packages) {
 library(tidyverse)
 library(dplyr)
 library(ggplot2)
-library(cowplot)
+library(patchwork)
 
+# Load theme
+source("R/theme.R")
+theme_set(themeMEAT())
+
+# Load functions
+#source("R/functions/regression_functions.R")
 
 rm(package, packages, is_package_installed)
 
@@ -53,64 +59,90 @@ load("data/preprocessedDataReplication.RData")
 
 # Aggregate choice probabilities ------
 
-df_agg_id <- df %>%
-  group_by(id, session, consumption_translation, price_translation) %>%
-  summarize(p_choice = mean(choice))
+aggregate_function <- function(data){
+  
+  df_agg_id <- data %>%
+    group_by(id, session, consumption_translation) %>%
+    summarize(p_choice = mean(choice))
+  
+  df_agg <- df_agg_id %>%
+    group_by(session, consumption_translation) %>%
+    summarize(p_choice = mean(p_choice))
+  
+  return(list(
+    df_agg_id = df_agg_id,
+    df_agg = df_agg
+    )
+  )
+  
+}
 
-df_agg <- df_agg_id %>%
-  group_by(session, consumption_translation, price_translation) %>%
-  summarize(p_choice = mean(p_choice))
+aggOriginal <- aggregate_function(dfOriginal)
+aggReplication <- aggregate_function(dfReplication)
 
 
 # Plot choice probabilities -------
 
-color_sessions <- c("#225780", "#8CC5E3")
+fun_plot_choice_prob <- function(data, condition_labels, title){
+  
+  plot_choice_prob <- 
+    ggplot(data = data,
+           aes(x = consumption_translation,
+               y = p_choice,
+               fill = session)) +
+    geom_hline(yintercept = 0.5,
+               linetype = "dashed",
+               linewidth = 1)+ 
+    geom_point(aes(color = session),
+               position = position_jitterdodge(dodge.width = 0.5, 
+                                               jitter.width = 0.2, 
+                                               jitter.height = 0),
+               size = 1.1, alpha = 0.7, show.legend = FALSE) +
+    stat_summary(fun = mean, 
+                 geom = "bar",
+                 linewidth = 1.2,
+                 position = "dodge",
+                 width = 0.6, 
+                 color = "black") +
+    stat_summary(fun.data = mean_se, 
+                 geom = "errorbar", 
+                 position = position_dodge(width = 0.6), 
+                 width = 0.2, 
+                 color = "black",
+                 linewidth = 1.2) + 
+    scale_fill_manual(values = scales::alpha(color_sessions, 0.4)) +  
+    scale_color_manual(values = color_sessions) +
+    scale_x_discrete(labels = condition_labels) +
+    labs(x = "Experimental Condition", 
+         y = "Probability of Choosing \nMore Ecological Option",
+         title = title,
+         fill = "Session") 
+  
+  return(plot_choice_prob)
+  
+} 
 
-fig_choice_prob <- 
-df_agg_id %>%
-  ggplot(aes(x = consumption_translation, y = p_choice, fill = session)) +
-  geom_point(aes(color = session),
-             position = position_jitterdodge(dodge.width = 0.5, jitter.width = 0.2, jitter.height = 0),
-             size = 1.1, alpha = 0.7, show.legend = FALSE) +
-  stat_summary(fun = mean, 
-               geom = "bar",
-               linewidth = 1.2,
-               position = "dodge",
-               width = 0.6, 
-               color = "black") +
-  stat_summary(fun.data = mean_se, 
-               geom = "errorbar", 
-               position = position_dodge(width = 0.6), 
-               width = 0.2, 
-               color = "black",
-               linewidth = 1.2) + 
-  scale_fill_manual(values = scales::alpha(color_sessions, 0.4)) +  
-  scale_color_manual(values = color_sessions) +
-  scale_x_discrete(labels = c("control" = "Control",
-                              "operating_costs" = "Operating\nCosts",
-                              "emissions" = "Carbon\nEmissions",
-                              "environmental_friendliness" = "Rating")) +
-  labs(x = "Translation of Energy and Water Consumption", 
-       y = "Probability of Choosing \nMore Ecological Option", 
-       title = '',
-       fill = "Session") + 
-  theme_bw() +
-  theme(axis.text.x=element_text(size=12),
-        plot.margin = margin(t = 15,
-                             r = 15,
-                             b = 15,
-                             l = 15),
-        axis.title.y = element_text(margin = margin(t = 0, r = 15, b = 0, l = 0), size = 14),
-        axis.title.x = element_text(margin = margin(t = 15, r = 0, b = 0, l = 0), size = 14),
-        legend.title = element_text(size = 16),
-        legend.text = element_text(size = 16),
-        legend.key.size = unit(0.5, "cm"),
-        legend.position = "top"
-  )
+plotChoiceProbOriginal <- fun_plot_choice_prob(aggOriginal[["df_agg_id"]], 
+                                               labelsOriginal, 
+                                               "Original")
+
+plotChoiceProbReplication <- fun_plot_choice_prob(aggReplication[["df_agg_id"]], 
+                                                  labelsReplication, 
+                                                  "Replication")
+
+# Combine plots
+
+plotChoiceProb <- 
+  plotChoiceProbOriginal + 
+  plotChoiceProbReplication + 
+  plot_layout(guides = 'collect',
+              axis_title = 'collect') &
+  theme(legend.position = 'top')
+
 
 
 # Save plot
-saveRDS(fig_choice_prob, "figures/choice_probability_me.rds")
+saveRDS(plotChoiceProb, "figures/figure3a.rds")
 #ggsave("figures/choice_probability_me.png", fig_choice_prob, width = 6, height = 5)
 
 
