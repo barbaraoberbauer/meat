@@ -495,6 +495,16 @@ emmRtOriginal <- emm_rt_function(rtModelOriginal)
 emmRtReplication <- emm_rt_function(rtModelReplication)
 
 
+# Save results
+behavioralResultsOriginal <- list(att = emmAttOriginal[["results_att"]],
+                                  rt = emmRtOriginal[["results_rt"]])
+
+behavioralResultsReplication <- list(att = emmAttReplication[["results_att"]],
+                                     rt = emmRtReplication[["results_rt"]])
+
+save(behavioralResultsOriginal, 
+     behavioralResultsReplication,
+     file = "data/behavioralResults.RData")
 
 
 
