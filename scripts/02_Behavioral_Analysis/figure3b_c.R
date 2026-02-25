@@ -1,8 +1,6 @@
 #---
 # title: "Computational Mechanisms of Attribute Translations" 
 # author: Barbara Oberbauer (barbara.oberbauer@uni-hamburg.de)
-# last update: "2025-02-17"
-# produced under R version: 2024.09.0
 #---
 
 # Load packages and read data ------
@@ -20,8 +18,7 @@ if(!is.null(dev.list())) dev.off()
 # List of packages to check and install if necessary
 packages <- c("tidyverse",
               "dplyr",
-              "ggplot2",
-              "cowplot")
+              "ggplot2")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -40,67 +37,76 @@ for (package in packages) {
 library(tidyverse)
 library(dplyr)
 library(ggplot2)
-library(cowplot)
 
+# Load theme
+source("R/theme.R")
+theme_set(themeMEAT())
 
 rm(package, packages, is_package_installed)
 
 
 ### Load data ---------
 
-results_att_rt <- readRDS("data/results_att_rt.rds")
+load("data/behavioralResults.RData")
 
-# red = reduced model (main effects of condition)
-results_att_red <- as.data.frame(results_att_rt$results_att_red)
-results_rt_red <- as.data.frame(results_att_rt$results_rt_red)
+# Reverse factor levels for plot
+behavioralResultsOriginal[["att"]]$consumption_translation <- 
+  factor(x = behavioralResultsOriginal[["att"]]$consumption_translation,
+         levels = rev(levels(behavioralResultsOriginal[["att"]]$consumption_translation)))
 
+behavioralResultsOriginal[["rt"]]$consumption_translation <- 
+  factor(x = behavioralResultsOriginal[["rt"]]$consumption_translation,
+         levels = rev(levels(behavioralResultsOriginal[["rt"]]$consumption_translation)))
 
-# Check data structure -------
+behavioralResultsReplication[["att"]]$consumption_translation <- 
+  factor(x = behavioralResultsReplication[["att"]]$consumption_translation,
+         levels = rev(levels(behavioralResultsReplication[["att"]]$consumption_translation)))
 
-str(results_att_red)
-str(results_rt_red)
-
-### reverse factor levels for plot ----
-
-results_att_red$consumption_translation <- factor(x = results_att_red$consumption_translation,
-                                              levels = rev(levels(results_att_red$consumption_translation)))
-
-results_rt_red$consumption_translation <- factor(x = results_rt_red$consumption_translation,
-                                             levels = rev(levels(results_rt_red$consumption_translation)))
+behavioralResultsReplication[["rt"]]$consumption_translation <- 
+  factor(x = behavioralResultsReplication[["rt"]]$consumption_translation,
+         levels = rev(levels(behavioralResultsReplication[["rt"]]$consumption_translation)))
 
 
 # Plot model estimates -----
 
 ### Attention ----
 
-p_att <- 
-ggplot(data = results_att_red,
-       mapping = aes(x = estimate, y = consumption_translation)) +
-  geom_vline(xintercept = 0, linetype = 'dashed', size = 1.5, color = "darkgrey") +
-  geom_point(size = 3.5) +
-  geom_errorbar(aes(xmin=asymp.LCL, xmax=asymp.UCL), width = .2, size = 1.5) +
-  labs(
-    x = "Effect on Relative Difference in Dwell Time",
-    y = "Consumption Translation"
-  ) +
-  coord_cartesian(xlim = c(-0.05, 0.1)) +
-  scale_y_discrete(labels = c("control" = "Control",
-                              "operating_costs" = "Operating\nCosts",
-                              "emissions" = "Carbon\nEmissions",
-                              "environmental_friendliness" = "Rating")) +
-  theme_bw() +
-  theme(axis.title.x = element_text(size = 14,
-                                    margin = margin(t = 15, r = 0, b = 0 ,l = 0)),
-        axis.title.y = element_text(size = 14,
-                                    margin = margin(t = 0, r = 15, b = 0, l = 0)),
-        axis.text.x = element_text(size = 12),
-        axis.text.y = element_text(size = 12),
-        plot.margin = margin(t = 15,
-                             r = 15,
-                             b = 15,
-                             l = 15)
-  )
+fun_plot_attention <- function(data, condition_labels){
+  
+  #plot_attention <-
+    ggplot(data = data,
+           mapping = aes(x = estimate, 
+                         y = consumption_translation)) +
+    geom_vline(xintercept = 0, 
+               linetype = 'dashed', 
+               size = 1.5, 
+               color = "lightgrey") +
+    geom_point(size = 3.5) +
+    geom_errorbar(aes(xmin = asymp.LCL, 
+                      xmax = asymp.UCL), 
+                  width = .2, 
+                  size = 1.5) +
+    labs(
+      x = "Effect on Relative Difference in Dwell Time",
+      y = "Experimental Condition"
+    ) +
+    coord_cartesian(xlim = c(-0.05, 0.1)) +
+    scale_y_discrete(labels = condition_labels) +
+    theme(panel.border = element_rect(color = "black", fill = NA),
+          panel.grid.major = element_line(color = "grey80"),
+          panel.grid.minor = element_line(color = "grey90")
+          )
+    
+}
 
+fun_plot_attention(behavioralResultsOriginal[["att"]],
+                   labelsOriginal)
+
+fun_plot_attention(behavioralResultsReplication[["att"]],
+                   labelsReplication)
+
+
+# TODO
 
 
 ### RT ----
