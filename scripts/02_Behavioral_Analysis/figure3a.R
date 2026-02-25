@@ -46,9 +46,6 @@ library(patchwork)
 source("R/theme.R")
 theme_set(themeMEAT())
 
-# Load functions
-#source("R/functions/regression_functions.R")
-
 rm(package, packages, is_package_installed)
 
 
