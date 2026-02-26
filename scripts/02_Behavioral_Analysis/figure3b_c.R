@@ -18,7 +18,8 @@ if(!is.null(dev.list())) dev.off()
 # List of packages to check and install if necessary
 packages <- c("tidyverse",
               "dplyr",
-              "ggplot2")
+              "ggplot2",
+              "patchwork")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -37,6 +38,7 @@ for (package in packages) {
 library(tidyverse)
 library(dplyr)
 library(ggplot2)
+library(patchwork)
 
 # Load theme
 source("R/theme.R")
@@ -73,7 +75,7 @@ behavioralResultsReplication[["rt"]]$consumption_translation <-
 
 fun_plot_attention <- function(data, condition_labels){
   
-  #plot_attention <-
+  plot_attention <-
     ggplot(data = data,
            mapping = aes(x = estimate, 
                          y = consumption_translation)) +
@@ -96,66 +98,87 @@ fun_plot_attention <- function(data, condition_labels){
           panel.grid.major = element_line(color = "grey80"),
           panel.grid.minor = element_line(color = "grey90")
           )
+  
+  return(plot_attention)
     
 }
 
-fun_plot_attention(behavioralResultsOriginal[["att"]],
+plotAttOriginal <- fun_plot_attention(behavioralResultsOriginal[["att"]],
                    labelsOriginal)
 
-fun_plot_attention(behavioralResultsReplication[["att"]],
+plotAttReplication <- fun_plot_attention(behavioralResultsReplication[["att"]],
                    labelsReplication)
-
-
-# TODO
 
 
 ### RT ----
 
-p_rt <- 
-  ggplot(data = results_rt_red,
-         mapping = aes(x = estimate, y = consumption_translation)) +
-  geom_vline(xintercept = 0, linetype = 'dashed', size = 1.5, color = "darkgrey") +
-  geom_point(size = 3.5) +
-  geom_errorbar(aes(xmin=asymp.LCL, xmax=asymp.UCL), width = .2, size = 1.5) +
-  labs(
-    x = "Effect on Response Times (in sec)",
-    y = "Consumption Translation"
-  ) +
-  coord_cartesian(xlim = c(-2.5, 5)) +
-  scale_y_discrete(labels = c("control" = "Control",
-                              "operating_costs" = "Operating\nCosts",
-                              "emissions" = "Carbon\nEmissions",
-                              "environmental_friendliness" = "Rating")) +
-  theme_bw() +
-  theme(axis.title.x = element_text(size = 14,
-                                    margin = margin(t = 15, r = 0, b = 0 ,l = 0)),
-        axis.title.y = element_text(size = 14,
-                                    margin = margin(t = 0, r = 15, b = 0, l = 0)),
-        axis.text.x = element_text(size = 12),
-        axis.text.y = element_text(size = 12),
-        plot.margin = margin(t = 15,
-                             r = 15,
-                             b = 15,
-                             l = 15)
+fun_plot_rt <- function(data, condition_labels){
+  
+  plot_rt <-
+  ggplot(data = data,
+         mapping = aes(x = estimate, 
+                       y = consumption_translation)) +
+    geom_vline(xintercept = 0, 
+               linetype = 'dashed', 
+               size = 1.5, 
+               color = "lightgrey") +
+    geom_point(size = 3.5) +
+    geom_errorbar(aes(xmin = asymp.LCL, 
+                      xmax = asymp.UCL), 
+                  width = .2, 
+                  size = 1.5) +
+    labs(
+      x = "Effect on Response Times (in sec)",
+      y = "Experimental Condition"
+    ) +
+    coord_cartesian(xlim = c(-3.3, 4.2)) +
+    scale_y_discrete(labels = condition_labels) +
+    theme(panel.border = element_rect(color = "black", fill = NA),
+          panel.grid.major = element_line(color = "grey80"),
+          panel.grid.minor = element_line(color = "grey90")
+    )
+  
+  return(plot_rt)
+  
+}
+
+plotRtOriginal <- fun_plot_rt(behavioralResultsOriginal[["rt"]],
+            labelsOriginal)
+
+plotRtReplication <- fun_plot_rt(behavioralResultsReplication[["rt"]],
+            labelsReplication)
+
+plotRt <- 
+  plotRtOriginal + 
+  plotRtReplication + 
+  plot_layout(ncol = 1,
+              guides = 'collect',
+              axis_title = 'collect') 
+
+# Combine plots
+
+plotAttRt <- 
+(
+  (plotAttOriginal / plotAttReplication) +
+    plot_layout(
+      heights = c(4, 5),
+      axis_titles = "collect"
+    )
+) |
+  (
+    (plotRtOriginal / plotRtReplication) +
+      plot_layout(
+        heights = c(4, 5),
+        axis_titles = "collect"
+      )
   )
 
 
-# Save plots
-saveRDS(p_att, "figures/p_att.rds")
-saveRDS(p_rt, "figures/p_rt.rds")
+# Save plot
+saveRDS(plotAttRt, "figures/figure3b_c.rds")
 
   
-# ### Arrange grids -----
-# 
-# plot_att_rt <- plot_grid(p_att,
-#                          p_rt,
-#                          ncol = 1,
-#                          labels = c("a", "b"),
-#                          label_size = 20
-# )
-# 
-# # save plot
-# ggsave("figures/plot_att_rt_me.png", plot_att_rt, width = 6, height = 9)
+
 
 
 
