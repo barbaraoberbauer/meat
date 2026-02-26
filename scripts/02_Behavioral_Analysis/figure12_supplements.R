@@ -42,14 +42,18 @@ library(dplyr)
 library(ggplot2)
 library(cowplot)
 
+# Load theme
+source("R/theme.R")
+theme_set(themeMEAT())
 
 rm(package, packages, is_package_installed)
 
 
 ### Load data ---------
 
-df <- readRDS("data/df.rds")
+load("data/preprocessedDataOriginal.RData")
 
+df <- dfOriginal
 
 # Aggregate choice probabilities ------
 
@@ -64,19 +68,22 @@ df_agg <- df_agg_id %>%
 
 # Plot choice probabilities -------
 
-color_sessions <- c("#225780", "#8CC5E3")
-
 fig_choice_prob <- 
 df_agg_id %>%
-  ggplot(aes(x = consumption_translation, y = p_choice, fill = session)) +
-  # geom_dotplot(binaxis = "y",
-  #              dotsize = 0.6,
-  #              position = position_dodge(width = 0.75)) +
+  ggplot(aes(x = consumption_translation, 
+             y = p_choice, 
+             fill = session)) +
+  geom_hline(yintercept = 0.5,
+             linetype = "dashed",
+             linewidth = 1) +
   geom_point(aes(color = session),
-             position = position_jitterdodge(dodge.width = 0.5, jitter.width = 0.2),
+             position = position_jitterdodge(dodge.width = 0.5, 
+                                             jitter.width = 0.2,
+                                             jitter.height = 0),
              size = 1.1, alpha = 0.7, show.legend = FALSE) +
   stat_summary(fun = mean, 
                geom = "bar", 
+               linewidth = 1.2,
                position = "dodge",
                width = 0.6, 
                color = "black") +
@@ -91,30 +98,13 @@ df_agg_id %>%
                                       "1" = "Price Translation Present"))) +
   scale_fill_manual(values = scales::alpha(color_sessions, 0.4)) +  
   scale_color_manual(values = color_sessions) +
-  scale_x_discrete(labels = c("control" = "Control",
-                              "operating_costs" = "Operating\nCosts",
-                              "emissions" = "Carbon\nEmissions",
-                              "environmental_friendliness" = "Rating")) +
-  labs(x = "Translation of Energy and Water Consumption", 
+  scale_x_discrete(labels = labelsOriginal) +
+  labs(x = "Experimental Condition", 
        y = "Probability of Choosing \nMore Ecological Option", 
-       title = '',
-       fill = "Session") + 
-  theme_bw() +
-  theme(axis.text.x=element_text(size=10),
-        plot.margin = margin(t = 10,
-                             r = 10,
-                             b = 10,
-                             l = 10),
-        axis.title.y = element_text(margin = margin(t = 0, r = 15, b = 0, l = 0), size = 14),
-        axis.title.x = element_text(margin = margin(t = 15, r = 0, b = 0, l = 0), size = 14),
-        legend.title = element_text(size = 10),
-        legend.text = element_text(size = 12),
-        legend.key.size = unit(0.5, "cm"),
-        legend.position = "top",
-        strip.text = element_text(size = 12),
-        strip.background = element_rect(fill="#DAD2D8")
-  )
-
+       fill = "Session") +
+  theme(strip.background = element_rect(color = "black",
+                                        fill = "white"),
+        strip.text = element_text(face = "bold"))
 
 # Save plot
 ggsave("figures/choice_probability.png", fig_choice_prob, width = 10, height = 6)
