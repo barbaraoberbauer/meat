@@ -20,7 +20,7 @@ if(!is.null(dev.list())) dev.off()
 packages <- c("tidyverse",
               "dplyr",
               "ggplot2",
-              "cowplot")
+              "patchwork")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -39,7 +39,7 @@ for (package in packages) {
 library(tidyverse)
 library(dplyr)
 library(ggplot2)
-library(cowplot)
+library(patchwork)
 
 
 rm(package, packages, is_package_installed)
@@ -47,29 +47,40 @@ rm(package, packages, is_package_installed)
 
 ### Load plots ---------
 
-fig_choice_prob <- readRDS("figures/choice_probability_me.rds")
-p_att <- readRDS("figures/p_att.rds")
-p_rt <- readRDS("figures/p_rt.rds")
+load("figures/figure3a.RData")
+load("figures/figure3b_c.RData")
 
 
 # Combine plots --------
 
-plot_att_rt <- plot_grid(p_att, p_rt,
-                         ncol = 1,
-                         labels = c("b", "c"),
-                         label_size = 20,
-                         hjust = 0.5)
+top <- 
+  wrap_elements(plotChoiceProb) +
+  labs(tag = "a")
 
-plot_choice_prob <- plot_grid(fig_choice_prob,
-                              ncol = 1,
-                              labels = "a",
-                              label_size = 20)
+left_bottom <-
+  wrap_elements(plotAtt) +
+  labs(tag = "b")
 
+right_bottom <-
+  wrap_elements(plotRt) +
+  labs(tag = "c")
 
-plot_behavior <- plot_grid(plot_choice_prob,
-                           plot_att_rt,
-                           ncol = 2)
+bottom <- left_bottom | right_bottom
+
+final_plot <- (top / bottom) &
+  theme(
+    plot.margin = margin(t = 2,
+                         r = 5,
+                         b = 2,
+                         l = 5)
+  )
+
 
 # Save plot ------------
 
-ggsave("figures/plot_behavior.png", plot_behavior, width = 10, height = 6)
+ggsave("figures/figure3.pdf", 
+       final_plot, 
+       width = 12,
+       height = 12,
+       units = "in",
+       device = cairo_pdf)

@@ -157,14 +157,16 @@ plotRt <-
 
 # Combine plots
 
-plotAttRt <- 
+plotAtt <- 
 (
   (plotAttOriginal / plotAttReplication) +
     plot_layout(
       heights = c(4, 5),
       axis_titles = "collect"
     )
-) |
+) 
+
+plotRt <- 
   (
     (plotRtOriginal / plotRtReplication) +
       plot_layout(
@@ -175,7 +177,7 @@ plotAttRt <-
 
 
 # Save plot
-saveRDS(plotAttRt, "figures/figure3b_c.rds")
+save(plotAtt, plotRt, file = "figures/figure3b_c.RData")
 
   
 

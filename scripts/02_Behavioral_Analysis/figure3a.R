@@ -139,7 +139,7 @@ plotChoiceProb <-
 
 
 # Save plot
-saveRDS(plotChoiceProb, "figures/figure3a.rds")
+save(plotChoiceProb, file = "figures/figure3a.RData")
 #ggsave("figures/choice_probability_me.png", fig_choice_prob, width = 6, height = 5)
 
 
