@@ -79,7 +79,7 @@ df_pilot <- read_csv("data/meat_pilot.csv",
                                        'set' = col_character())))
 
 
-df <- read_csv("data/meat_session2_250.csv",
+df <- read_csv("data/meat_session2_370.csv",
                col_types = (cols('id' = col_integer(),
                                  'expame' = col_character(),
                                  'subject' = col_character(),
@@ -412,7 +412,7 @@ rm(rts)
 nSubjects <- length(unique(df$subject))
 
 #get data for prolific submission
-# cutoff <- as.POSIXct("2026-02-23 09:00:00",
+# cutoff <- as.POSIXct("2026-02-24 09:00:00",
 #                      tz = tz(df$submitted))
 # submitIds <- unique(df$subject[df$submitted > cutoff & df$session == 2])
 # write.csv(submitIds, "submission_ids.csv", row.names = FALSE)
