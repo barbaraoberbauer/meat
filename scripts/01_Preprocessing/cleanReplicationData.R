@@ -39,6 +39,9 @@ library(tidyverse)
 library(psych)
 library(dplyr)
 
+# load function for normalization
+# load function for normalization
+source("R/functions/fun_normalization.R")
 
 rm(package, packages, is_package_installed)
 
@@ -174,6 +177,23 @@ df <- df %>% rename(task = fixedTrialNum,
                     roword = condPermutation,
                     colord = optionOrder)
 
+
+### Normalize attribute levels
+
+cols <- c("price_A", 
+          "price_B", 
+          "cons_A", 
+          "cons_B", 
+          "pop_A", 
+          "pop_B")
+
+# note: since the smallest price, energy consumption or popularity score is the best, set 10 to minimal value and 1 to maximum
+df[cols] <- lapply(df[cols], function(x) normalizeValue(x,
+                                                        min(x), 
+                                                        max(x), 
+                                                        10, 
+                                                        1))
+
 ### Exclude non-conflicting trials ----
 
 df <- filter(df, task != 5 & task != 8 & task != 10)
@@ -200,13 +220,13 @@ df <- df %>%
 
 ###### Choice ------
   
-# A has less emissions and is more ecological option
-df$choice[df$cons_A < df$cons_B & df$choice == "A"] <- 1
-df$choice[df$cons_A < df$cons_B & df$choice == "B"] <- 0
+# A has a better level of emissions and is more ecological option
+df$choice[df$cons_A > df$cons_B & df$choice == "A"] <- 1
+df$choice[df$cons_A > df$cons_B & df$choice == "B"] <- 0
 
 # B has less emissions and is more ecological option
-df$choice[df$cons_B < df$cons_A & df$choice == "B"] <- 1
-df$choice[df$cons_B < df$cons_A & df$choice == "A"] <- 0
+df$choice[df$cons_B > df$cons_A & df$choice == "B"] <- 1
+df$choice[df$cons_B > df$cons_A & df$choice == "A"] <- 0
 
 ###### Attribute values -----
 
@@ -218,95 +238,95 @@ df$popularityEco <- NaN
 df$popularityNonEco <- NaN
 
 # price
-df$priceEco[df$cons_A < df$cons_B] <- df$price_A[df$cons_A < df$cons_B]
-df$priceEco[df$cons_B < df$cons_A] <- df$price_B[df$cons_B < df$cons_A]
+df$priceEco[df$cons_A > df$cons_B] <- df$price_A[df$cons_A > df$cons_B]
+df$priceEco[df$cons_B > df$cons_A] <- df$price_B[df$cons_B > df$cons_A]
 
-df$priceNonEco[df$cons_A < df$cons_B] <- df$price_B[df$cons_A < df$cons_B]
-df$priceNonEco[df$cons_B < df$cons_A] <- df$price_A[df$cons_B < df$cons_A]
+df$priceNonEco[df$cons_A > df$cons_B] <- df$price_B[df$cons_A > df$cons_B]
+df$priceNonEco[df$cons_B > df$cons_A] <- df$price_A[df$cons_B > df$cons_A]
 
 # consumption
-df$energyEco[df$cons_A < df$cons_B] <- df$cons_A[df$cons_A < df$cons_B]
-df$energyEco[df$cons_B < df$cons_A] <- df$cons_B[df$cons_B < df$cons_A]
+df$energyEco[df$cons_A > df$cons_B] <- df$cons_A[df$cons_A > df$cons_B]
+df$energyEco[df$cons_B > df$cons_A] <- df$cons_B[df$cons_B > df$cons_A]
 
-df$energyNonEco[df$cons_A < df$cons_B] <- df$cons_B[df$cons_A < df$cons_B]
-df$energyNonEco[df$cons_B < df$cons_A] <- df$cons_A[df$cons_B < df$cons_A]
+df$energyNonEco[df$cons_A > df$cons_B] <- df$cons_B[df$cons_A > df$cons_B]
+df$energyNonEco[df$cons_B > df$cons_A] <- df$cons_A[df$cons_B > df$cons_A]
 
 # popularity
-df$popularityEco[df$cons_A < df$cons_B] <- df$pop_A[df$cons_A < df$cons_B]
-df$popularityEco[df$cons_B < df$cons_A] <- df$pop_B[df$cons_B < df$cons_A]
+df$popularityEco[df$cons_A > df$cons_B] <- df$pop_A[df$cons_A > df$cons_B]
+df$popularityEco[df$cons_B > df$cons_A] <- df$pop_B[df$cons_B > df$cons_A]
 
-df$popularityNonEco[df$cons_A < df$cons_B] <- df$pop_B[df$cons_A < df$cons_B]
-df$popularityNonEco[df$cons_B < df$cons_A] <- df$pop_A[df$cons_B < df$cons_A]
+df$popularityNonEco[df$cons_A > df$cons_B] <- df$pop_B[df$cons_A > df$cons_B]
+df$popularityNonEco[df$cons_B > df$cons_A] <- df$pop_A[df$cons_B > df$cons_A]
 
 ###### Event targets -----
 
 # price
-df$name[df$cons_A < df$cons_B & df$name == "price_A"] <- "priceEco"
-df$name[df$cons_A < df$cons_B & df$name == "price_B"] <- "priceNonEco"
+df$name[df$cons_A > df$cons_B & df$name == "price_A"] <- "priceEco"
+df$name[df$cons_A > df$cons_B & df$name == "price_B"] <- "priceNonEco"
 
-df$name[df$cons_A > df$cons_B & df$name == "price_A"] <- "priceNonEco"
-df$name[df$cons_A > df$cons_B & df$name == "price_B"] <- "priceEco"
+df$name[df$cons_A < df$cons_B & df$name == "price_A"] <- "priceNonEco"
+df$name[df$cons_A < df$cons_B & df$name == "price_B"] <- "priceEco"
 
 # consumption
-df$name[df$cons_A < df$cons_B & df$name == "cons_A"] <- "energyEco"
-df$name[df$cons_A < df$cons_B & df$name == "cons_B"] <- "energyNonEco"
+df$name[df$cons_A > df$cons_B & df$name == "cons_A"] <- "energyEco"
+df$name[df$cons_A > df$cons_B & df$name == "cons_B"] <- "energyNonEco"
 
-df$name[df$cons_A > df$cons_B & df$name == "cons_A"] <- "energyNonEco"
-df$name[df$cons_A > df$cons_B & df$name == "cons_B"] <- "energyEco"
+df$name[df$cons_A < df$cons_B & df$name == "cons_A"] <- "energyNonEco"
+df$name[df$cons_A < df$cons_B & df$name == "cons_B"] <- "energyEco"
 
 # popularity
-df$name[df$cons_A < df$cons_B & df$name == "pop_A"] <- "popularityEco"
-df$name[df$cons_A < df$cons_B & df$name == "pop_B"] <- "popularityNonEco"
+df$name[df$cons_A > df$cons_B & df$name == "pop_A"] <- "popularityEco"
+df$name[df$cons_A > df$cons_B & df$name == "pop_B"] <- "popularityNonEco"
 
-df$name[df$cons_A > df$cons_B & df$name == "pop_A"] <- "popularityNonEco"
-df$name[df$cons_A > df$cons_B & df$name == "pop_B"] <- "popularityEco"
+df$name[df$cons_A < df$cons_B & df$name == "pop_A"] <- "popularityNonEco"
+df$name[df$cons_A < df$cons_B & df$name == "pop_B"] <- "popularityEco"
 
 # emission
-df$name[df$cons_A < df$cons_B & df$name == "emission_A"] <- "emissionEco"
-df$name[df$cons_A < df$cons_B & df$name == "emission_B"] <- "emissionNonEco"
+df$name[df$cons_A > df$cons_B & df$name == "emission_A"] <- "emissionEco"
+df$name[df$cons_A > df$cons_B & df$name == "emission_B"] <- "emissionNonEco"
 
-df$name[df$cons_A > df$cons_B & df$name == "emission_A"] <- "emissionNonEco"
-df$name[df$cons_A > df$cons_B & df$name == "emission_B"] <- "emissionEco"
+df$name[df$cons_A < df$cons_B & df$name == "emission_A"] <- "emissionNonEco"
+df$name[df$cons_A < df$cons_B & df$name == "emission_B"] <- "emissionEco"
 
 # rating
-df$name[df$cons_A < df$cons_B & df$name == "rating_A"] <- "ratingEco"
-df$name[df$cons_A < df$cons_B & df$name == "rating_B"] <- "ratingNonEco"
+df$name[df$cons_A > df$cons_B & df$name == "rating_A"] <- "ratingEco"
+df$name[df$cons_A > df$cons_B & df$name == "rating_B"] <- "ratingNonEco"
 
-df$name[df$cons_A > df$cons_B & df$name == "rating_A"] <- "ratingNonEco"
-df$name[df$cons_A > df$cons_B & df$name == "rating_B"] <- "ratingEco"
+df$name[df$cons_A < df$cons_B & df$name == "rating_A"] <- "ratingNonEco"
+df$name[df$cons_A < df$cons_B & df$name == "rating_B"] <- "ratingEco"
 
 
 # Recodings for pilot participants
 # price
-df$name[df$cons_A < df$cons_B & df$name == "A1"] <- "priceEco"
-df$name[df$cons_A < df$cons_B & df$name == "B1"] <- "priceNonEco"
+df$name[df$cons_A > df$cons_B & df$name == "A1"] <- "priceEco"
+df$name[df$cons_A > df$cons_B & df$name == "B1"] <- "priceNonEco"
 
-df$name[df$cons_A > df$cons_B & df$name == "A1"] <- "priceNonEco"
-df$name[df$cons_A > df$cons_B & df$name == "B1"] <- "priceEco"
+df$name[df$cons_A < df$cons_B & df$name == "A1"] <- "priceNonEco"
+df$name[df$cons_A < df$cons_B & df$name == "B1"] <- "priceEco"
 
 # consumption
-df$name[df$cons_A < df$cons_B & df$name == "A2"] <- "energyEco"
-df$name[df$cons_A < df$cons_B & df$name == "B2"] <- "energyNonEco"
+df$name[df$cons_A > df$cons_B & df$name == "A2"] <- "energyEco"
+df$name[df$cons_A > df$cons_B & df$name == "B2"] <- "energyNonEco"
 
-df$name[df$cons_A > df$cons_B & df$name == "A2"] <- "energyNonEco"
-df$name[df$cons_A > df$cons_B & df$name == "B2"] <- "energyEco"
+df$name[df$cons_A < df$cons_B & df$name == "A2"] <- "energyNonEco"
+df$name[df$cons_A < df$cons_B & df$name == "B2"] <- "energyEco"
 
 # popularity
-df$name[df$cons_A < df$cons_B & df$name == "A3"] <- "popularityEco"
-df$name[df$cons_A < df$cons_B & df$name == "B3"] <- "popularityNonEco"
+df$name[df$cons_A > df$cons_B & df$name == "A3"] <- "popularityEco"
+df$name[df$cons_A > df$cons_B & df$name == "B3"] <- "popularityNonEco"
 
-df$name[df$cons_A > df$cons_B & df$name == "A3"] <- "popularityNonEco"
-df$name[df$cons_A > df$cons_B & df$name == "B3"] <- "popularityEco"
+df$name[df$cons_A < df$cons_B & df$name == "A3"] <- "popularityNonEco"
+df$name[df$cons_A < df$cons_B & df$name == "B3"] <- "popularityEco"
 
 df$name[df$name == "A"] <- df$choice[df$name == "A"]
 df$name[df$name == "B"] <- df$choice[df$name == "B"]
 
 ###### Colord -----
 
-df$colord[df$cons_A < df$cons_B & df$colord == "A-B"] <- "1_0"
-df$colord[df$cons_A < df$cons_B & df$colord == "B-A"] <- "0_1"
-df$colord[df$cons_A > df$cons_B & df$colord == "A-B"] <- "0_1"
-df$colord[df$cons_A > df$cons_B & df$colord == "B-A"] <- "1_0"
+df$colord[df$cons_A > df$cons_B & df$colord == "A-B"] <- "1_0"
+df$colord[df$cons_A > df$cons_B & df$colord == "B-A"] <- "0_1"
+df$colord[df$cons_A < df$cons_B & df$colord == "A-B"] <- "0_1"
+df$colord[df$cons_A < df$cons_B & df$colord == "B-A"] <- "1_0"
 
 
 # drop A-B coded variables
@@ -474,7 +494,6 @@ df <- df %>%
 drops <- c("subject")
 df <- df[ , !(names(df) %in% drops)]
 rm(drops)
-
 
 # Save data frames -----
 write_csv(df, "data/process_data_replication.csv")
