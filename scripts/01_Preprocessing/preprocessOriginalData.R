@@ -41,6 +41,9 @@ library(tidyverse)
 library(psych)
 library(dplyr)
 
+# load function for normalization
+source("R/functions/fun_normalization.R")
+
 
 rm(package, packages, is_package_installed)
 
@@ -267,13 +270,6 @@ rm(i, mask)
 # Rescale attribute values to equal ranges 
 # [1] Berkowitsch et al., 2015: https://bpspsychub.onlinelibrary.wiley.com/doi/10.1111/bmsp.12048 
 
-#function for normalization 
-normalizeValue <- function(v_old, min_old, max_old, min_new, max_new){
-  
-  v_new <- min_new + (v_old - min_old)*(max_new - min_new)/(max_old - min_old)
-  return(v_new)
-  
-}
 
 # note: since the smallest price, energy consumption or popularity score is the best, set 10 to minimal value and 1 to maximum
 taskVariablesNormalized <- as.data.frame(apply(taskVariablesEco, 2, function(x) {
