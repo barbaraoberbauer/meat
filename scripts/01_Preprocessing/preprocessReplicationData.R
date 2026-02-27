@@ -58,17 +58,15 @@ df_process <- read_csv("data/process_data_replication.csv",
                                          'event' = col_character(),
                                          'name' = col_character(),
                                          'time' = col_integer(),
-                                         'priceEco' = col_integer(),
-                                         'priceNonEco' = col_integer(),
-                                         'energyEco' = col_integer(),
-                                         'energyNonEco' = col_integer(),
-                                         'popularityEco' = col_integer(),
-                                         'popularityNonEco' = col_integer(),
+                                         'priceEco' = col_double(),
+                                         'priceNonEco' = col_double(),
+                                         'energyEco' = col_double(),
+                                         'energyNonEco' = col_double(),
+                                         'popularityEco' = col_double(),
+                                         'popularityNonEco' = col_double(),
                                          't_decision' = col_double(),
                                          'age' = col_integer(),
                                          'gender' = col_factor(NULL))))
-
-
 
 
 
