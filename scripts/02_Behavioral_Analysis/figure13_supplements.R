@@ -42,9 +42,13 @@ library(dplyr)
 library(ggplot2)
 library(cowplot)
 
+# Load theme
+source("R/theme.R")
+theme_set(themeMEAT())
+
 # Load required functions
-source("functions/fun_plot_model_estimates.R")
-source("functions/fun_nudgedodge.R")
+source("R/functions/fun_plot_model_estimates.R")
+source("R/functions/fun_nudgedodge.R")
 
 
 rm(package, packages, is_package_installed)
@@ -52,7 +56,7 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-results_att_rt <- readRDS("data/results_att_rt.rds")
+load("data/behavioralResultsOriginalSupplements.RData")
 
 results_att <- as.data.frame(results_att_rt$results_att)
 results_att_red <- as.data.frame(results_att_rt$results_att_red)
@@ -90,22 +94,23 @@ results_rt_red$consumption_translation <- factor(x = results_rt_red$consumption_
 
 # Plot model estimates -----
 
-color_price <- c("#2D3142", "#BFC0C0") # present, absent
-
 ### Attention ----
 
 p_att <- plot_model_estimates(results_att,
                               results_att_red,
                               "Effect on Relative Difference in Dwell Time",
-                              c(-0.05, 0.1)
+                              c(-0.05, 0.1),
+                              labelsOriginal
                               )
+
 
 ### RT ----
 
 p_rt <- plot_model_estimates(results_rt,
                              results_rt_red,
                               "Effect on Response Times (in sec)",
-                              c(-3, 6)
+                              c(-3, 6),
+                             labelsOriginal
 )
 
   
