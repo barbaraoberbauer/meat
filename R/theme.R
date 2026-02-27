@@ -59,6 +59,10 @@ themeMEAT <- function(base_size = 12) {
 # colors sessions
 color_sessions <- c("#225780", "#8CC5E3")
 
+# colors price translation (only relevant for supplements)
+color_price <- c("#2D3142", "#BFC0C0") # present, absent
+
+
 # labels
 labelsOriginal <- c("control" = "Control",
                     "operating_costs" = "Operating\nCosts",
