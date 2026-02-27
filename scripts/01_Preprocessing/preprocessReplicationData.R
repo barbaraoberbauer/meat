@@ -68,6 +68,10 @@ df_process <- read_csv("data/process_data_replication.csv",
                                          'age' = col_integer(),
                                          'gender' = col_factor(NULL))))
 
+
+
+
+
 # Create aggregated data frame ------
 
 df <- df_process[df_process$event == "btnClick",]
