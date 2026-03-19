@@ -82,7 +82,7 @@ df_pilot <- read_csv("data/meat_pilot.csv",
                                        'set' = col_character())))
 
 
-df <- read_csv("data/meat_session2_600.csv",
+df <- read_csv("data/meat_session2_630.csv",
                col_types = (cols('id' = col_integer(),
                                  'expame' = col_character(),
                                  'subject' = col_character(),
