@@ -103,7 +103,7 @@ df_process <- df_process %>%
 
 # filter fixations below 200 ms
 df_process <- df_process %>%
-  filter(fix_duration > 200)
+  filter(fix_duration > 150)
 
 # aggregate duration per attribute
 durationFixations <- df_process %>%
