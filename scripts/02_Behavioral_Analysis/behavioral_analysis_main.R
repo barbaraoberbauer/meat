@@ -351,19 +351,19 @@ rt_descriptives_function <- function(data){
   
   # aggregate data on subject level
   rt_prob_id <- data %>%
-    group_by(session, condition, id) %>%
+    group_by(session, consumption_translation, id) %>%
     summarise(mean_rt_id = mean(t_decision/1000, na.rm = TRUE), 
               se_rt_id = sd(t_decision/1000, na.rm = TRUE)/sqrt(sum(!is.na(t_decision/1000)))
     ) %>%
-    arrange(condition)
+    arrange(consumption_translation)
   
   # aggregate data on group level
   rt_prob_group <- rt_prob_id %>%
-    group_by(session, condition) %>%
+    group_by(session, consumption_translation) %>%
     summarise(mean_rt = mean(mean_rt_id, na.rm = TRUE), 
               se_rt = sd(mean_rt_id, na.rm = TRUE)/sqrt(sum(!is.na(mean_rt_id)))
     ) %>%
-    arrange(condition)
+    arrange(consumption_translation)
   
   return(list(
     rt_id_level = rt_prob_id,
