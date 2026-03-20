@@ -114,9 +114,6 @@ durationFixations <- df_process %>%
 durationFixations <- durationFixations %>%
   pivot_wider(names_from = name, values_from = tFixations)
 
-# replace NA with 0 as they indicate no fixations
-#durationFixations[is.na(durationFixations)] <- 0
-
 # generate new columns for consumption translation
 durationFixations <- durationFixations %>%
   mutate(consumptionTranslationEco = coalesce(emissionEco, ratingEco),
@@ -191,6 +188,41 @@ df <- df %>%
   left_join(numFixations, by = c("id", "task", "session"))
 
 rm(numFixations)
+
+### Replace NA with 0 -----
+# Currently, unfixated attributes have NA as duration and fixation count which
+# distorts sum and mean calculations (NA are simply excluded)
+# Hence, we need to replace NAs with 0s 
+
+# price and popularity were presented in all sessions and conditions and hence NA 
+# may be replaced with 0s
+df$t_price0[is.na(df$t_price0)] <- 0
+df$t_price1[is.na(df$t_price1)] <- 0
+df$f_price0[is.na(df$f_price0)] <- 0
+df$f_price1[is.na(df$f_price1)] <- 0
+
+df$t_popularity0[is.na(df$t_popularity0)] <- 0
+df$t_popularity1[is.na(df$t_popularity1)] <- 0
+df$f_popularity0[is.na(df$f_popularity0)] <- 0
+df$f_popularity1[is.na(df$f_popularity1)] <- 0
+
+# consumption was present in all first sessions
+df$t_consumption0[is.na(df$t_consumption0) & df$session == 1] <- 0
+df$t_consumption1[is.na(df$t_consumption1) & df$session == 1] <- 0
+df$f_consumption0[is.na(df$f_consumption0) & df$session == 1] <- 0
+df$f_consumption1[is.na(df$f_consumption1) & df$session == 1] <- 0
+
+# in all but the replacement groups, consumption was present in session 2
+df$t_consumption0[is.na(df$t_consumption0) & df$condition != 2] <- 0
+df$t_consumption1[is.na(df$t_consumption1) & df$condition != 2] <- 0
+df$f_consumption0[is.na(df$f_consumption0) & df$condition != 2] <- 0
+df$f_consumption1[is.na(df$f_consumption1) & df$condition != 2] <- 0
+
+# a consumption translation was present in all second sessions except for the control group
+df$t_consumption_translation0[is.na(df$t_consumption_translation0) & df$session == 2 & df$condition != 1] <- 0
+df$t_consumption_translation1[is.na(df$t_consumption_translation1) & df$session == 2 & df$condition != 1] <- 0
+df$f_consumption_translation0[is.na(df$f_consumption_translation0) & df$session == 2 & df$condition != 1] <- 0
+df$f_consumption_translation1[is.na(df$f_consumption_translation1) & df$session == 2 & df$condition != 1] <- 0
 
 
 # Sample Characteristics ---------
