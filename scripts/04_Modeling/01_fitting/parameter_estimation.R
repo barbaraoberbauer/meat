@@ -48,7 +48,7 @@ library(truncnorm)
 
 # Load functions written by John Kruschke
 # https://github.com/boboppie/kruschke-doing_bayesian_data_analysis/blob/master/2e/DBDA2E-utilities.R
-source("functions/DBDA2E-utilities.R")
+source("R/functions/DBDA2E-utilities.R")
 
 # Load required modules
 load.runjagsmodule("wiener")
@@ -58,26 +58,42 @@ rm(package, packages, is_package_installed)
 
 ### Load data ------
 
-df <- readRDS("data/df.rds")
+load("data/preprocessedDataOriginal.RData")
+load("data/preprocessedDataReplication.RData")
 
 ### Specify subset of data ----
 
-translation_of_interest <- "emissions"
-# translations: "control", "emissions", "operating_costs", "environmental_friendliness"
+dataset <- "replication"
+# datasets: "original", "replication"
+
+translation_of_interest <- "control"
+# translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
+# translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
 
 run_subgroups_separately <- TRUE
-# if set to TRUE, estimates parameters separately for participants that did receive an additional price translation at t2 and those who did not 
+# if set to TRUE, estimates parameters separately for participants that did receive an additional price translation at t2 and those who did not
+# only applicable to original data
 
 group_of_interest <- "price_translation_present"
 # groups: "price_translation_absent", "price_translation_present"
+# only applicable to original data
 
 
-if (run_subgroups_separately == FALSE) {
+# set data
+
+if (dataset == "original") {
   
-  df_subset <- df %>%
-    filter(consumption_translation == translation_of_interest)
+  df <- dfOriginal
   
-} else if (run_subgroups_separately == TRUE) {
+} else if (dataset == "replication") {
+  
+  df <- dfReplication
+    
+}
+
+# set subset depending on condition
+
+if (dataset == "original" & run_subgroups_separately == TRUE) {
   
   if (group_of_interest == "price_translation_absent") {
     
@@ -87,9 +103,14 @@ if (run_subgroups_separately == FALSE) {
   } else if (group_of_interest == "price_translation_present") {
     
     df_subset <- df %>%
-        filter(consumption_translation == translation_of_interest & price_translation == 1)
+      filter(consumption_translation == translation_of_interest & price_translation == 1)
     
   }
+  
+} else {
+  
+  df_subset <- df %>%
+    filter(consumption_translation == translation_of_interest)
   
 }
 
@@ -132,10 +153,21 @@ fixProps <- data.frame(price0 = rep(NA, nrow(df_subset)),
                        popularity1 = rep(NA, nrow(df_subset))) 
 
 # attributes and their translation are treated as one attribute for simplicity
-fixProps$price0 <- rowSums(df_subset[, c("t_price0", "t_price_translation0")], na.rm = TRUE)/1000
+# depending on dataset, summarize price and price translation
+if (dataset == "original") {
+  
+  fixProps$price0 <- rowSums(df_subset[, c("t_price0", "t_price_translation0")], na.rm = TRUE)/1000
+  fixProps$price1 <- rowSums(df_subset[, c("t_price1", "t_price_translation1")], na.rm = TRUE)/1000
+  
+} else if (dataset == "replication") {
+  
+  fixProps$price0 <- df_subset$t_price0/1000
+  fixProps$price1 <- df_subset$t_price1/1000
+  
+}
+
 fixProps$consumption0 <- rowSums(df_subset[, c("t_consumption0", "t_consumption_translation0")], na.rm = TRUE)/1000
 fixProps$popularity0 <- df_subset$t_popularity0/1000
-fixProps$price1 <- rowSums(df_subset[, c("t_price1", "t_price_translation1")], na.rm = TRUE)/1000
 fixProps$consumption1 <- rowSums(df_subset[, c("t_consumption1", "t_consumption_translation1")], na.rm = TRUE)/1000
 fixProps$popularity1 <- df_subset$t_popularity1/1000
 
@@ -337,12 +369,12 @@ nThinSteps <- 25
 
 if (bounded == TRUE) {
  
-  model_file <- "04_Modeling/bayes_models/hierarchical_bayesian_maaDDM_bounds.txt"
+  model_file <- "scripts/04_Modeling/bayes_models/hierarchical_bayesian_maaDDM_bounds.txt"
   file_extension <- "_bounds"
   
 } else if (bounded == FALSE) {
   
-  model_file <- "04_Modeling/bayes_models/hierarchical_bayesian_maaDDM_nobounds.txt"
+  model_file <- "scripts/04_Modeling/bayes_models/hierarchical_bayesian_maaDDM_nobounds.txt"
   file_extension <- "_nobounds"
   
 }
