@@ -101,9 +101,9 @@ fixation_duration$fixNum <- 1:nrow(fixation_duration)
 df_process <- df_process %>%
   left_join(fixation_duration, by = c("fixNum"))
 
-# filter fixations below 200 ms
+# filter fixations below 200 ms, from A Handbook of Process Tracing Methods, chapter 6
 df_process <- df_process %>%
-  filter(fix_duration > 150)
+  filter(fix_duration > 200)
 
 # aggregate duration per attribute
 durationFixations <- df_process %>%
