@@ -62,6 +62,12 @@ color_sessions <- c("#225780", "#8CC5E3")
 # colors price translation (only relevant for supplements)
 color_price <- c("#2D3142", "#BFC0C0") # present, absent
 
+# colors choice
+color_choice <- c("#CBCBD4", "#556F44") # non-eco, eco choice
+
+# colors error
+color_error <- '#cb181d'
+
 
 # labels
 labelsOriginal <- c("control" = "Control",
