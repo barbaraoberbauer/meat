@@ -550,14 +550,22 @@ hdi$sp <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_sp),
 
 # Store the results
 
-if (run_subgroups_separately == FALSE) {
+if (dataset == "replication") {
   
-  filename <- paste0("data/hdi_", translation_of_interest, file_extension, ".rds")
+  filename <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".rds")
   
-} else if (run_subgroups_separately == TRUE) {
+} else if (dataset == "original") {
   
-  filename <- paste0("data/hdi_", translation_of_interest, "_", group_of_interest, file_extension, ".rds")
-
+  if (run_subgroups_separately == FALSE) {
+    
+    filename <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".rds")
+    
+  } else if (run_subgroups_separately == TRUE) {
+    
+    filename <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", file_extension, "_", time, ".rds")
+    
+  }
+  
 }
 
 saveRDS(hdi, file = filename)
