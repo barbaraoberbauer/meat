@@ -68,6 +68,9 @@ color_choice <- c("#CBCBD4", "#556F44") # non-eco, eco choice
 # colors error
 color_error <- '#cb181d'
 
+# colors change
+color_change <-"black" 
+
 
 # labels
 labelsOriginal <- c("control" = "Control",
