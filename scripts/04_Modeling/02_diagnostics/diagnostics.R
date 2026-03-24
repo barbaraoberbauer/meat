@@ -1,8 +1,7 @@
 #---
 # title: "Computational Mechanisms of Attribute Translations" 
 # author: Barbara Oberbauer (barbara.oberbauer@uni-hamburg.de)
-# last update: "2025-01-23"
-# produced under R version: 2024.09.0
+# purpose: look at diagnostics of bayesian hierarchical estimation
 #---
 
 # Load packages and read data ------
