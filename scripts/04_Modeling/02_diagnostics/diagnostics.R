@@ -153,8 +153,6 @@ ESS <- MCSE$sseff
 
 # Visual Inspection (following Kruschke, 2014) ------
 
-gelman.plot(x = mcmcfin)
-
 ### Boundary -----
 
 diagMCMC(codaObject = mcmcfin, parName = "mu_dalpha")
