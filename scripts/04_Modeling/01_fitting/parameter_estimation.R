@@ -370,12 +370,12 @@ nThinSteps <- 25
 if (bounded == TRUE) {
  
   model_file <- "scripts/04_Modeling/bayes_models/hierarchical_bayesian_maaDDM_bounds.txt"
-  file_extension <- "_bounds"
+  file_extension <- "bounds"
   
 } else if (bounded == FALSE) {
   
   model_file <- "scripts/04_Modeling/bayes_models/hierarchical_bayesian_maaDDM_nobounds.txt"
-  file_extension <- "_nobounds"
+  file_extension <- "nobounds"
   
 }
 
@@ -410,13 +410,23 @@ runJagsOut <- run.jags(method = "parallel",
 
 ### Save model output ------
 
-if (run_subgroups_separately == FALSE) {
+time <- format(Sys.time(), "%Y%m%d_%H%M")
+
+if (dataset == "replication") {
   
-  filename <- paste0("data/runJagsOut_", translation_of_interest, file_extension, ".rds")
+  filename <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".rds")
   
-} else if (run_subgroups_separately == TRUE) {
+} else if (dataset == "original") {
   
-  filename <- paste0("data/runJagsOut_", translation_of_interest, "_", group_of_interest, file_extension, ".rds")
+  if (run_subgroups_separately == FALSE) {
+    
+    filename <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".rds")
+
+  } else if (run_subgroups_separately == TRUE) {
+    
+    filename <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", file_extension, "_", time, ".rds")
+
+  }
   
 }
 
