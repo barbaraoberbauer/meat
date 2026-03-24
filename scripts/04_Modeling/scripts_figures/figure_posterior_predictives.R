@@ -1,8 +1,7 @@
 #---
 # title: "Computational Mechanisms of Attribute Translations" 
 # author: Barbara Oberbauer (barbara.oberbauer@uni-hamburg.de)
-# last update: "2025-01-23"
-# produced under R version: 2024.09.0
+# purpose: plot posterior predictives
 #---
 
 # Load packages and read data ------
@@ -45,7 +44,7 @@ library(cowplot)
 library(bayestestR)
 
 # Load required functions
-source("functions/fun_plot_posterior_predictives.R")
+source("R/functions/fun_plot_posterior_predictives.R")
 
 
 rm(package, packages, is_package_installed)
@@ -53,35 +52,64 @@ rm(package, packages, is_package_installed)
 
 ### Load data ------
 
-# specify subset of data 
+load("data/preprocessedDataOriginal.RData")
+load("data/preprocessedDataReplication.RData")
 
-group_of_interest <- "environmental_friendliness"
-# groups: "control", "emissions", "operating_costs", "environmental_friendliness"
+### Specify subset of data ----
+
+dataset <- "replication"
+# datasets: "original", "replication"
+
+translation_of_interest <- "rating_add"
+# translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
+# translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
+
+run_subgroups_separately <- TRUE
+# if set to TRUE, estimates parameters separately for participants that did receive an additional price translation at t2 and those who did not
+# only applicable to original data
+
+group_of_interest <- "price_translation_present"
+# groups: "price_translation_absent", "price_translation_present"
+# only applicable to original data
+
+time <- "20260324_1001"
+# time stamp of data generation
 
 # bounded or unbounded attentional parameters? 
-
 bounded <- FALSE # set to TRUE for bounded model, set to FALSE for unbounded model
 
 if (bounded == TRUE) {
   
-  file_extension <- "_bounds"
+  file_extension <- "bounds"
   
 } else if (bounded == FALSE) {
   
-  file_extension <- "_nobounds"
+  file_extension <- "nobounds"
   
 }
 
-filename <- paste0("data/simResults_", group_of_interest, file_extension, ".rds")
+# simulated data
 
+filename <- paste0("data/modeling/simResults", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
 simResults <- readRDS(filename)
 
 rm(filename)
 
-df <- readRDS("data/df.rds")
+
+# empirical data
+
+if (dataset == "original") {
+  
+  df <- dfOriginal
+  
+} else if (dataset == "replication") {
+  
+  df <- dfReplication
+  
+}
 
 df_subset <- df %>%
-  filter(consumption_translation == group_of_interest)
+  filter(consumption_translation == translation_of_interest)
 
 # assign new ids that are starting from 1 and increment by 1
 df_subset <- df_subset %>%
@@ -207,6 +235,9 @@ frequency <- frequency %>%
 
 # Plot Frequencies of Empirical and Simulated Data ------
 
+# rename count column
+names(frequency)[4] <- "count_emp"
+
 # plot only subset of frequeny (get rid of long tails that model expects)
 frequency <- subset(frequency, !(count_emp < 1 & mid_bins > 10))
 
@@ -215,9 +246,6 @@ frequency <- subset(frequency, !(count_emp < 1 & mid_bins > 10))
 # set colors
 color_choice <- c("#CBCBD4", "#556F44") # non-eco, eco choice
 color_error <- '#cb181d'
-
-# rename count column
-names(frequency)[4] <- "count_emp"
 
 ### Plot Sim and Emp Data for both Sessions ------
 
