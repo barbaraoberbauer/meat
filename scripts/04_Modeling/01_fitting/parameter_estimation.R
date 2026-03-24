@@ -446,28 +446,38 @@ hdi <- list()
 
 ### HDIs weights -------
 
+# see Hellmann, S., Busch, N., Hof, L., & Pachur, T. (2025). Bias by Variance: How Common Parameter Transformations in Hierarchical Models Distort Group-Level Estimates.
+# for correct mapping of group-level means onto the parameter scale
+
 ###### price -------
 
-hdi$w_price <- list(hdi_baseline = HDIofMCMC(pnorm(combined_mcmcfin$mu_w1)),
-                    hdi_manipulation = HDIofMCMC(pnorm(combined_mcmcfin$mu_w1 + combined_mcmcfin$mu_dw1)),
-                    hdi_change = HDIofMCMC(pnorm(combined_mcmcfin$mu_w1 + combined_mcmcfin$mu_dw1) -
-                                             pnorm(combined_mcmcfin$mu_w1)))
+map_input_w1 <- combined_mcmcfin$mu_w1/sqrt(1 + combined_mcmcfin$sigma_w1^2)
+map_input_dw1 <- combined_mcmcfin$mu_dw1/sqrt(1 + combined_mcmcfin$sigma_dw1)
+
+hdi$w_price <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_w1)),
+                    hdi_manipulation = HDIofMCMC(pnorm(map_input_w1 + map_input_dw1)),
+                    hdi_change = HDIofMCMC(pnorm(map_input_w1 + map_input_dw1) -
+                                             pnorm(map_input_w1)))
 
 
 ###### consumption -------
 
-hdi$w_consumption <- list(hdi_baseline = HDIofMCMC(pnorm(combined_mcmcfin$mu_w2)),
-                    hdi_manipulation = HDIofMCMC(pnorm(combined_mcmcfin$mu_w2 + combined_mcmcfin$mu_dw2)),
-                    hdi_change = HDIofMCMC(pnorm(combined_mcmcfin$mu_w2 + combined_mcmcfin$mu_dw2) -
-                                             pnorm(combined_mcmcfin$mu_w2)))
+map_input_w2 <- combined_mcmcfin$mu_w2/sqrt(1 + combined_mcmcfin$sigma_w2^2)
+map_input_dw2 <- combined_mcmcfin$mu_dw2/sqrt(1 + combined_mcmcfin$sigma_dw2^2)
+
+hdi$w_consumption <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_w2)),
+                          hdi_manipulation = HDIofMCMC(pnorm(map_input_w2 +
+                                                               map_input_dw2)),
+                          hdi_change = HDIofMCMC(pnorm(map_input_w2 + map_input_dw2) -
+                                                   pnorm(map_input_w2)))
 
 
 ###### popularity -------
 
-combined_mcmcfin$mu_w3 <- 1 - pnorm(combined_mcmcfin$mu_w1) - pnorm(combined_mcmcfin$mu_w2)
+combined_mcmcfin$mu_w3 <- 1 - pnorm(map_input_w1) - pnorm(map_input_w2)
 combined_mcmcfin$mu_w3_AT <- 1 - 
-  pnorm(combined_mcmcfin$mu_w1 + combined_mcmcfin$mu_dw1) - 
-  pnorm(combined_mcmcfin$mu_w2 + combined_mcmcfin$mu_dw2)
+  pnorm(map_input_w1 + map_input_dw1) - 
+  pnorm(map_input_w2 + map_input_dw2)
 
 hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_w3),
                           hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_w3_AT),
@@ -478,15 +488,21 @@ hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_w3),
 
 if (bounded == TRUE) {
   
-  hdi$theta <- list(hdi_baseline = HDIofMCMC(pnorm(combined_mcmcfin$mu_theta)),
-                            hdi_manipulation = HDIofMCMC(pnorm(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta)),
-                            hdi_change = HDIofMCMC(pnorm(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta) -
-                                                     pnorm(combined_mcmcfin$mu_theta)))
+  map_input_theta <- combined_mcmcfin$mu_theta/sqrt(1 + combined_mcmcfin$sigma_theta^2)
+  map_input_dtheta <- combined_mcmcfin$mu_dtheta/sqrt(1 + combined_mcmcfin$sigma_dtheta^2)
   
-  hdi$phi <- list(hdi_baseline = HDIofMCMC(pnorm(combined_mcmcfin$mu_phi)),
-                    hdi_manipulation = HDIofMCMC(pnorm(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi)),
-                    hdi_change = HDIofMCMC(pnorm(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi) -
-                                             pnorm(combined_mcmcfin$mu_phi)))
+  hdi$theta <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_theta)),
+                            hdi_manipulation = HDIofMCMC(pnorm(map_input_theta + map_input_dtheta)),
+                            hdi_change = HDIofMCMC(pnorm(map_input_theta + map_input_dtheta) -
+                                                     pnorm(map_input_dtheta)))
+  
+  map_input_phi <- combined_mcmcfin$mu_phi/sqrt(1 + combined_mcmcfin$sigma_phi^2)
+  map_input_dphi <- combined_mcmcfin$mu_dphi/sqrt(1 + combined_mcmcfin$sigma_dphi^2)
+  
+  hdi$phi <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_phi)),
+                    hdi_manipulation = HDIofMCMC(pnorm(map_input_phi + map_input_dphi)),
+                    hdi_change = HDIofMCMC(pnorm(map_input_phi + map_input_dphi) -
+                                             pnorm(map_input_dphi)))
   
   
 } else if (bounded == FALSE) {
@@ -531,6 +547,8 @@ hdi$tau <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_tau),
 hdi$sp <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_sp),
                     hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_sp + combined_mcmcfin$mu_dsp),
                     hdi_change = HDIofMCMC(combined_mcmcfin$mu_dsp))
+
+# Store the results
 
 if (run_subgroups_separately == FALSE) {
   
