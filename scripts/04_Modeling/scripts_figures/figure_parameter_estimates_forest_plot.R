@@ -1,8 +1,7 @@
 #---
 # title: "Computational Mechanisms of Attribute Translations" 
 # author: Barbara Oberbauer (barbara.oberbauer@uni-hamburg.de)
-# last update: "2025-01-23"
-# produced under R version: 2024.09.0
+# purpose: plot group-level parameter estimates
 #---
 
 # Load packages and read data ------
@@ -47,8 +46,12 @@ library(cowplot)
 library(runjags)
 
 # Load required functions
-source("functions/fun_plot_forest.R")
-source("functions/fun_plot_change_forest.R")
+source("R/functions/fun_plot_forest.R")
+source("R/functions/fun_plot_change_forest.R")
+
+# Load theme
+source("R/theme.R")
+theme_set(themeMEAT())
 
 rm(package, packages, is_package_installed)
 
@@ -57,27 +60,45 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-group_of_interest <- "environmental_friendliness"
-# groups: "control", "emissions", "operating_costs", "environmental_friendliness"
+dataset <- "replication"
+# datasets: "original", "replication"
+
+translation_of_interest <- "rating_add"
+# translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
+# translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
+
+run_subgroups_separately <- TRUE
+# if set to TRUE, estimates parameters separately for participants that did receive an additional price translation at t2 and those who did not
+# only applicable to original data
+
+group_of_interest <- "price_translation_present"
+# groups: "price_translation_absent", "price_translation_present"
+# only applicable to original data
+
+time <- "20260324_1001"
+# time stamp of data generation
 
 # bounded or unbounded attentional parameters? 
-
 bounded <- FALSE # set to TRUE for bounded model, set to FALSE for unbounded model
 
 if (bounded == TRUE) {
   
-  file_extension <- "_bounds"
+  file_extension <- "bounds"
   
 } else if (bounded == FALSE) {
   
-  file_extension <- "_nobounds"
+  file_extension <- "nobounds"
   
 }
 
-filename <- paste0("data/runJagsOut_", group_of_interest, file_extension, ".rds")
+# get runJagsOut and HDI
+
+filename <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".rds")
 runJagsOut <- readRDS(filename)
 
-filename <- paste0("data/hdi_", group_of_interest, file_extension, ".rds")
+rm(filename)
+
+filename <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".rds")
 hdi <- readRDS(filename)
 
 rm(filename)
@@ -264,51 +285,47 @@ estimates$session <- as.factor(estimates$session)
 
 # Plot Posterior Distributions ------
 
-cols_sess <- c("#225780", "#8CC5E3")
-
 ### Boundary ------
 
-pboundary <- plot_params_forest(estimates, "alpha", "Boundary Separation", cols_sess)
+pboundary <- plot_params_forest(estimates, "alpha", "Boundary Separation", color_sessions)
 
 ### Scaling ------
 
-pscaling <- plot_params_forest(estimates, "scaling", "Drift Scaling", cols_sess)
+pscaling <- plot_params_forest(estimates, "scaling", "Drift Scaling", color_sessions)
 
 ### Tau ------
 
-ptau <- plot_params_forest(estimates, "tau", "Non-Decision Time", cols_sess)
+ptau <- plot_params_forest(estimates, "tau", "Non-Decision Time", color_sessions)
 
 ### Theta ------
 
-ptheta <- plot_params_forest(estimates, "theta", "Discounting Unattended\nOption (theta)", cols_sess)
+ptheta <- plot_params_forest(estimates, "theta", "Discounting Unattended\nOption (theta)", color_sessions)
 
 ### Phi ------
 
-pphi <- plot_params_forest(estimates, "phi", "Discounting Unattended\nAttribute (phi)", cols_sess)
+pphi <- plot_params_forest(estimates, "phi", "Discounting Unattended\nAttribute (phi)", color_sessions)
 
 ### Weight Price ------
 
-pprice <- plot_params_forest(estimates, "w1", "Weight Price", cols_sess)
+pprice <- plot_params_forest(estimates, "w1", "Weight Price", color_sessions)
 
 ### Weight Consumption ------
 
-penergy <- plot_params_forest(estimates, "w2", "Weight Consumption", cols_sess)
+penergy <- plot_params_forest(estimates, "w2", "Weight Consumption", color_sessions)
 
 ### Weight Popularity ------
 
-ppopularity <- plot_params_forest(estimates, "w3", "Weight Popularity", cols_sess)
+ppopularity <- plot_params_forest(estimates, "w3", "Weight Popularity", color_sessions)
 
 ### Starting point -------
 
-psp <- plot_params_forest(estimates, "sp", "Starting Point Bias", cols_sess)
+psp <- plot_params_forest(estimates, "sp", "Starting Point Bias", color_sessions)
 
 
 # Plot change parameters -------
 
-cols_change <-"black" #"#331832"
-
 # x-axis of change plots
-if (group_of_interest == "control") {
+if (translation_of_interest == "control") {
   
   change_x_title <- "Difference btw. Sessions"
   
@@ -322,41 +339,41 @@ if (group_of_interest == "control") {
 
 ### Boundary -------
 
-pdBoundary <- plot_change_param_forest(estimates, "alpha", change_x_title, cols_change)
+pdBoundary <- plot_change_param_forest(estimates, "alpha", change_x_title, color_change)
 
 ### Scaling ------
 
-pdScaling <- plot_change_param_forest(estimates, "scaling", change_x_title, cols_change)
+pdScaling <- plot_change_param_forest(estimates, "scaling", change_x_title, color_change)
 
 ### Tau ------
 
-pdTau <- plot_change_param_forest(estimates, "tau", change_x_title, cols_change)
+pdTau <- plot_change_param_forest(estimates, "tau", change_x_title, color_change)
 
 ### Theta ------
 
-pdTheta <- plot_change_param_forest(estimates, "theta", change_x_title, cols_change)
+pdTheta <- plot_change_param_forest(estimates, "theta", change_x_title, color_change)
 
 ### Phi ------
 
-pdPhi <- plot_change_param_forest(estimates, "phi", change_x_title, cols_change)
+pdPhi <- plot_change_param_forest(estimates, "phi", change_x_title, color_change)
 
 
 ### Weight Price ------
 
-pdPrice <- plot_change_param_forest(estimates, "w1", change_x_title, cols_change)
+pdPrice <- plot_change_param_forest(estimates, "w1", change_x_title, color_change)
 
 ### Weight Energy ------
 
-pdEnergy <- plot_change_param_forest(estimates, "w2", change_x_title, cols_change)
+pdEnergy <- plot_change_param_forest(estimates, "w2", change_x_title, color_change)
 
 ### Weight Popularity ------
 
-pdPopularity <- plot_change_param_forest(estimates, "w3", change_x_title, cols_change)
+pdPopularity <- plot_change_param_forest(estimates, "w3", change_x_title, color_change)
 
 
 ### Starting point bias ----
 
-pdsp <- plot_change_param_forest(estimates, "sp", change_x_title, cols_change)
+pdsp <- plot_change_param_forest(estimates, "sp", change_x_title, color_change)
 
 # Arrange plots --------
 
@@ -411,7 +428,7 @@ group_param_estimates <- plot_grid(# plots
 
 
 # save plot
-filename <- paste0("figures/group_param_estimates_forest_", group_of_interest, file_extension, ".png")
+filename <- paste0("figures/group_param_estimates_forest", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".pdf")
 ggsave(filename, group_param_estimates, width = 12, height = 11)
 
 
