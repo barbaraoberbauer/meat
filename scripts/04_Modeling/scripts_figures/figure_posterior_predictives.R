@@ -46,6 +46,9 @@ library(bayestestR)
 # Load required functions
 source("R/functions/fun_plot_posterior_predictives.R")
 
+# Load theme
+source("R/theme.R")
+theme_set(themeMEAT())
 
 rm(package, packages, is_package_installed)
 
@@ -243,10 +246,6 @@ frequency <- subset(frequency, !(count_emp < 1 & mid_bins > 10))
 
 ### Set Prerequisites -----
 
-# set colors
-color_choice <- c("#CBCBD4", "#556F44") # non-eco, eco choice
-color_error <- '#cb181d'
-
 ### Plot Sim and Emp Data for both Sessions ------
 
 post_pred_session_1 <- plot_posterior_predictives(1, "Session 1")
@@ -277,5 +276,5 @@ posterior_predictives <- plot_grid(posterior_predictives,
 
 
 # save plot
-filename <- paste0("figures/posterior_predictives_", group_of_interest, file_extension, ".png")
+filename <- paste0("figures/posterior_predictives", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".png")
 ggsave(filename, posterior_predictives, width = 12, height = 6)
