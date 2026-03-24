@@ -43,9 +43,7 @@ library(runjags)
 
 # Load function written by John Kruschke for diagnostics
 # https://github.com/boboppie/kruschke-doing_bayesian_data_analysis/blob/master/2e/DBDA2E-utilities.R
-source("functions/DBDA2E-utilities.R")
-
-
+source("R/functions/DBDA2E-utilities.R")
 
 rm(package, packages, is_package_installed)
 
@@ -54,26 +52,58 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-group_of_interest <- "environmental_friendliness"
-# groups: "control", "emissions", "operating_costs", "environmental_friendliness"
+dataset <- "replication"
+# datasets: "original", "replication"
 
+translation_of_interest <- "rating_add"
+# translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
+# translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
+
+run_subgroups_separately <- TRUE
+# if set to TRUE, estimates parameters separately for participants that did receive an additional price translation at t2 and those who did not
+# only applicable to original data
+
+group_of_interest <- "price_translation_present"
+# groups: "price_translation_absent", "price_translation_present"
+# only applicable to original data
+
+time <- "20260324_1001"
+# time stamp of data generation
 
 # bounded or unbounded attentional parameters? 
-
 bounded <- FALSE # set to TRUE for bounded model, set to FALSE for unbounded model
 
 if (bounded == TRUE) {
   
-  file_extension <- "_bounds"
+  file_extension <- "bounds"
   
 } else if (bounded == FALSE) {
   
-  file_extension <- "_nobounds"
+  file_extension <- "nobounds"
   
 }
 
-filename <- paste0("data/runJagsOut_", group_of_interest, file_extension, ".rds")
+# create filename
 
+if (dataset == "replication") {
+  
+  filename <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".rds")
+  
+} else if (dataset == "original") {
+  
+  if (run_subgroups_separately == FALSE) {
+    
+    filename <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".rds")
+    
+  } else if (run_subgroups_separately == TRUE) {
+    
+    filename <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", file_extension, "_", time, ".rds")
+    
+  }
+  
+}
+
+# read data
 runJagsOut <- readRDS(filename)
 
 mcmcfin <- as.mcmc.list(runJagsOut)
@@ -122,6 +152,8 @@ MCSE <- summary_statistics$mcse
 ESS <- MCSE$sseff
 
 # Visual Inspection (following Kruschke, 2014) ------
+
+gelman.plot(x = mcmcfin)
 
 ### Boundary -----
 
