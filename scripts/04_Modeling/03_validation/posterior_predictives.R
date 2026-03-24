@@ -1,8 +1,7 @@
 #---
 # title: "Computational Mechanisms of Attribute Translations" 
 # author: Barbara Oberbauer (barbara.oberbauer@uni-hamburg.de)
-# last update: "2025-01-23"
-# produced under R version: 2024.09.0
+# purpose: simulate data for posterior predictives
 #---
 
 # Load packages and read data ------
@@ -45,7 +44,6 @@ library(runjags)
 # Load required modules
 load.module("wiener")
 
-
 rm(package, packages, is_package_installed)
 
 
@@ -53,33 +51,98 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-group_of_interest <- "environmental_friendliness"
-# groups: "control", "emissions", "operating_costs", "environmental_friendliness"
+dataset <- "replication"
+# datasets: "original", "replication"
+
+translation_of_interest <- "rating_add"
+# translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
+# translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
+
+run_subgroups_separately <- TRUE
+# if set to TRUE, estimates parameters separately for participants that did receive an additional price translation at t2 and those who did not
+# only applicable to original data
+
+group_of_interest <- "price_translation_present"
+# groups: "price_translation_absent", "price_translation_present"
+# only applicable to original data
+
+time <- "20260324_1001"
+# time stamp of data generation
 
 # bounded or unbounded attentional parameters? 
-
 bounded <- FALSE # set to TRUE for bounded model, set to FALSE for unbounded model
 
 if (bounded == TRUE) {
   
-  file_extension <- "_bounds"
+  file_extension <- "bounds"
   
 } else if (bounded == FALSE) {
   
-  file_extension <- "_nobounds"
+  file_extension <- "nobounds"
   
 }
 
-filename <- paste0("data/runJagsOut_", group_of_interest, file_extension, ".rds")
+# create filename
 
+if (dataset == "replication") {
+  
+  filename <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".rds")
+  
+} else if (dataset == "original") {
+  
+  if (run_subgroups_separately == FALSE) {
+    
+    filename <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".rds")
+    
+  } else if (run_subgroups_separately == TRUE) {
+    
+    filename <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", file_extension, "_", time, ".rds")
+    
+  }
+  
+}
+
+# Load modeling data
 runJagsOut <- readRDS(filename)
 
 rm(filename)
 
-df <- readRDS("data/df.rds")
+# Load behavioral data
+load("data/preprocessedDataOriginal.RData")
+load("data/preprocessedDataReplication.RData")
 
-df_subset <- df %>%
-  filter(consumption_translation == group_of_interest)
+if (dataset == "original") {
+  
+  df <- dfOriginal
+  
+} else if (dataset == "replication") {
+  
+  df <- dfReplication
+  
+}
+
+# set subset depending on condition
+
+if (dataset == "original" & run_subgroups_separately == TRUE) {
+  
+  if (group_of_interest == "price_translation_absent") {
+    
+    df_subset <- df %>%
+      filter(consumption_translation == translation_of_interest & price_translation == 0)
+    
+  } else if (group_of_interest == "price_translation_present") {
+    
+    df_subset <- df %>%
+      filter(consumption_translation == translation_of_interest & price_translation == 1)
+    
+  }
+  
+} else {
+  
+  df_subset <- df %>%
+    filter(consumption_translation == translation_of_interest)
+  
+}
 
 # assign new ids that are starting from 1 and increment by 1
 df_subset <- df_subset %>%
@@ -111,18 +174,29 @@ fixProps <- data.frame(price0 = rep(NA, nrow(df_subset)),
                        popularity1 = rep(NA, nrow(df_subset))) 
 
 # attributes and their translation are treated as one attribute for simplicity
-fixProps$price0 <- rowSums(df_subset[, c("t_price0", "t_price_translation0")], na.rm = TRUE)/1000
+# depending on dataset, summarize price and price translation
+if (dataset == "original") {
+  
+  fixProps$price0 <- rowSums(df_subset[, c("t_price0", "t_price_translation0")], na.rm = TRUE)/1000
+  fixProps$price1 <- rowSums(df_subset[, c("t_price1", "t_price_translation1")], na.rm = TRUE)/1000
+  
+} else if (dataset == "replication") {
+  
+  fixProps$price0 <- df_subset$t_price0/1000
+  fixProps$price1 <- df_subset$t_price1/1000
+  
+}
+
 fixProps$consumption0 <- rowSums(df_subset[, c("t_consumption0", "t_consumption_translation0")], na.rm = TRUE)/1000
 fixProps$popularity0 <- df_subset$t_popularity0/1000
-fixProps$price1 <- rowSums(df_subset[, c("t_price1", "t_price_translation1")], na.rm = TRUE)/1000
 fixProps$consumption1 <- rowSums(df_subset[, c("t_consumption1", "t_consumption_translation1")], na.rm = TRUE)/1000
 fixProps$popularity1 <- df_subset$t_popularity1/1000
 
 # divide by total duration of the trial
-fixProps <- fixProps/(df_subset$t_decision/1000)
+fixProps <- fixProps/abs(df_subset$t_decision) #take absolute value instead of +/- coded RT
 
 # normalize each trial to 1
-fixProps <- fixProps/rowSums(fixProps)
+fixProps <- fixProps/rowSums(fixProps) 
 
 
 # Prepare Data Simulation ------
@@ -138,7 +212,7 @@ witch <- function(parameter_name){
 sim_results <- matrix(nrow = nrow(df_subset), ncol = simRuns)
 
 # select model file
-model_file <- "04_Modeling/bayes_models/simulation_maaDDM.txt"
+model_file <- "scripts/04_Modeling/bayes_models/simulation_maaDDM.txt"
 
 
 # Simulate Data --------
