@@ -152,8 +152,8 @@ plotChooseEcoProbabilityConsumptionNorm <-
 
 
 # Save plot
-ggsave("figures/figureKrajbich.pdf", 
-       plotChooseEcoProbabilityNorm, 
+ggsave("figures/figureKrajbichAttribute.pdf", 
+       plotChooseEcoProbabilityConsumptionNorm, 
        width = 12,
        height = 9,
        units = "in",
