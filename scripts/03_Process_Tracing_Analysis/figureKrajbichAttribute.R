@@ -116,7 +116,7 @@ plotEcoChoiceDwellTime <- function(data, labels, title){
                nrow = 2,
                labeller = labeller(consumption_translation = labels)) +
     coord_cartesian(ylim = c(0,1)) + 
-    labs(x = "Normalized dwell time on Consumption", 
+    labs(x = "Relative dwell time on consumption (and its translation)", 
          y = "P(Eco Choice)",
          title = title,
          color = "Session") +
@@ -139,4 +139,23 @@ plotChooseEcoProbabilityConsumptionNormReplication <-
   plotEcoChoiceDwellTime(chooseEcoProbabilityConsumptionNormReplication, 
                          labelsReplication,
                          "Replication")
+
+# Combine plots
+
+plotChooseEcoProbabilityConsumptionNorm <- 
+  plotChooseEcoProbabilityConsumptionNormOriginal + 
+  plotChooseEcoProbabilityConsumptionNormReplication + 
+  plot_layout(widths = c(1,1.5),
+              guides = 'collect',
+              axis_title = 'collect') &
+  theme(legend.position = 'bottom')
+
+
+# Save plot
+ggsave("figures/figureKrajbich.pdf", 
+       plotChooseEcoProbabilityNorm, 
+       width = 12,
+       height = 9,
+       units = "in",
+       device = cairo_pdf)
 
