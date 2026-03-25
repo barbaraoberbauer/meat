@@ -84,3 +84,19 @@ labelsReplication <- c("control" = "Control",
                        "emission_add" = "Carbon \nEmissions \nAdd",
                        "rating_add" = "Rating \nAdd")
 
+labelsAttributesT <- c("t_price0" = "Price\nOther",
+                      "t_price1" = "Price\nEco",
+                      "t_consumption0" = "Consumption\nOther",
+                      "t_consumption1" = "Consumption\nEco",
+                      "t_popularity0" = "Popularity\nOther",
+                      "t_popularity1" = "Popularity\nEco")
+
+labelsAttributesF <- c("f_price0" = "Price\nOther",
+                       "f_price1" = "Price\nEco",
+                       "f_consumption0" = "Consumption\nOther",
+                       "f_consumption1" = "Consumption\nEco",
+                       "f_popularity0" = "Popularity\nOther",
+                       "f_popularity1" = "Popularity\nEco")
+
+
+
