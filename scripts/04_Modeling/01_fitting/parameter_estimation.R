@@ -66,7 +66,7 @@ load("data/preprocessedDataReplication.RData")
 dataset <- "replication"
 # datasets: "original", "replication"
 
-translation_of_interest <- "emission_replace"
+translation_of_interest <- "emission_add"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
 
@@ -172,7 +172,8 @@ fixProps$consumption1 <- rowSums(df_subset[, c("t_consumption1", "t_consumption_
 fixProps$popularity1 <- df_subset$t_popularity1/1000
 
 # divide by total duration of the trial
-fixProps <- fixProps/abs(df_subset$t_decision) #take absolute value instead of +/- coded RT
+#fixProps <- fixProps/abs(df_subset$t_decision) #take absolute value instead of +/- coded RT
+fixProps <- fixProps/df_subset$t_total # divide by total dwell time
 
 # normalize each trial to 1
 fixProps <- fixProps/rowSums(fixProps) 
