@@ -296,6 +296,30 @@ n_trials_after <- nrow(df)
 
 rm(n_trials_before, n_trials_after)
 
+# Exclude the above trials from the process tracing data as well
+
+# only keep trials that also exist in df
+df_process <- df_process %>%
+  semi_join(df, by = c("id", "session", "condition", "group", "trial", "task"))
+
+# assert that number of unique trials is the same for df and df_process
+numTrialsDfProcess <- df_process %>%
+  group_by(id, session, condition, group) %>%
+  summarize(numTrials = n_distinct(trial))
+
+numTrialsDf <- df %>%
+  group_by(id, session, condition, group) %>%
+  summarize(numTrials = n_distinct(trial))
+
+stopifnot(numTrialsDfProcess$numTrials == numTrialsDf$numTrials)
+
+# Recalculate fixation number after exclusion of trials
+df_process <- df_process %>%
+  arrange(id, session, condition, group, trial, task, fixNum) %>%
+  group_by(id, session, condition, group, trial, task) %>%
+  mutate(fixNum = row_number()) %>%
+  ungroup()
+
 # Create consumption_translation variable for compatability w original df ----
 
 df$consumption_translation <- NA
@@ -329,6 +353,7 @@ df_process$consumption_translation <- factor(df_process$consumption_translation,
                                                   "rating_add"
                                                   )
                                                 )
+
 
 # Save data ----------
 
