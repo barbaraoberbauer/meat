@@ -1,7 +1,7 @@
 #---
 # title: "Computational Mechanisms of Attribute Translations" 
 # author: Barbara Oberbauer (barbara.oberbauer@uni-hamburg.de)
-# purpose: plot dwell time and fixation frequency for attributes
+# purpose: plot payne index
 #---
 
 # Load packages and read data ------
