@@ -63,7 +63,7 @@ rm(package, packages, is_package_installed)
 dataset <- "replication"
 # datasets: "original", "replication"
 
-translation_of_interest <- "emission_replace"
+translation_of_interest <- "emission_add"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
 
@@ -75,7 +75,7 @@ group_of_interest <- "price_translation_present"
 # groups: "price_translation_absent", "price_translation_present"
 # only applicable to original data
 
-time <- "20260325_0851"
+time <- "20260326_0912"
 # time stamp of data generation
 
 # bounded or unbounded attentional parameters? 
