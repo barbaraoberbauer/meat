@@ -63,9 +63,9 @@ rm(package, packages, is_package_installed)
 dataset <- "replication"
 # datasets: "original", "replication"
 
-translation_of_interest <- "emission_add"
+translation_of_interest <- "rating_replace"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
-# translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
+# translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace", "rating_replace"
 
 run_subgroups_separately <- TRUE
 # if set to TRUE, estimates parameters separately for participants that did receive an additional price translation at t2 and those who did not
@@ -75,7 +75,7 @@ group_of_interest <- "price_translation_present"
 # groups: "price_translation_absent", "price_translation_present"
 # only applicable to original data
 
-time <- "20260326_0912"
+time <- "20260327_0932"
 # time stamp of data generation
 
 # bounded or unbounded attentional parameters? 
