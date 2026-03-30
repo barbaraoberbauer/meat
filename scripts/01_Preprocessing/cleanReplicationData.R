@@ -48,7 +48,7 @@ rm(package, packages, is_package_installed)
 ### Load data ---------
 
 # load pilot data and change variable types
-df_pilot <- read_csv("data/meat_pilot.csv",
+df_pilot <- read_csv("data/meat_pilot_prolific_2026.csv",
                      col_types = (cols('id' = col_integer(),
                                        'expname' = col_character(),
                                        'subject' = col_character(),
@@ -82,7 +82,7 @@ df_pilot <- read_csv("data/meat_pilot.csv",
                                        'set' = col_character())))
 
 
-df <- read_csv("data/meat_session2_631.csv",
+df <- read_csv("data/meat_prolific_2026.csv",
                col_types = (cols('id' = col_integer(),
                                  'expame' = col_character(),
                                  'subject' = col_character(),
@@ -115,31 +115,25 @@ df <- read_csv("data/meat_session2_631.csv",
 df <- df[df$expname == "trial", ]
 
 # Demographic data
-demographics1 <- read_csv("data/prolific_demographic_export_session1.csv")
-demographics2 <- read_csv("data/prolific_demographic_export_session1_pilot.csv")
-demographics3 <- read_csv("data/prolific_demographic_export_session1_first10.csv")
+demographics <- read_csv("data/meat_prolific_2026_demographics.csv")
+demographics_pilot <- read_csv("data/meat_pilot_prolific_2026_demographics.csv")
 
-# filter for age and sex
-demographics1 <- demographics1 %>%
+demographics <- demographics %>%
   filter(Status == "APPROVED") %>%
   select("Participant id", "Age", "Sex")
 
-demographics2 <- demographics2 %>%
+demographics_pilot <- demographics_pilot %>%
   filter(Status == "APPROVED") %>%
   select("Participant id", "Age", "Sex")
-
-demographics2$Age <- as.character(demographics2$Age)
-
-demographics3 <- demographics3 %>%
-  filter(Status == "APPROVED") %>%
-  select("Participant id", "Age", "Sex")
-
-# bind and remove individual data frames
-demographics <- bind_rows(demographics1, demographics2, demographics3)
-
-rm(demographics1, demographics2, demographics3)
 
 demographics$Age <- as.integer(demographics$Age)
+demographics_pilot$Age <- as.integer(demographics_pilot$Age)
+
+# bind and remove individual data frames
+demographics <- bind_rows(demographics, demographics_pilot)
+
+rm(demographics_pilot)
+
 
 # rename columns
 demographics <- demographics %>% rename("subject" = "Participant id",
@@ -432,7 +426,7 @@ rm(rts)
 nSubjects <- length(unique(df$subject))
 
 #get data for prolific submission
-# cutoff <- as.POSIXct("2026-03-09 03:00:00",
+# cutoff <- as.POSIXct("2026-03-23 03:00:00",
 #                      tz = tz(df$submitted))
 # submitIds <- unique(df$subject[df$submitted > cutoff & df$session == 2])
 # write.csv(submitIds, "submission_ids.csv", row.names = FALSE)
