@@ -66,9 +66,9 @@ load("data/preprocessedDataReplication.RData")
 dataset <- "replication"
 # datasets: "original", "replication"
 
-translation_of_interest <- "emission_add"
+translation_of_interest <- "rating_replace"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
-# translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
+# translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace", "rating_replace"
 
 run_subgroups_separately <- TRUE
 # if set to TRUE, estimates parameters separately for participants that did receive an additional price translation at t2 and those who did not
