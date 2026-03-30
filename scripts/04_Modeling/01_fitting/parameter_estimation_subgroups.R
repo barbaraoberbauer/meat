@@ -512,27 +512,23 @@ time <- format(Sys.time(), "%Y%m%d_%H%M")
 
 if (dataset == "replication") {
   
-  filenameHighEco <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", "subgroup", "_", "highEco", "_", time, ".rds")
-  filenameLowEco <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", "subgroup", "_", "lowEco", "_", time, ".rds")
-  
+  filename <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", "EcoSubgroups", "_", time, ".rds")
+
 } else if (dataset == "original") {
   
   if (run_subgroups_separately == FALSE) {
     
-    filenameHighEco <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", "subgroup", "_", "highEco", "_", time, ".rds")
-    filenameLowEco <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", "subgroup", "_", "lowEco", "_", time, ".rds")
+    filename <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", "EcoSubgroups", "_", time, ".rds")
 
   } else if (run_subgroups_separately == TRUE) {
     
-    filenameHighEco <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", file_extension, "_", "subgroup", "_", "highEco", "_", time, ".rds")
-    filenameLowEco <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", file_extension, "_", "subgroup", "_", "lowEco", "_", time, ".rds")
+    filename <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", file_extension, "_", "EcoSubgroups", "_", time, ".rds")
 
   }
   
 }
 
-saveRDS(runJagsOutHighEcoChoice, file = filenameHighEco)
-saveRDS(runJagsOutLowEcoChoice, file = filenameLowEco)
+save(runJagsOutHighEcoChoice, runJagsOutLowEcoChoice, file = filename)
 
 
 # Check results ------
@@ -664,24 +660,23 @@ hdiLowEcoChoice <- getHDIs(runJagsOutLowEcoChoice)
 
 if (dataset == "replication") {
   
-  filenameHighEco <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", "subgroup", "_", "highEco", "_", time, ".rds")
-  filenameLowEco <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", "subgroup", "_", "lowEco", "_", time, ".rds")
+  filename <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", "EcoSubgroups", "_", time, ".rds")
   
 } else if (dataset == "original") {
   
   if (run_subgroups_separately == FALSE) {
     
-    filenameHighEco <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", "subgroup", "_", "highEco", "_", time, ".rds")
-    filenameLowEco <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", "subgroup", "_", "lowEco", "_", time, ".rds")
-    
+    filename <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", "EcoSubgroups", "_", time, ".rds")
+
   } else if (run_subgroups_separately == TRUE) {
     
-    filenameHighEco <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", file_extension, "_", "subgroup", "_", "highEco", "_", time, ".rds")
-    filenameLowEco <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", file_extension, "_", "subgroup", "_", "lowEco", "_", time, ".rds")
-    
+    filename <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", file_extension, "_", "EcoSubgroups", "_", time, ".rds")
+
   }
   
 }
 
-saveRDS(hdiHighEcoChoice, file = filenameHighEco)
-saveRDS(hdiLowEcoChoice, file = filenameLowEco)
+save(hdiHighEcoChoice, hdiLowEcoChoice, file = filename)
+
+
+
