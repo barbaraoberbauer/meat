@@ -103,7 +103,7 @@ baseline_choice <- function(data){
   data_session1 <- subset(data, session == 1)
   
   # Fit a model without the session interaction
-  choice_model_session1 <- glmer(choice ~ consumption_translation + (1 | id) + (1 | task), 
+  choice_model_session1 <- glmer(choice ~ gender + consumption_translation + (1 | id) + (1 | task), 
                                  data = data_session1, 
                                  family = binomial(link = "logit"),
                                  control = glmerControl(optimizer="bobyqa", 
@@ -126,7 +126,7 @@ Anova(baselineChoiceReplication)
 
 fixed_effects_function <- function(data){
   
-  fixed_effects_choice <- afex::mixed(choice ~ (session | id) + (1 | task) + session * consumption_translation, 
+  fixed_effects_choice <- afex::mixed(choice ~ (session | id) + (1 | task) + session * consumption_translation * gender, 
                                       data = data, 
                                       family = binomial(link = "logit"), 
                                       control = glmerControl(optimizer="bobyqa", 
@@ -137,8 +137,14 @@ fixed_effects_function <- function(data){
   
 }
 
+# exclude one subject that did not indicate gender
+dfReplicationGender <- dfReplication %>%
+  filter(gender != "Prefer not to say")
+
+dfReplicationGender$gender <- droplevels(dfReplicationGender$gender)
+
 fixedEffectsOriginal <- fixed_effects_function(dfOriginal)
-fixedEffectsReplication <- fixed_effects_function(dfReplication)
+fixedEffectsReplication <- fixed_effects_function(dfReplicationGender)
 
 # also look at significant fixed effects for conditions which are a direct replication
 # of the original study (control, emission add, rating add)
