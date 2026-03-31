@@ -51,6 +51,12 @@ library(dplyr)
 library(lmerTest)
 library(emmeans)
 library(afex)
+library(ggplot2)
+library(patchwork)
+
+# Load theme
+source("R/theme.R")
+theme_set(themeMEAT())
 
 
 rm(package, packages, is_package_installed)
@@ -103,6 +109,10 @@ dfReplicationGender <- dfReplication %>%
 
 dfReplicationGender$gender <- droplevels(dfReplicationGender$gender)
 
+# rename levels to female male in original data
+levels(dfOriginal$gender) <- c("Male", "Female")
+
+
 baseline_choice <- function(data){
   
   # Subset the data for session 1
@@ -146,12 +156,6 @@ fixed_effects_function <- function(data){
 fixedEffectsOriginal <- fixed_effects_function(dfOriginal)
 fixedEffectsReplication <- fixed_effects_function(dfReplicationGender)
 
-# also look at significant fixed effects for conditions which are a direct replication
-# of the original study (control, emission add, rating add)
-fixedEffectsDirectReplication <- fixed_effects_function(dfReplication %>%
-                                                          filter(consumption_translation == "control" |
-                                                                   consumption_translation == "emission_add" |
-                                                                   consumption_translation == "rating_add"))
 
 ### Set up model ----
 
@@ -161,7 +165,7 @@ choice_model_function <- function(data){
   contrasts(data$consumption_translation) <- 
     contr.treatment(levels(data$consumption_translation), base = 1)
   
-  choice_model <- glmer(choice ~ (session | id) + (1 | task) + session * consumption_translation, 
+  choice_model <- glmer(choice ~ (session | id) + (1 | task) + gender * session * consumption_translation, 
                         data = data, 
                         family = binomial(link = "logit"), 
                         control = glmerControl(optimizer="bobyqa", 
@@ -172,352 +176,107 @@ choice_model_function <- function(data){
 }
 
 choiceModelOriginal <- choice_model_function(dfOriginal)
-choiceModelReplication <- choice_model_function(dfReplication)
+choiceModelReplication <- choice_model_function(dfReplicationGender)
 
 summary(choiceModelOriginal)
 summary(choiceModelReplication)
 
 
-### EMM Comparison -------
+# Plot gender effects -----
 
-emm_function <- function(choice_model){
+aggregate_function <- function(data){
   
-  EMM <- emmeans(choice_model, 
-                 ~ consumption_translation * session, 
-                 type = "response")
+  df_agg_id <- data %>%
+    group_by(id, session, gender, consumption_translation) %>%
+    summarize(p_choice = mean(choice))
   
-  emm_session <- pairs(EMM, reverse = TRUE, simple = "session")
+  df_agg_id_wide <- df_agg_id %>%
+    pivot_wider(names_from = session,
+                values_from = p_choice,
+                names_prefix = "session_")
   
-  emm_session_confint <- confint(emm_session)
+  df_agg_id_wide$difChoiceProbEco <- df_agg_id_wide$session_2 - df_agg_id_wide$session_1
   
-  return(list(
-    emm_session = emm_session,
-    emm_session_confint = emm_session_confint
-  ))
-  
-}
-
-emmOriginal <- emm_function(choiceModelOriginal)
-emmReplication <- emm_function(choiceModelReplication)
-
-
-# Attention -----
-
-### Descriptives  ---------
-
-att_descriptives_function <- function(data){
-  
-  # aggregate data on subject level
-  att_prob_id <- data %>%
-    group_by(session, consumption_translation, id) %>%
-    summarise(mean_diff_dt_id = mean(diff_t_options, na.rm = TRUE), 
-              se_diff_dt_id = sd(diff_t_options, na.rm = TRUE)/sqrt(sum(!is.na(diff_t_options)))
-    ) %>%
-    arrange(consumption_translation)
-  
-  # aggregate data on group level
-  att_prob_group <- att_prob_id %>%
-    group_by(session, consumption_translation) %>%
-    summarise(mean_diff_dt = mean(mean_diff_dt_id, na.rm = TRUE), 
-              se_diff_dt = sd(mean_diff_dt_id, na.rm = TRUE)/sqrt(sum(!is.na(mean_diff_dt_id)))
-    ) %>%
-    arrange(consumption_translation)
+  df_agg <- df_agg_id %>%
+    group_by(session, gender, consumption_translation) %>%
+    summarize(p_choice = mean(p_choice))
   
   return(list(
-    att_id_level = att_prob_id,
-    att_group_level = att_prob_group
-  ))
+    df_agg_id = df_agg_id,
+    df_agg_id_wide = df_agg_id_wide,
+    df_agg = df_agg
+  )
+  )
   
 }
 
-attDescriptivesOriginal <- att_descriptives_function(dfOriginal)
-attDescriptivesReplication <- att_descriptives_function(dfReplication)
+aggOriginal <- aggregate_function(dfOriginal)
+aggReplication <- aggregate_function(dfReplicationGender)
 
-
-### Attention Consistency in Session 1 between Consumption Translations ------
-
-baseline_att <- function(data){
+plotGenderDifferences <- function(data, labels, title){
   
-  # Subset the data for session 1
-  data_session1 <- subset(data, session == 1)
-  
-  # Fit a model without the session interaction
-  att_model_session1 <- lmer(diff_t_options ~ consumption_translation + (1 | id) + (1 | task), 
-                             data = data_session1, 
-                             REML = FALSE,
-                             control = lmerControl(optimizer="bobyqa", 
-                                                   optCtrl = list(maxfun=2e5)))
-  
-  return(att_model_session1)
-  
-}
-
-baselineAttOriginal <- baseline_att(dfOriginal)
-baselineAttReplication <- baseline_att(dfReplication)
-
-# Perform an ANOVA to see if consumption translation has a significant effect
-Anova(baselineAttOriginal)
-Anova(baselineAttReplication)
-
-
-### Check for Significant Fixed Effects -------
-
-fixed_effects_att_function <- function(data){
-  
-  fixed_effects_att <- afex::mixed(diff_t_options ~ (1 | id) + (1 | task) + session * consumption_translation, 
-                                   data = data, 
-                                   REML = FALSE, 
-                                   control = lmerControl(optimizer="bobyqa", 
-                                                         optCtrl = list(maxfun=2e5)),
-                                   method = 'LRT')
-  
-  return(fixed_effects_att)
+  ggplot(data = data,
+         aes(x = consumption_translation,
+             y = difChoiceProbEco,
+             fill = gender)) +
+    geom_hline(yintercept = 0,
+               linetype = "dashed",
+               linewidth = 1) +
+    geom_point(aes(color = gender),
+               position = position_jitterdodge(dodge.width = 0.6,
+                                               jitter.width = 0.2,
+                                               jitter.height = 0),
+               size = 1.1, alpha = 0.7, show.legend = FALSE) +
+    stat_summary(fun = mean,
+                 geom = "bar",
+                 linewidth = 1.2,
+                 position = "dodge",
+                 width = 0.6,
+                 color = "black") +
+    stat_summary(fun.data = mean_se,
+                 geom = "errorbar",
+                 position = position_dodge(width = 0.6),
+                 width = 0.2,
+                 color = "black",
+                 linewidth = 1.2) +
+    scale_fill_manual(values = scales::alpha(color_gender, 0.4)) +  
+    scale_color_manual(values = color_gender) +
+    scale_x_discrete(labels = labels) +
+    coord_cartesian(ylim = c(-1, 1)) +
+    labs(x = "Experimental Condition",
+         y = "Differential Probability of Choosing Eco \n(Session 2 - Session 1)",
+         fill = "Gender",
+         title = title)
   
 }
 
-fixedEffectsAttOriginal <- fixed_effects_att_function(dfOriginal)
-fixedEffectsAttReplication <- fixed_effects_att_function(dfReplication)
 
-# also look at significant fixed effects for conditions which are a direct replication
-# of the original study (control, emission add, rating add)
-fixedEffectsAttDirectReplication <- fixed_effects_att_function(dfReplication %>%
-                                                          filter(consumption_translation == "control" |
-                                                                   consumption_translation == "emission_add" |
-                                                                   consumption_translation == "rating_add"))
+genderDifferencesOriginal <-
+  plotGenderDifferences(aggOriginal[["df_agg_id_wide"]],
+                        labelsOriginal,
+                        "Original")
 
-### Set up model -------
+genderDifferencesReplication <-
+  plotGenderDifferences(aggReplication[["df_agg_id_wide"]],
+                        labelsReplication,
+                        "Replication")
 
-att_model_function <- function(data){
-  
-  # Effect of translation of energy and water consumption (no translation/control) on product choice  
-  contrasts(data$consumption_translation) <- 
-    contr.treatment(levels(data$consumption_translation), base = 1)
-  
-  attention_model <- lmer(diff_t_options ~ (1 | id) + (1| task) + session * consumption_translation, 
-                          data = data, 
-                          REML = FALSE, 
-                          control = lmerControl(optimizer="bobyqa", optCtrl = list(maxfun=2e5)))
-  
-  return(attention_model)
-  
-}
+# Combine plots
 
-attentionModelOriginal <- att_model_function(dfOriginal)
-attentionModelReplication <- att_model_function(dfReplication)
-
-summary(attentionModelOriginal)
-summary(attentionModelReplication)
+plotGenderDifferences <-
+  genderDifferencesOriginal +
+  genderDifferencesReplication +
+  plot_layout(guides = 'collect',
+              axis_title = 'collect') &
+  theme(legend.position = 'top')
 
 
-### EMM Comparison -------
-
-emm_att_function <- function(attention_model){
-  
-  EMM_att <- emmeans(attention_model, 
-                     ~ consumption_translation * session, 
-                     type = "response")
-  
-  emm_session_att <- pairs(EMM_att, reverse = TRUE, simple = "session")
-  
-  emm_session_att_confint <- confint(emm_session_att)
-  
-  # extract estimates
-  results_att <- as.data.frame(summary(emm_session_att_confint))[c('consumption_translation',
-                                                                   'estimate', 
-                                                                   'SE',
-                                                                   'asymp.LCL',
-                                                                   'asymp.UCL')]
-  
-  # round to four decimals
-  results_att[,c('estimate', 
-                 'SE',
-                 'asymp.LCL',
-                 'asymp.UCL')] <- round(results_att[,c('estimate', 
-                                                       'SE',
-                                                       'asymp.LCL',
-                                                       'asymp.UCL')], 4)
-  
-  return(list(
-    emm_session = emm_session_att,
-    emm_session_confint = emm_session_att_confint,
-    results_att = results_att
-  ))
-  
-}
-
-emmAttOriginal <- emm_att_function(attentionModelOriginal)
-emmAttReplication <- emm_att_function(attentionModelReplication)
-
-
-# Response Times ----
-
-### Descriptives  ---------
-
-rt_descriptives_function <- function(data){
-  
-  # aggregate data on subject level
-  rt_prob_id <- data %>%
-    group_by(session, consumption_translation, id) %>%
-    summarise(mean_rt_id = mean(t_decision/1000, na.rm = TRUE), 
-              se_rt_id = sd(t_decision/1000, na.rm = TRUE)/sqrt(sum(!is.na(t_decision/1000)))
-    ) %>%
-    arrange(consumption_translation)
-  
-  # aggregate data on group level
-  rt_prob_group <- rt_prob_id %>%
-    group_by(session, consumption_translation) %>%
-    summarise(mean_rt = mean(mean_rt_id, na.rm = TRUE), 
-              se_rt = sd(mean_rt_id, na.rm = TRUE)/sqrt(sum(!is.na(mean_rt_id)))
-    ) %>%
-    arrange(consumption_translation)
-  
-  return(list(
-    rt_id_level = rt_prob_id,
-    rt_group_level = rt_prob_group
-  ))
-  
-}
-
-rtDescriptivesOriginal <- rt_descriptives_function(dfOriginal)
-rtDescriptivesReplication <- rt_descriptives_function(dfReplication)
-
-
-### RT Consistency in Session 1 between Conditions ------
-
-baseline_rt <- function(data){
-  
-  # Subset the data for session 1
-  data_session1 <- subset(data, session == 1)
-  
-  # Fit a model without the session interaction
-  rt_model_session1 <- glmer(t_decision/1000 ~ consumption_translation + (1 | id) + (1 | task), 
-                             data = data_session1, 
-                             family = "inverse.gaussian"(link='identity'),
-                             control = glmerControl(optimizer="bobyqa", 
-                                                    optCtrl = list(maxfun=2e5)))
-  
-  return(rt_model_session1)
-  
-}
-
-baselineRtOriginal <- baseline_rt(dfOriginal)
-baselineRtReplication <- baseline_rt(dfReplication)
-
-# Perform an ANOVA to see if consumption translation has a significant effect
-Anova(baselineRtOriginal)
-Anova(baselineRtReplication)
-
-
-### Check for Significant Fixed Effects -------
-
-fixed_effects_rt_function <- function(data){
-  
-  fixed_effects_rt <- afex::mixed(t_decision/1000 ~ (session | id) + (1 | task) + session * consumption_translation, 
-                                  data = data, 
-                                  family = "Gamma"(link='identity'), 
-                                  control = glmerControl(optimizer="bobyqa", 
-                                                         optCtrl = list(maxfun=2e5)),
-                                  method = 'LRT')
-  
-  return(fixed_effects_rt)
-  
-}
-
-fixedEffectsRtOriginal <- fixed_effects_rt_function(dfOriginal)
-fixedEffectsRtReplication <- fixed_effects_rt_function(dfReplication)
-
-# also look at significant fixed effects for conditions which are a direct replication
-# of the original study (control, emission add, rating add)
-fixedEffectsRtDirectReplication <- fixed_effects_rt_function(dfReplication %>%
-                                                          filter(consumption_translation == "control" |
-                                                                   consumption_translation == "emission_add" |
-                                                                   consumption_translation == "rating_add"))
-
-
-### Set up model ----
-
-rt_model_function <- function(data){
-  
-  # Effect of translation of energy and water consumption (no translation/control) on product choice  
-  contrasts(data$consumption_translation) <- 
-    contr.treatment(levels(data$consumption_translation), base = 1)
-  
-  rt_model <- glmer(t_decision/1000 ~ (session | id) + (1 | task) + session * consumption_translation, 
-                    data = data, 
-                    family = "Gamma"(link='identity'), 
-                    control = glmerControl(optimizer="bobyqa", 
-                                           optCtrl = list(maxfun=2e5)))
-  
-  return(rt_model)
-  
-}
-
-rtModelOriginal <- rt_model_function(dfOriginal)
-rtModelReplication <- rt_model_function(dfReplication)
-
-summary(rtModelOriginal)
-summary(rtModelReplication)
-
-
-### EMM Comparison -------
-
-### EMM Comparison -------
-
-emm_rt_function <- function(rt_model){
-  
-  EMM_rt <- emmeans(rt_model, 
-                    ~ consumption_translation * session, 
-                    type = "response")
-  
-  emm_session_rt <- pairs(EMM_rt, reverse = TRUE, simple = "session")
-  
-  emm_session_rt_confint <- confint(emm_session_rt)
-  
-  # extract estimates
-  results_rt <- as.data.frame(summary(emm_session_rt_confint))[c('consumption_translation',
-                                                                 'estimate', 
-                                                                 'SE',
-                                                                 'asymp.LCL',
-                                                                 'asymp.UCL')]
-  
-  # round to four decimals
-  results_rt[,c('estimate', 
-                'SE',
-                'asymp.LCL',
-                'asymp.UCL')] <- round(results_rt[,c('estimate', 
-                                                     'SE',
-                                                     'asymp.LCL',
-                                                     'asymp.UCL')], 4)
-  
-  return(list(
-    emm_session = emm_session_rt,
-    emm_session_confint = emm_session_rt_confint,
-    results_rt = results_rt
-  ))
-  
-}
-
-emmRtOriginal <- emm_rt_function(rtModelOriginal)
-emmRtReplication <- emm_rt_function(rtModelReplication)
-
-
-# Save results
-behavioralResultsOriginal <- list(att = emmAttOriginal[["results_att"]],
-                                  rt = emmRtOriginal[["results_rt"]])
-
-behavioralResultsReplication <- list(att = emmAttReplication[["results_att"]],
-                                     rt = emmRtReplication[["results_rt"]])
-
-save(behavioralResultsOriginal, 
-     behavioralResultsReplication,
-     file = "data/behavioralResults.RData")
-
-
-
-
-
-
-
-
+# Save plot
+ggsave("figures/figureGenderDifferences.pdf",
+       plotGenderDifferences,
+       width = 12,
+       height = 6,
+       units = "in",
+       device = cairo_pdf)
 
 
