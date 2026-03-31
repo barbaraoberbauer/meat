@@ -132,6 +132,10 @@ df_subset <- df_subset %>%
 
 medianEcoChoice <- median(df_subset$PEcoChoiceSession1)
 
+# remove participants whose probability to choose the more ecological appliance is equal to the median
+df_subset <- df_subset %>%
+  filter(PEcoChoiceSession1 != medianEcoChoice)
+
 df_subset$HighPEcoChoice <- NA
 
 df_subset$HighPEcoChoice[df_subset$PEcoChoiceSession1 <= medianEcoChoice] <- 0
