@@ -97,6 +97,12 @@ descriptivesReplication <- descriptives_function(dfReplication)
 
 ### Choice Consistency in Session 1 between Consumption Translations ------
 
+# exclude one subject that did not indicate gender
+dfReplicationGender <- dfReplication %>%
+  filter(gender != "Prefer not to say")
+
+dfReplicationGender$gender <- droplevels(dfReplicationGender$gender)
+
 baseline_choice <- function(data){
   
   # Subset the data for session 1
@@ -115,7 +121,7 @@ baseline_choice <- function(data){
 }
 
 baselineChoiceOriginal <- baseline_choice(dfOriginal)
-baselineChoiceReplication <- baseline_choice(dfReplication)
+baselineChoiceReplication <- baseline_choice(dfReplicationGender)
 
 # Perform an ANOVA to see if consumption translation has a significant effect
 Anova(baselineChoiceOriginal)
@@ -136,12 +142,6 @@ fixed_effects_function <- function(data){
   return(fixed_effects_choice)
   
 }
-
-# exclude one subject that did not indicate gender
-dfReplicationGender <- dfReplication %>%
-  filter(gender != "Prefer not to say")
-
-dfReplicationGender$gender <- droplevels(dfReplicationGender$gender)
 
 fixedEffectsOriginal <- fixed_effects_function(dfOriginal)
 fixedEffectsReplication <- fixed_effects_function(dfReplicationGender)
