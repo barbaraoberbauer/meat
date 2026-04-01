@@ -194,7 +194,7 @@ remove(df_1, df_2)
 # Remove trials in which participants did not inspect at least two attributes (n = 399)
 df <- df %>%
   filter(rowSums(select(., f_price0, 
-                          f_price1,
+                        f_price1,
                         f_consumption0,
                         f_consumption1,
                         f_popularity0,
@@ -211,6 +211,12 @@ df <- df %>%
 n_trials_after <- nrow(df)
 
 rm(n_trials_before, n_trials_after)
+
+# Check number of trials per participant
+
+nTrials <- df %>%
+  group_by(id, session) %>%
+  summarize(nTrials = length(unique(task)))
 
 # Add choice problem (task) values to df -----
 

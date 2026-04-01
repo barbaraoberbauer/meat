@@ -296,6 +296,12 @@ n_trials_after <- nrow(df)
 
 rm(n_trials_before, n_trials_after)
 
+# Check number of trials per participant
+
+nTrials <- df %>%
+  group_by(id, session) %>%
+  summarize(nTrials = length(unique(task)))
+
 # Exclude the above trials from the process tracing data as well
 
 # only keep trials that also exist in df
