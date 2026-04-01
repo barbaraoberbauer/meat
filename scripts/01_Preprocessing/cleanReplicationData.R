@@ -118,6 +118,10 @@ df <- df[df$expname == "trial", ]
 demographics <- read_csv("data/meat_prolific_2026_demographics.csv")
 demographics_pilot <- read_csv("data/meat_pilot_prolific_2026_demographics.csv")
 
+# demographicsOLD <- demographicsOLD[-1]
+# 
+# demographics_test <- bind_rows(demographics, anti_join(demographicsOLD, demographics))
+
 demographics <- demographics %>%
   filter(Status == "APPROVED") %>%
   select("Participant id", "Age", "Sex")
@@ -426,7 +430,7 @@ rm(rts)
 nSubjects <- length(unique(df$subject))
 
 #get data for prolific submission
-# cutoff <- as.POSIXct("2026-03-23 03:00:00",
+# cutoff <- as.POSIXct("2026-03-31 03:00:00",
 #                      tz = tz(df$submitted))
 # submitIds <- unique(df$subject[df$submitted > cutoff & df$session == 2])
 # write.csv(submitIds, "submission_ids.csv", row.names = FALSE)
