@@ -71,6 +71,9 @@ color_error <- '#cb181d'
 # colors change
 color_change <-"black" 
 
+# colors gender 
+color_gender <- c("#D4CB92", "#395C6B")
+
 
 # labels
 labelsOriginal <- c("control" = "Control",
