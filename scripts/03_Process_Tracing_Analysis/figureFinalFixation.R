@@ -113,6 +113,6 @@ ggplot(data = finalFixationsChoice,
 ggsave("figures/figureFinalFixations.pdf", 
        plotFinalFixations, 
        width = 12,
-       height = 9,
+       height = 6,
        units = "in",
        device = cairo_pdf)
