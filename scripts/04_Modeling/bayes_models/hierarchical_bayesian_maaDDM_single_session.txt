@@ -1,0 +1,178 @@
+#maaDDM with starting point bias
+model {
+	##########################
+	# model the data
+	##########################
+
+	#JAGS for loop specifies the distributional assumptions for the variable that is defined within its body
+	for (i in 1:N) {
+
+		#specify parameters depending on sessions
+		weight1[i] <- w1T[Subject[i]]
+		weight2[i] <- w2T[Subject[i]]
+		weight3[i] <- w3T[Subject[i]]
+
+		theta_x[i] <- thetaT[Subject[i]]
+
+		phi_x[i] <- phiT[Subject[i]]
+
+		alpha_x[i] <- alpha[Subject[i]]
+
+		scaling_x[i] <- scaling[Subject[i]]
+
+		tau_x[i] <- tau[Subject[i]]
+
+		sp_x[i] <- sp[Subject[i]]
+
+
+		#calculate mean drift rate mu
+		mu[i] <- 	fixProps_Price_Eco[i]*(weight1[i]*(Price_Eco[i]-theta_x[i]*Price_NonEco[i]) + weight2[i]*phi_x[i]*(Energy_Eco[i]-theta_x[i]*Energy_NonEco[i]) + weight3[i]*phi_x[i]*(Popularity_Eco[i]-theta_x[i]*Popularity_NonEco[i])) + # Price_Eco is looked at
+                		fixProps_Energy_Eco[i]*(weight1[i]*phi_x[i]*(Price_Eco[i]-theta_x[i]*Price_NonEco[i]) + weight2[i]*(Energy_Eco[i]-theta_x[i]*Energy_NonEco[i]) + weight3[i]*phi_x[i]*(Popularity_Eco[i]-theta_x[i]*Popularity_NonEco[i])) + # Consumption_Eco is looked at
+                		fixProps_Popularity_Eco[i]*(weight1[i]*phi_x[i]*(Price_Eco[i]-theta_x[i]*Price_NonEco[i]) + weight2[i]*phi_x[i]*(Energy_Eco[i]-theta_x[i]*Energy_NonEco[i]) + weight3[i]*(Popularity_Eco[i]-theta_x[i]*Popularity_NonEco[i])) + # Popularity_Eco is looked at
+                		fixProps_Price_NonEco[i]*(weight1[i]*(theta_x[i]*Price_Eco[i]-Price_NonEco[i]) + weight2[i]*phi_x[i]*(theta_x[i]*Energy_Eco[i]-Energy_NonEco[i]) + weight3[i]*phi_x[i]*(theta_x[i]*Popularity_Eco[i]-Popularity_NonEco[i])) + # Price_NonEco is looked at
+                		fixProps_Energy_NonEco[i]*(weight1[i]*phi_x[i]*(theta_x[i]*Price_Eco[i]-Price_NonEco[i]) + weight2[i]*(theta_x[i]*Energy_Eco[i]-Energy_NonEco[i]) + weight3[i]*phi_x[i]*(theta_x[i]*Popularity_Eco[i]-Popularity_NonEco[i])) + # Consumption_NonEco is looked at
+                		fixProps_Popularity_NonEco[i]*(weight1[i]*phi_x[i]*(theta_x[i]*Price_Eco[i]-Price_NonEco[i]) + weight2[i]*phi_x[i]*(theta_x[i]*Energy_Eco[i]-Energy_NonEco[i]) + weight3[i]*(theta_x[i]*Popularity_Eco[i]-Popularity_NonEco[i]))   # Popularity_NonEco is looked at
+		
+		#draw from wiener distribution
+		x[i] ~ dwiener(alpha_x[i], tau_x[i], sp_x[i], scaling_x[i] * mu[i])
+
+		#loglikelihood
+		#see https://sourceforge.net/p/jags-wiener/code/ci/master/tree/README.rst 
+		loglik[i] <- dlogwiener(x[i], alpha_x[i], tau_x[i], sp_x[i], scaling_x[i] * mu[i])
+
+	}
+
+	##########################
+	# priors for parameters
+	##########################
+
+	# Define group priors
+
+
+		# boundary
+			mu_alpha ~ dnorm(8,1)
+			sigma_alpha ~ dnorm(1,1)T(0,)
+
+			# transform SD to precision
+			lambda_alpha <- 1/pow(sigma_alpha, 2)
+
+		# non-decision time
+			mu_tau ~ dnorm(1, 1)
+			sigma_tau ~ dnorm(1, 1)T(0,)
+
+			# transform SD to precision
+			lambda_tau <- 1/pow(sigma_tau, 2)
+
+		# scaling
+			mu_scaling ~ dnorm(1, 1)
+			sigma_scaling ~ dnorm(1, 1)T(0,)
+
+			# transform SD to precision
+			lambda_scaling <- 1/pow(sigma_scaling, 2)
+
+
+		# theta
+			mu_theta ~ dnorm(0.5, 1)
+			sigma_theta ~ dnorm(1, 1)T(0,)
+
+			# transform SD to precision
+			lambda_theta <- 1/pow(sigma_theta, 2)
+
+		# phi
+			mu_phi ~ dnorm(0.5, 1)
+			sigma_phi ~ dnorm(1, 1)T(0,)
+
+			# transform SD to precision
+			lambda_phi <- 1/pow(sigma_phi, 2)
+
+		# weights
+			mu_w1 ~ dnorm(0, 1)
+			sigma_w1 ~ dnorm(1,1)T(0,)
+		
+			# transform SD to precision
+			lambda_w1 <- 1/pow(sigma_w1, 2)
+	
+			mu_w2 ~ dnorm(0, 1)
+			sigma_w2 ~ dnorm(1,1)T(0,)
+		
+			# transform SD to precision
+			lambda_w2 <- 1/pow(sigma_w2, 2)
+
+		# starting point
+			mu_sp ~ dnorm(1/2, 1)
+			sigma_sp ~ dnorm(1, 1)T(0,)
+
+			# transform SD to precision
+			lambda_sp <- 1/pow(sigma_sp, 2)
+
+
+
+	# initiate and transform weight parameters
+	# after phi-transformation, weight parameters will be bound between 0 and 1
+	# define change parameters for when attribute translation is present
+	
+	# Define subject priors
+	for (s in 1:SampleSize){
+
+		# ----------
+		# price
+		# ----------
+	
+		w1[s] ~ dnorm(mu_w1, lambda_w1) # weight for price, untransformed
+		w1T[s] <- phi(w1[s]) # weight for price, phi-transformed
+
+		# ----------
+		# energy consumption
+		# ----------
+
+		w2[s] ~ dnorm(mu_w2, lambda_w2) # weight for energy consumption, untransformed
+		w2T[s] <- phi(w2[s]) # weight for energy consumption, phi-transformed
+
+		# ----------
+		# popularity
+		# ----------
+
+		w3T[s] <- 1 - w1T[s] - w2T[s]
+
+		# ----------
+		# theta
+		# ----------
+	
+		theta[s] ~ dnorm(mu_theta, lambda_theta) #theta parameter (devalues option that is not looked at)
+		thetaT[s] <- theta[s] # no phi-transformation		
+
+		# ----------
+		# phi
+		# ----------
+			
+		phi[s] ~ dnorm(mu_phi, lambda_phi)	#phi parameter (devalues attributes that are not looked at)
+		phiT[s] <- phi[s] # no phi-transformation
+
+		# ----------
+		# boundary
+		# ----------
+
+		alpha[s] ~ dnorm(mu_alpha, lambda_alpha)T(0,) #boundary separation, truncated above 0
+
+		# ----------
+		# scaling
+		# ----------
+
+		scaling[s] ~ dnorm(mu_scaling, lambda_scaling) #scaling parameter, multplied by mu for drift rate
+
+		# ----------
+		# non-decision time
+		# ----------
+
+		tau[s] ~ dnorm(mu_tau, lambda_tau)T(0,) #non-decision time, truncated above 0
+
+		# ----------
+		# starting point bias
+		# ----------
+
+		sp[s] ~ dnorm(mu_sp, lambda_sp)
+		
+	}
+
+	
+}
