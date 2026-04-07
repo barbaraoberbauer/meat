@@ -330,17 +330,17 @@ time <- format(Sys.time(), "%Y%m%d_%H%M")
 
 if (dataset == "replication") {
   
-  filename <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".rds")
+  filename <- paste0("data/modeling/runJagsOutDDM", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
   
 } else if (dataset == "original") {
   
   if (run_subgroups_separately == FALSE) {
     
-    filename <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".rds")
+    filename <- paste0("data/modeling/runJagsOutDDM", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
 
   } else if (run_subgroups_separately == TRUE) {
     
-    filename <- paste0("data/modeling/runJagsOut", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", file_extension, "_", time, ".rds")
+    filename <- paste0("data/modeling/runJagsOutDDM", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", time, ".rds")
 
   }
   
@@ -400,41 +400,6 @@ hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_w3),
                           hdi_change = HDIofMCMC(combined_mcmcfin$mu_w3_AT - combined_mcmcfin$mu_w3))
 
 
-### HDIs attentional parameters -------
-
-if (bounded == TRUE) {
-  
-  map_input_theta <- combined_mcmcfin$mu_theta/sqrt(1 + combined_mcmcfin$sigma_theta^2)
-  map_input_dtheta <- combined_mcmcfin$mu_dtheta/sqrt(1 + combined_mcmcfin$sigma_dtheta^2)
-  
-  hdi$theta <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_theta)),
-                            hdi_manipulation = HDIofMCMC(pnorm(map_input_theta + map_input_dtheta)),
-                            hdi_change = HDIofMCMC(pnorm(map_input_theta + map_input_dtheta) -
-                                                     pnorm(map_input_dtheta)))
-  
-  map_input_phi <- combined_mcmcfin$mu_phi/sqrt(1 + combined_mcmcfin$sigma_phi^2)
-  map_input_dphi <- combined_mcmcfin$mu_dphi/sqrt(1 + combined_mcmcfin$sigma_dphi^2)
-  
-  hdi$phi <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_phi)),
-                    hdi_manipulation = HDIofMCMC(pnorm(map_input_phi + map_input_dphi)),
-                    hdi_change = HDIofMCMC(pnorm(map_input_phi + map_input_dphi) -
-                                             pnorm(map_input_dphi)))
-  
-  
-} else if (bounded == FALSE) {
-  
-  hdi$theta <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_theta),
-                    hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta),
-                    hdi_change = HDIofMCMC(combined_mcmcfin$mu_dtheta))
-  
-  hdi$phi <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_phi),
-                    hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi),
-                    hdi_change = HDIofMCMC(combined_mcmcfin$mu_dphi))
-  
-}
-
-
-
 ### HDIs other parameters -------
 
 ###### boundary separation ----------
@@ -468,17 +433,17 @@ hdi$sp <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_sp),
 
 if (dataset == "replication") {
   
-  filename <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".rds")
+  filename <- paste0("data/modeling/hdiDDM", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
   
 } else if (dataset == "original") {
   
   if (run_subgroups_separately == FALSE) {
     
-    filename <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".rds")
+    filename <- paste0("data/modeling/hdiDDM", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
     
   } else if (run_subgroups_separately == TRUE) {
     
-    filename <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", file_extension, "_", time, ".rds")
+    filename <- paste0("data/modeling/hdiDDM", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", ".rds")
     
   }
   
