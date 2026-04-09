@@ -95,19 +95,19 @@ if (dataset == "original" & run_subgroups_separately == TRUE) {
   
   if (group_of_interest == "price_translation_absent") {
     
-    df_subset <- df %>%
+    df <- df %>%
       filter(consumption_translation == translation_of_interest & price_translation == 0)
     
   } else if (group_of_interest == "price_translation_present") {
     
-    df_subset <- df %>%
+    df <- df %>%
       filter(consumption_translation == translation_of_interest & price_translation == 1)
     
   }
   
 } else {
   
-  df_subset <- df %>%
+  df <- df %>%
     filter(consumption_translation == translation_of_interest)
   
 }
@@ -124,7 +124,7 @@ if (dataset == "original" & run_subgroups_separately == TRUE) {
 # choice = selection of energy-efficient option (0 = no, 1 = yes)
 # lower boundary will code selection of less energy_efficient option (former 0)
 
-df_subset <- df_subset %>%
+df <- df %>%
   mutate(t_decision = case_when(choice == 0 ~ t_decision * -1/1000,
                                 choice == 1 ~ t_decision * 1/1000))
 
@@ -234,7 +234,7 @@ for (session_of_interest in 1:2) {
   #'-------------------------
   
   # filter session
-  df_subset <- df_subset %>%
+  df_subset <- df %>%
     filter(session == session_of_interest)
   
   # assign new ids that are starting from 1 and increment by 1
@@ -329,7 +329,7 @@ for (session_of_interest in 1:2) {
                          summarise = TRUE,
                          plots = FALSE)
   
-  runJagsOutResults[session_of_interest] <- runJagsOut
+  runJagsOutResults[[session_of_interest]] <- runJagsOut
   
 }
 
