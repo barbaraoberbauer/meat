@@ -146,6 +146,8 @@ monitor <- c(
   "sigma_w1",
   "mu_w2",
   "sigma_w2",
+  "mu_sp",
+  "sigma_sp",
   
   # Subject parameters
   "w1",
@@ -361,10 +363,12 @@ saveRDS(runJagsOutResults, file = filename)
 # Check results ------
 
 # store as mcmc object
-mcmcfin = as.mcmc.list(runJagsOut)
+mcmcfin_s1 = as.mcmc.list(runJagsOutResults[[1]])
+mcmcfin_s2 = as.mcmc.list(runJagsOutResults[[2]])
 
 # combine chains
-combined_mcmcfin <- as.data.frame(do.call(rbind, mcmcfin))
+combined_mcmcfin_s1 <- as.data.frame(do.call(rbind, mcmcfin_s1))
+combined_mcmcfin_s2 <- as.data.frame(do.call(rbind, mcmcfin_s2))
 
 # set up data frame to store hdis
 hdi <- list()
@@ -376,71 +380,83 @@ hdi <- list()
 
 ###### price -------
 
-map_input_w1 <- combined_mcmcfin$mu_w1/sqrt(1 + combined_mcmcfin$sigma_w1^2)
-map_input_dw1 <- combined_mcmcfin$mu_dw1/sqrt(1 + combined_mcmcfin$sigma_dw1)
+map_input_w1_s1 <- combined_mcmcfin_s1$mu_w1/sqrt(1 + combined_mcmcfin_s1$sigma_w1^2)
+map_input_w1_s2 <- combined_mcmcfin_s2$mu_w1/sqrt(1 + combined_mcmcfin_s2$sigma_w1^2)
 
-hdi$w_price <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_w1)),
-                    hdi_manipulation = HDIofMCMC(pnorm(map_input_w1 + map_input_dw1)),
-                    hdi_change = HDIofMCMC(pnorm(map_input_w1 + map_input_dw1) -
-                                             pnorm(map_input_w1)))
-
+hdi$w_price <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_w1_s1)),
+                    hdi_manipulation = HDIofMCMC(pnorm(map_input_w1_s2)),
+                    hdi_change = HDIofMCMC(pnorm(map_input_w1_s2) -
+                                             pnorm(map_input_w1_s1)))
 
 ###### consumption -------
 
-map_input_w2 <- combined_mcmcfin$mu_w2/sqrt(1 + combined_mcmcfin$sigma_w2^2)
-map_input_dw2 <- combined_mcmcfin$mu_dw2/sqrt(1 + combined_mcmcfin$sigma_dw2^2)
+map_input_w2_s1 <- combined_mcmcfin_s1$mu_w2/sqrt(1 + combined_mcmcfin_s1$sigma_w2^2)
+map_input_w2_s2 <- combined_mcmcfin_s2$mu_w2/sqrt(1 + combined_mcmcfin_s2$sigma_w2^2)
 
-hdi$w_consumption <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_w2)),
-                          hdi_manipulation = HDIofMCMC(pnorm(map_input_w2 +
-                                                               map_input_dw2)),
-                          hdi_change = HDIofMCMC(pnorm(map_input_w2 + map_input_dw2) -
-                                                   pnorm(map_input_w2)))
+hdi$w_consumption <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_w2_s1)),
+                          hdi_manipulation = HDIofMCMC(pnorm(map_input_w2_s2)),
+                          hdi_change = HDIofMCMC(pnorm(map_input_w2_s2) -
+                                                   pnorm(map_input_w2_s1)))
 
 
 ###### popularity -------
 
-combined_mcmcfin$mu_w3 <- 1 - pnorm(map_input_w1) - pnorm(map_input_w2)
-combined_mcmcfin$mu_w3_AT <- 1 - 
-  pnorm(map_input_w1 + map_input_dw1) - 
-  pnorm(map_input_w2 + map_input_dw2)
+combined_mcmcfin_s1$mu_w3 <- 1 - pnorm(map_input_w1_s1) - pnorm(map_input_w2_s1)
+combined_mcmcfin_s2$mu_w3 <- 1 - pnorm(map_input_w1_s2) - pnorm(map_input_w2_s2)
 
-hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_w3),
-                          hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_w3_AT),
-                          hdi_change = HDIofMCMC(combined_mcmcfin$mu_w3_AT - combined_mcmcfin$mu_w3))
+hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin_s1$mu_w3),
+                          hdi_manipulation = HDIofMCMC(combined_mcmcfin_s2$mu_w3),
+                          hdi_change = HDIofMCMC(combined_mcmcfin_s2$mu_w3 - combined_mcmcfin_s1$mu_w3))
 
 
 ### HDIs attentional parameters -------
 
-if (bounded == TRUE) {
-  
-  map_input_theta <- combined_mcmcfin$mu_theta/sqrt(1 + combined_mcmcfin$sigma_theta^2)
-  map_input_dtheta <- combined_mcmcfin$mu_dtheta/sqrt(1 + combined_mcmcfin$sigma_dtheta^2)
-  
-  hdi$theta <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_theta)),
-                            hdi_manipulation = HDIofMCMC(pnorm(map_input_theta + map_input_dtheta)),
-                            hdi_change = HDIofMCMC(pnorm(map_input_theta + map_input_dtheta) -
-                                                     pnorm(map_input_dtheta)))
-  
-  map_input_phi <- combined_mcmcfin$mu_phi/sqrt(1 + combined_mcmcfin$sigma_phi^2)
-  map_input_dphi <- combined_mcmcfin$mu_dphi/sqrt(1 + combined_mcmcfin$sigma_dphi^2)
-  
-  hdi$phi <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_phi)),
-                    hdi_manipulation = HDIofMCMC(pnorm(map_input_phi + map_input_dphi)),
-                    hdi_change = HDIofMCMC(pnorm(map_input_phi + map_input_dphi) -
-                                             pnorm(map_input_dphi)))
-  
-  
-} else if (bounded == FALSE) {
-  
-  hdi$theta <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_theta),
-                    hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta),
-                    hdi_change = HDIofMCMC(combined_mcmcfin$mu_dtheta))
-  
-  hdi$phi <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_phi),
-                    hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi),
-                    hdi_change = HDIofMCMC(combined_mcmcfin$mu_dphi))
-  
-}
+map_input_theta_s1 <- combined_mcmcfin_s1$mu_theta/sqrt(1 + combined_mcmcfin_s1$sigma_theta^2)
+map_input_theta_s2 <- combined_mcmcfin_s2$mu_theta/sqrt(1 + combined_mcmcfin_s2$sigma_theta^2)
+
+hdi$theta <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_theta_s1)),
+                          hdi_manipulation = HDIofMCMC(pnorm(map_input_theta_s2)),
+                          hdi_change = HDIofMCMC(pnorm(map_input_theta_s2) -
+                                                   pnorm(map_input_theta_s1)))
+
+map_input_phi_s1 <- combined_mcmcfin_s1$mu_phi/sqrt(1 + combined_mcmcfin_s1$sigma_phi^2)
+map_input_phi_s2 <- combined_mcmcfin_s2$mu_phi/sqrt(1 + combined_mcmcfin_s2$sigma_phi^2)
+
+hdi$phi <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_phi_s1)),
+                  hdi_manipulation = HDIofMCMC(pnorm(map_input_phi_s2)),
+                  hdi_change = HDIofMCMC(pnorm(map_input_phi_s2) -
+                                           pnorm(map_input_phi_s1)))
+
+# if (bounded == TRUE) {
+#   
+#   map_input_theta_s1 <- combined_mcmcfin_s1$mu_theta/sqrt(1 + combined_mcmcfin_s1$sigma_theta^2)
+#   map_input_theta_s2 <- combined_mcmcfin_s2$mu_theta/sqrt(1 + combined_mcmcfin_s2$sigma_theta^2)
+#   
+#   hdi$theta <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_theta_s1)),
+#                             hdi_manipulation = HDIofMCMC(pnorm(map_input_theta_s2)),
+#                             hdi_change = HDIofMCMC(pnorm(map_input_theta_s2) -
+#                                                      pnorm(map_input_theta_s1)))
+#   
+#   map_input_phi_s1 <- combined_mcmcfin_s1$mu_phi/sqrt(1 + combined_mcmcfin_s1$sigma_phi^2)
+#   map_input_phi_s2 <- combined_mcmcfin_s2$mu_phi/sqrt(1 + combined_mcmcfin_s2$sigma_phi^2)
+#   
+#   hdi$phi <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_phi_s1)),
+#                     hdi_manipulation = HDIofMCMC(pnorm(map_input_phi_s2)),
+#                     hdi_change = HDIofMCMC(pnorm(map_input_phi_s2) -
+#                                              pnorm(map_input_phi_s1)))
+#   
+#   
+# } else if (bounded == FALSE) {
+#   
+#   hdi$theta <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin_s1$mu_theta),
+#                     hdi_manipulation = HDIofMCMC(combined_mcmcfin_s2$mu_theta),
+#                     hdi_change = HDIofMCMC(combined_mcmcfin_s2$mu_theta - combined_mcmcfin_s1$mu_theta))
+#   
+#   hdi$phi <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin_s1$mu_phi),
+#                     hdi_manipulation = HDIofMCMC(combined_mcmcfin_s2$mu_phi),
+#                     hdi_change = HDIofMCMC(combined_mcmcfin_s2$mu_phi - combined_mcmcfin_s1$mu_phi))
+#   
+# }
 
 
 
@@ -448,46 +464,46 @@ if (bounded == TRUE) {
 
 ###### boundary separation ----------
 
-hdi$alpha <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_alpha),
-                hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_alpha + combined_mcmcfin$mu_dalpha),
-                hdi_change = HDIofMCMC(combined_mcmcfin$mu_dalpha))
+hdi$alpha <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin_s1$mu_alpha),
+                hdi_manipulation = HDIofMCMC(combined_mcmcfin_s2$mu_alpha),
+                hdi_change = HDIofMCMC(combined_mcmcfin_s2$mu_alpha - combined_mcmcfin_s1$mu_alpha))
 
 
 ###### scaling  ----------
 
-hdi$scaling <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_scaling),
-                  hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_scaling + combined_mcmcfin$mu_dscaling),
-                  hdi_change = HDIofMCMC(combined_mcmcfin$mu_dscaling))
+hdi$scaling <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin_s1$mu_scaling),
+                  hdi_manipulation = HDIofMCMC(combined_mcmcfin_s2$mu_scaling),
+                  hdi_change = HDIofMCMC(combined_mcmcfin_s2$mu_scaling - combined_mcmcfin_s1$mu_scaling))
 
 
 ###### non-decision time  ----------
 
-hdi$tau <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_tau),
-                    hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_tau + combined_mcmcfin$mu_dtau),
-                    hdi_change = HDIofMCMC(combined_mcmcfin$mu_dtau))
+hdi$tau <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin_s1$mu_tau),
+                    hdi_manipulation = HDIofMCMC(combined_mcmcfin_s2$mu_tau),
+                    hdi_change = HDIofMCMC(combined_mcmcfin_s2$mu_tau - combined_mcmcfin_s1$mu_tau))
 
 
 ###### starting point bias  ----------
 
-hdi$sp <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_sp),
-                    hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_sp + combined_mcmcfin$mu_dsp),
-                    hdi_change = HDIofMCMC(combined_mcmcfin$mu_dsp))
+hdi$sp <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin_s1$mu_sp),
+                    hdi_manipulation = HDIofMCMC(combined_mcmcfin_s2$mu_sp),
+                    hdi_change = HDIofMCMC(combined_mcmcfin_s2$mu_sp - combined_mcmcfin_s1$mu_sp))
 
 # Store the results
 
 if (dataset == "replication") {
   
-  filename <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".rds")
+  filename <- paste0("data/modeling/hdiSingleSession", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
   
 } else if (dataset == "original") {
   
   if (run_subgroups_separately == FALSE) {
     
-    filename <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".rds")
+    filename <- paste0("data/modeling/hdiSingleSession", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
     
   } else if (run_subgroups_separately == TRUE) {
     
-    filename <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", file_extension, "_", time, ".rds")
+    filename <- paste0("data/modeling/hdiSingleSession", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", time, ".rds")
     
   }
   
