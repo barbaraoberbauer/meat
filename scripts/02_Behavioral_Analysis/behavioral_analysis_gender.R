@@ -77,7 +77,7 @@ descriptives_function <- function(data){
   
   # aggregate data on subject level
   choice_prob_id <- data %>%
-    group_by(session, consumption_translation, id) %>%
+    group_by(session, consumption_translation, id, gender) %>%
     summarise(mean_choice_id = mean(choice, na.rm = TRUE), 
               se_choice_id = sd(choice, na.rm = TRUE)/sqrt(sum(!is.na(choice)))
     ) %>%
@@ -85,7 +85,7 @@ descriptives_function <- function(data){
   
   # aggregate data on group level
   choice_prob_group <- choice_prob_id %>%
-    group_by(session, consumption_translation) %>%
+    group_by(session, consumption_translation, gender) %>%
     summarise(mean_choice = mean(mean_choice_id, na.rm = TRUE), 
               se_choice = sd(mean_choice_id, na.rm = TRUE)/sqrt(sum(!is.na(mean_choice_id)))
     ) %>%
