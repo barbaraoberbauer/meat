@@ -69,6 +69,12 @@ n_bins <- 10
 calculateEcoChoiceDwellTime <- function(data){
   
   chooseEcoProbabilityNorm <- data %>%
+    # mutate(bin = cut(ddt_eco_noneco_norm,
+    #                  breaks = seq(min(ddt_eco_noneco_norm), 
+    #                               max(ddt_eco_noneco_norm), 
+    #                               length.out = n_bins + 1),
+    #                  labels = 1:n_bins,
+    #                  include.lowest = TRUE)) %>%
     group_by(session, consumption_translation) %>%
     mutate(bin = ntile(ddt_eco_noneco_norm, n_bins)) %>%
     group_by(session, consumption_translation, bin) %>%
