@@ -4,6 +4,9 @@
 # purpose: estimate parameters of maaDDM model using bayesian hierarchical estimation
 #---
 
+# Helpful ressources for Dirichlet distribution
+# https://www.andrewheiss.com/blog/2023/09/18/understanding-dirichlet-beta-intuition/ 
+
 # Load packages and read data ------
 
 ### Clear environment -------
