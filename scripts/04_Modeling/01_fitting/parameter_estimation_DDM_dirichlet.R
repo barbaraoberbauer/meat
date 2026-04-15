@@ -66,10 +66,10 @@ load("data/preprocessedDataReplication.RData")
 
 ### Specify subset of data ----
 
-dataset <- "replication"
+dataset <- "original"
 # datasets: "original", "replication"
 
-translation_of_interest <- "rating_add"
+translation_of_interest <- "environmental_friendliness"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace", "rating_replace"
 
@@ -174,11 +174,11 @@ monitor <- c(
   "mu_scaling",
   "sigma_scaling",
   # group-level weights (main inference targets)
-  "mu_w", "mu_w_AT",
+  #"mu_w", "mu_w_AT",
   # group-level weight variability
-  "kappa", "kappa_AT",
+  #"kappa", "kappa_AT",
   # subject-level weights and changes
-  "wT", "wT_AT", "dw",
+  #"wT", "wT_AT", "dw",
   "mu_dalpha",
   "sigma_dalpha",
   "mu_dscaling",
@@ -191,6 +191,9 @@ monitor <- c(
   "sigma_dsp",
   
   # Subject parameters
+  "wT",
+  "wT_AT",
+  "dw",
   "alpha",
   "dalpha",
   "alpha_AT",
@@ -211,72 +214,72 @@ monitor <- c(
 
 ### Set up initial values ------
 
-sd <- 0.1
-
-GenInits = function() {
-
-  mu_alpha = rnorm(1, 6, sd)
-  sigma_alpha = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-  mu_tau = rnorm(1, 0.5, sd)
-  sigma_tau = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-  mu_scaling = rnorm(1, 1, sd)
-  sigma_scaling = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-  mu_w1 = rnorm(1, 0, sd)
-  sigma_w1 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-  mu_w2 = rnorm(1, 0, sd)
-  sigma_w2 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-  mu_sp = rnorm(1, 0.5, sd)
-  sigma_sp = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-  mu_dw1 = rnorm(1, 0, sd)
-  sigma_dw1 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-  mu_dw2 = rnorm(1, 0, sd)
-  sigma_dw2 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-  mu_dtheta = rnorm(1, 0, sd)
-  sigma_dtheta = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-  mu_dphi = rnorm(1, 0, sd)
-  sigma_dphi = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-  mu_dalpha = rnorm(1, 0, sd)
-  sigma_dalpha = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-  mu_dscaling = rnorm(1, 0, sd)
-  sigma_dscaling = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-  mu_dtau = rnorm(1, 0, sd)
-  sigma_dtau = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-  mu_dsp = rnorm(1, 0, sd)
-  sigma_dsp = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-
-  list(
-    mu_alpha = mu_alpha,
-    sigma_alpha = sigma_alpha,
-    mu_tau = mu_tau,
-    sigma_tau = sigma_tau,
-    mu_scaling = mu_scaling,
-    sigma_scaling = sigma_scaling,
-    mu_w1 = mu_w1,
-    sigma_w1 = sigma_w1,
-    mu_w2 = mu_w2,
-    sigma_w2 = sigma_w2,
-    mu_sp = mu_sp,
-    sigma_sp = sigma_sp,
-    mu_dw1 = mu_dw1,
-    sigma_dw1 = sigma_dw1,
-    mu_dw2 = mu_dw2,
-    sigma_dw2 = sigma_dw2,
-    mu_dalpha = mu_dalpha,
-    sigma_dalpha = sigma_dalpha,
-    mu_dscaling = mu_dscaling,
-    sigma_dscaling = sigma_dscaling,
-    mu_dtau = mu_dtau,
-    sigma_dtau = sigma_dtau,
-    mu_dsp = mu_dsp,
-    sigma_dsp = sigma_dsp
-  )
-
-}
+# sd <- 0.1
+# 
+# GenInits = function() {
+# 
+#   mu_alpha = rnorm(1, 6, sd)
+#   sigma_alpha = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+#   mu_tau = rnorm(1, 0.5, sd)
+#   sigma_tau = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+#   mu_scaling = rnorm(1, 1, sd)
+#   sigma_scaling = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+#   mu_w1 = rnorm(1, 0, sd)
+#   sigma_w1 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+#   mu_w2 = rnorm(1, 0, sd)
+#   sigma_w2 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+#   mu_sp = rnorm(1, 0.5, sd)
+#   sigma_sp = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+#   mu_dw1 = rnorm(1, 0, sd)
+#   sigma_dw1 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+#   mu_dw2 = rnorm(1, 0, sd)
+#   sigma_dw2 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+#   mu_dtheta = rnorm(1, 0, sd)
+#   sigma_dtheta = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+#   mu_dphi = rnorm(1, 0, sd)
+#   sigma_dphi = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+#   mu_dalpha = rnorm(1, 0, sd)
+#   sigma_dalpha = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+#   mu_dscaling = rnorm(1, 0, sd)
+#   sigma_dscaling = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+#   mu_dtau = rnorm(1, 0, sd)
+#   sigma_dtau = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+#   mu_dsp = rnorm(1, 0, sd)
+#   sigma_dsp = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+# 
+#   list(
+#     mu_alpha = mu_alpha,
+#     sigma_alpha = sigma_alpha,
+#     mu_tau = mu_tau,
+#     sigma_tau = sigma_tau,
+#     mu_scaling = mu_scaling,
+#     sigma_scaling = sigma_scaling,
+#     mu_w1 = mu_w1,
+#     sigma_w1 = sigma_w1,
+#     mu_w2 = mu_w2,
+#     sigma_w2 = sigma_w2,
+#     mu_sp = mu_sp,
+#     sigma_sp = sigma_sp,
+#     mu_dw1 = mu_dw1,
+#     sigma_dw1 = sigma_dw1,
+#     mu_dw2 = mu_dw2,
+#     sigma_dw2 = sigma_dw2,
+#     mu_dalpha = mu_dalpha,
+#     sigma_dalpha = sigma_dalpha,
+#     mu_dscaling = mu_dscaling,
+#     sigma_dscaling = sigma_dscaling,
+#     mu_dtau = mu_dtau,
+#     sigma_dtau = sigma_dtau,
+#     mu_dsp = mu_dsp,
+#     sigma_dsp = sigma_dsp
+#   )
+# 
+# }
 
 
 ### Set model specifications ------
 
-nchains <- 6
+nchains <- 4
 nAdaptSteps <- 5000
 nBurninSteps <- 25000
 nUseSteps = nchains * 6500 # total number of used steps

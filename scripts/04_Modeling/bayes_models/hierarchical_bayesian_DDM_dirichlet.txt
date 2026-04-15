@@ -37,38 +37,15 @@ model {
 	# priors for parameters
 	##########################
 
-	# Dirichlet concentration parameters (fixed)
-	# -----------------------------------------------
 	# Session 1: symmetric uniform prior over simplex
-	alpha_w[1] <- 1
-	alpha_w[2] <- 1
-	alpha_w[3] <- 1
+    	alpha_w[1] <- 1
+    	alpha_w[2] <- 1
+    	alpha_w[3] <- 1
 
-	# Session 2: symmetric uniform prior over simplex
-	alpha_w_AT[1] <- 1
-	alpha_w_AT[2] <- 1
-	alpha_w_AT[3] <- 1
-
-	# Group-level priors: weights (Hierarchical Dirichlet)
-	# -----------------------------------------------
-
-		# Group mean weight vectors (live on the simplex)
-		mu_w[1:3]    ~ ddirch(alpha_w[])      # group mean weights, Session 1
-		mu_w_AT[1:3] ~ ddirch(alpha_w_AT[])   # group mean weights, Session 2
-
-		# Base concentration (fixed, uninformative)
-		alpha_w[1] <- 1
-		alpha_w[2] <- 1
-		alpha_w[3] <- 1
-
-		alpha_w_AT[1] <- 1
-		alpha_w_AT[2] <- 1
-		alpha_w_AT[3] <- 1
-
-		# Concentration (inter-subject variability)
-		kappa    ~ dgamma(1, 0.1)   # Session 1: how tightly subjects cluster around mu_w
-		kappa_AT ~ dgamma(1, 0.1)   # Session 2: how tightly subjects cluster around mu_w_AT
-
+    	# Session 2: symmetric uniform prior over simplex
+    	alpha_w_AT[1] <- 1
+    	alpha_w_AT[2] <- 1
+    	alpha_w_AT[3] <- 1
 
 	# Define group priors for non-weight parameters
 	# -----------------------------------------------
@@ -138,11 +115,6 @@ model {
 			# transform SD to precision
 			lambda_dsp <- 1/pow(sigma_dsp, 2)
 
-
-	# initiate and transform weight parameters
-	# after phi-transformation, weight parameters will be bound between 0 and 1
-	# define change parameters for when attribute translation is present
-	
 	# Define subject priors
 	for (s in 1:SampleSize){
 
@@ -150,8 +122,8 @@ model {
 		# weights (Dirichlet — simplex constraint built in)
 		# ----------
 
-		wT[s, 1:3]    ~ ddirch(mu_w[]    * kappa)      # Session 1: subject weights shrink toward mu_w
-		wT_AT[s, 1:3] ~ ddirch(mu_w_AT[] * kappa_AT)   # Session 2: subject weights shrink toward mu_w_AT
+		wT[s, 1:3]    ~ ddirch(alpha_w[])
+		wT_AT[s, 1:3] ~ ddirch(alpha_w_AT[])
 
 		# Derived group-level change parameters
 		dw[s, 1] <- wT_AT[s, 1] - wT[s, 1]   # change in price weight
