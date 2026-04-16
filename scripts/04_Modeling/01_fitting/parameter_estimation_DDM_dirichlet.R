@@ -66,10 +66,10 @@ load("data/preprocessedDataReplication.RData")
 
 ### Specify subset of data ----
 
-dataset <- "original"
+dataset <- "replication"
 # datasets: "original", "replication"
 
-translation_of_interest <- "environmental_friendliness"
+translation_of_interest <- "rating_add"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace", "rating_replace"
 
@@ -324,17 +324,17 @@ time <- format(Sys.time(), "%Y%m%d_%H%M")
 
 if (dataset == "replication") {
   
-  filename <- paste0("data/modeling/runJagsOutDDM", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
+  filename <- paste0("data/modeling/runJagsOutDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
   
 } else if (dataset == "original") {
   
   if (run_subgroups_separately == FALSE) {
     
-    filename <- paste0("data/modeling/runJagsOutDDM", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
+    filename <- paste0("data/modeling/runJagsOutDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
 
   } else if (run_subgroups_separately == TRUE) {
     
-    filename <- paste0("data/modeling/runJagsOutDDM", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", time, ".rds")
+    filename <- paste0("data/modeling/runJagsOutDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", time, ".rds")
 
   }
   
@@ -356,42 +356,50 @@ hdi <- list()
 
 ### HDIs weights -------
 
-# see Hellmann, S., Busch, N., Hof, L., & Pachur, T. (2025). Bias by Variance: How Common Parameter Transformations in Hierarchical Models Distort Group-Level Estimates.
-# for correct mapping of group-level means onto the parameter scale
+weights <- combined_mcmcfin %>%
+  select(starts_with("wT"))
 
-###### price -------
+start_strings <- c("wT[", "wT_AT[")
+end_strings <- c(",1]", ",2]", ",3]")
 
-map_input_w1 <- combined_mcmcfin$mu_w1/sqrt(1 + combined_mcmcfin$sigma_w1^2)
-map_input_dw1 <- combined_mcmcfin$mu_dw1/sqrt(1 + combined_mcmcfin$sigma_dw1)
+weight_parameters <- matrix(NA, nrow = 2, ncol = 3)
+weight_subj_parameters <- array(NA, dim = c(2, 3, SampleSize))
 
-hdi$w_price <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_w1)),
-                    hdi_manipulation = HDIofMCMC(pnorm(map_input_w1 + map_input_dw1)),
-                    hdi_change = HDIofMCMC(pnorm(map_input_w1 + map_input_dw1) -
-                                             pnorm(map_input_w1)))
+# loop through sessions
+for (session in 1:2) {
+  
+  # loop through attributes
+  for (att in 1:3) {
+    
+    attribute <- weights %>%
+      select(starts_with(start_strings[session]) & ends_with(end_strings[att]))
+    
+    subj_parameter <- colMeans(attribute)
+    
+    param <- mean(subj_parameter)
+    
+    # save results
+    weight_parameters[session, att] <- param
+    weight_subj_parameters[session, att, ] <- subj_parameter
+    
+  }
 
+}
 
-###### consumption -------
+hdi$w_price <- list(hdi_baseline = HDIofMCMC(weight_subj_parameters[1, 1, ]),
+                    hdi_manipulation = HDIofMCMC(weight_subj_parameters[2, 1, ]),
+                    hdi_change = HDIofMCMC(weight_subj_parameters[2, 1, ] -
+                                             weight_subj_parameters[1, 1, ]))
 
-map_input_w2 <- combined_mcmcfin$mu_w2/sqrt(1 + combined_mcmcfin$sigma_w2^2)
-map_input_dw2 <- combined_mcmcfin$mu_dw2/sqrt(1 + combined_mcmcfin$sigma_dw2^2)
+hdi$w_consumption <- list(hdi_baseline = HDIofMCMC(weight_subj_parameters[1, 2, ]),
+                    hdi_manipulation = HDIofMCMC(weight_subj_parameters[2, 2, ]),
+                    hdi_change = HDIofMCMC(weight_subj_parameters[2, 2, ] -
+                                             weight_subj_parameters[1, 2, ]))
 
-hdi$w_consumption <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_w2)),
-                          hdi_manipulation = HDIofMCMC(pnorm(map_input_w2 +
-                                                               map_input_dw2)),
-                          hdi_change = HDIofMCMC(pnorm(map_input_w2 + map_input_dw2) -
-                                                   pnorm(map_input_w2)))
-
-
-###### popularity -------
-
-combined_mcmcfin$mu_w3 <- 1 - pnorm(map_input_w1) - pnorm(map_input_w2)
-combined_mcmcfin$mu_w3_AT <- 1 - 
-  pnorm(map_input_w1 + map_input_dw1) - 
-  pnorm(map_input_w2 + map_input_dw2)
-
-hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_w3),
-                          hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_w3_AT),
-                          hdi_change = HDIofMCMC(combined_mcmcfin$mu_w3_AT - combined_mcmcfin$mu_w3))
+hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(weight_subj_parameters[1, 3, ]),
+                          hdi_manipulation = HDIofMCMC(weight_subj_parameters[2, 3, ]),
+                          hdi_change = HDIofMCMC(weight_subj_parameters[2, 3, ] -
+                                                   weight_subj_parameters[1, 3, ]))
 
 
 ### HDIs other parameters -------
@@ -427,17 +435,17 @@ hdi$sp <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_sp),
 
 if (dataset == "replication") {
   
-  filename <- paste0("data/modeling/hdiDDM", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
+  filename <- paste0("data/modeling/hdiDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
   
 } else if (dataset == "original") {
   
   if (run_subgroups_separately == FALSE) {
     
-    filename <- paste0("data/modeling/hdiDDM", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
+    filename <- paste0("data/modeling/hdiDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
     
   } else if (run_subgroups_separately == TRUE) {
     
-    filename <- paste0("data/modeling/hdiDDM", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", ".rds")
+    filename <- paste0("data/modeling/hdiDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", ".rds")
     
   }
   
