@@ -58,7 +58,7 @@ model {
 			lambda_alpha <- 1/pow(sigma_alpha, 2)
 
 		# non-decision time
-			mu_tau ~ dnorm(1, 1)
+			mu_tau ~ dnorm(0, 1)
 			sigma_tau ~ dnorm(1, 1)T(0,)
 
 			# transform SD to precision
