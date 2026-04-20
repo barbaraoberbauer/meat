@@ -133,12 +133,64 @@ fixPropsReplication_long <- pivot_longer(fixPropsReplication,
                                       values_to = "fixProp")
 
 
+# test some combinations
 fixPropsOriginal_long %>%
   filter(session == 2 & option == "all" & consumption_translation == "control") %>%
   ggplot(aes(x = fixProp,
              fill = attribute)) +
   geom_density()
 
+
+# Inspect differences between conditions and sessions ----
+
+calculate_session_differences <- function(fixPropsDat){
+  
+  aggFixPropsDat <- fixPropsDat %>%
+    group_by(id, session, consumption_translation) %>%
+    summarize(meanFixPropPrice = mean(price_all),
+              meanFixPropConsumption = mean(consumption_all),
+              meanFixPropPopularity = mean(popularity_all))
+  
+  aggFixPropsDat <- aggFixPropsDat %>%
+    pivot_wider(id_cols = c(id, consumption_translation),
+                names_from = session,
+                values_from = c(contains("meanFix")),
+                names_glue = "{.value}_s{session}") %>%
+    filter(!if_any(everything(), is.na)) # filter subjects with missing values
+  
+  # calculate difference in proportional dwell times between sessions
+  aggFixPropsDat$difFixPropPrice <- aggFixPropsDat$meanFixPropPrice_s2 -
+    aggFixPropsDat$meanFixPropPrice_s1
+  
+  aggFixPropsDat$difFixPropConsumption <- aggFixPropsDat$meanFixPropConsumption_s2 -
+    aggFixPropsDat$meanFixPropConsumption_s1
+  
+  aggFixPropsDat$difFixPropPopularity <- aggFixPropsDat$meanFixPropPopularity_s2 -
+    aggFixPropsDat$meanFixPropPopularity_s1
+  
+  # keep only session values and transform to long format
+  aggFixPropsDat_long <- aggFixPropsDat %>%
+    select(id, consumption_translation, difFixPropPrice, difFixPropConsumption, difFixPropPopularity) %>%
+    pivot_longer(cols = c(contains("difFix")),
+                 names_to = c("attribute"),
+                 values_to = "fixProp")
+  
+  return(aggFixPropsDat_long)
+  
+}
+
+aggFixPropsDifOriginal <- calculate_session_differences(fixPropsOriginal)
+aggFixPropsDifReplication <- calculate_session_differences(fixPropsReplication)
+
+
+
+
+
+aggFixPropsDifReplication %>%
+  ggplot(aes(x = fixProp,
+             fill = attribute)) +
+  geom_density() +
+  facet_grid(~consumption_translation)
 
 
 
