@@ -46,7 +46,9 @@ simrOptions(progress=FALSE)
 
 ### Load data ---------
 
-df <- readRDS("data/df.rds")
+load("data/preprocessedDataOriginal.RData")
+
+df <- dfOriginal
 
 ### Create function for plotting -----
 
