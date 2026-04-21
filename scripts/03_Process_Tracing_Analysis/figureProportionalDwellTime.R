@@ -182,15 +182,61 @@ calculate_session_differences <- function(fixPropsDat){
 aggFixPropsDifOriginal <- calculate_session_differences(fixPropsOriginal)
 aggFixPropsDifReplication <- calculate_session_differences(fixPropsReplication)
 
+# Plot differences
 
+plotFixPropsDif <- function(dat, labels, title){
+  
+  dat %>%
+    ggplot(aes(x = fixProp,
+               fill = attribute)) +
+    geom_density(color = "black",
+                 linewidth = 1) +
+    geom_vline(xintercept = 0,
+               linetype = "dashed",
+               linewidth = 1,
+               color = "black") +
+    facet_wrap(~consumption_translation, 
+               nrow = 1,
+               labeller = labeller(consumption_translation = labels)) + 
+    scale_fill_manual(values = scales::alpha(color_attributes, 0.5),
+                      labels = labelsDwellTimeProportions,
+                      breaks = c("difFixPropPrice", 
+                                 "difFixPropConsumption", 
+                                 "difFixPropPopularity")) +
+    labs(x = "Difference between Proportional Dwell Time (Session 2 - Session 1)", 
+         y = "Density",
+         title = title,
+         fill = "Attribute") +
+    theme(strip.background = element_blank(),
+          strip.text = element_text(size = 12,
+                                    face = "bold"),  # style for facet labels
+          panel.border = element_rect(color = "black", fill = NA),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank()
+    )
+  
+}
 
+plotFixPropDifOriginal <- plotFixPropsDif(aggFixPropsDifOriginal, labelsOriginal, "Original")
+plotFixPropDifReplication <- plotFixPropsDif(aggFixPropsDifReplication, labelsReplication, "Replication")
 
+# Combine plots
 
-aggFixPropsDifReplication %>%
-  ggplot(aes(x = fixProp,
-             fill = attribute)) +
-  geom_density() +
-  facet_grid(~consumption_translation)
+plotFixPropDifAll <- 
+  plotFixPropDifOriginal / 
+  plotFixPropDifReplication + 
+  plot_layout(guides = 'collect',
+              axis_title = 'collect') &
+  theme(legend.position = 'bottom')
+
+# Save plot
+ggsave("figures/figureProporitonalDwellTimeDifferences.pdf", 
+       plotFixPropDifAll, 
+       width = 12,
+       height = 10,
+       units = "in",
+       device = cairo_pdf)
+ 
 
 
 
