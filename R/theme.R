@@ -74,6 +74,9 @@ color_change <-"black"
 # colors gender 
 color_gender <- c("#D4CB92", "#395C6B")
 
+# colors attribute
+color_attributes <- c("#B5543A", "#4E6E58", "#D4B483")
+
 
 # labels
 labelsOriginal <- c("control" = "Control",
@@ -100,6 +103,10 @@ labelsAttributesF <- c("f_price0" = "Price\nOther",
                        "f_consumption1" = "Consumption\nEco",
                        "f_popularity0" = "Popularity\nOther",
                        "f_popularity1" = "Popularity\nEco")
+
+labelsDwellTimeProportions <- c("difFixPropPrice" = "Price",
+                                "difFixPropConsumption" = "Consumption",
+                                "difFixPropPopularity" = "Popularity")
 
 
 
