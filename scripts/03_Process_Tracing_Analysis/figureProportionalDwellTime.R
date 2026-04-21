@@ -133,12 +133,63 @@ fixPropsReplication_long <- pivot_longer(fixPropsReplication,
                                       values_to = "fixProp")
 
 
-# test some combinations
-fixPropsOriginal_long %>%
-  filter(session == 2 & option == "all" & consumption_translation == "control") %>%
-  ggplot(aes(x = fixProp,
-             fill = attribute)) +
-  geom_density()
+# Plot Session 1
+
+plotFixPropsBaseline <- function(dat, labels, title){
+  
+  plot <- dat %>%
+    filter(session == 1 & option == "all") %>%
+    ggplot(aes(x = fixProp,
+               fill = attribute)) +
+    geom_density(color = "black",
+                 linewidth = 1) +
+    facet_wrap(~consumption_translation, 
+               #nrow = 4,
+               ncol = 1,
+               labeller = labeller(consumption_translation = labels)) +
+    scale_fill_manual(values = scales::alpha(color_attributes, 0.5),
+                      labels = c("price" = "Price",
+                                 "consumption" = "Consumption",
+                                 "popularity" = "Popularity"),
+                      breaks = c("price",
+                                 "consumption",
+                                 "popularity")) + 
+    labs(x = "Proportional Dwell Time (Session 1)", 
+         y = "Density",
+         title = title,
+         fill = "Attribute") +
+    theme(strip.background = element_blank(),
+          strip.text = element_text(size = 12,
+                                    face = "bold"),  # style for facet labels
+          panel.border = element_rect(color = "black", fill = NA),
+          axis.text.y = element_blank(),
+          axis.ticks.y = element_blank()
+    )
+  
+  return(plot)
+  
+}
+
+plotFixPropsBaselineOriginal <- plotFixPropsBaseline(fixPropsOriginal_long, labelsOriginal, "Original")
+plotFixPropsBaselineReplication <- plotFixPropsBaseline(fixPropsReplication_long, labelsReplication, "Replication")
+
+# Combine plots
+
+plotFixPropBaselineAll <- 
+  plotFixPropsBaselineOriginal + 
+  plotFixPropsBaselineReplication + 
+  plot_layout(guides = 'collect',
+              axis_title = 'collect') &
+  theme(legend.position = 'bottom')
+
+# Save plot
+ggsave("figures/figureProporitonalDwellTimeBaseline.pdf", 
+       plotFixPropBaselineAll, 
+       width = 10,
+       height = 10,
+       units = "in",
+       device = cairo_pdf)
+
 
 
 # Inspect differences between conditions and sessions ----
