@@ -173,12 +173,10 @@ monitor <- c(
   "sigma_tau",
   "mu_scaling",
   "sigma_scaling",
-  # group-level weights (main inference targets)
-  #"mu_w", "mu_w_AT",
-  # group-level weight variability
-  #"kappa", "kappa_AT",
-  # subject-level weights and changes
-  #"wT", "wT_AT", "dw",
+  "mu_w", 
+  "mu_w_AT",
+  "kappa", 
+  "kappa_AT",
   "mu_dalpha",
   "sigma_dalpha",
   "mu_dscaling",
