@@ -174,9 +174,11 @@ monitor <- c(
   "mu_scaling",
   "sigma_scaling",
   "mu_w", 
-  "mu_w_AT",
-  "kappa", 
-  "kappa_AT",
+  "kappa",
+  "mu_dalr1",
+  "sigma_dalr1",
+  "mu_dalr2",
+  "sigma_dalr2",
   "mu_dalpha",
   "sigma_dalpha",
   "mu_dscaling",
@@ -398,6 +400,25 @@ hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(weight_subj_parameters[1, 3, ]
                           hdi_manipulation = HDIofMCMC(weight_subj_parameters[2, 3, ]),
                           hdi_change = HDIofMCMC(weight_subj_parameters[2, 3, ] -
                                                    weight_subj_parameters[1, 3, ]))
+
+
+######### Alternative ########
+
+hdi$w_price <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$`mu_w[1]`),
+                    hdi_manipulation = HDIofMCMC(combined_mcmcfin$`mu_w_AT[1]`),
+                    hdi_manipulation = HDIofMCMC(combined_mcmcfin$`mu_w_AT[1]` -
+                                                   combined_mcmcfin$`mu_w[1]`))
+
+hdi$w_consumption <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$`mu_w[2]`),
+                    hdi_manipulation = HDIofMCMC(combined_mcmcfin$`mu_w_AT[2]`),
+                    hdi_manipulation = HDIofMCMC(combined_mcmcfin$`mu_w_AT[2]` -
+                                                   combined_mcmcfin$`mu_w[2]`))
+
+hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$`mu_w[3]`),
+                          hdi_manipulation = HDIofMCMC(combined_mcmcfin$`mu_w_AT[3]`),
+                          hdi_manipulation = HDIofMCMC(combined_mcmcfin$`mu_w_AT[3]` -
+                                                         combined_mcmcfin$`mu_w[3]`))
+
 
 
 ### HDIs other parameters -------
