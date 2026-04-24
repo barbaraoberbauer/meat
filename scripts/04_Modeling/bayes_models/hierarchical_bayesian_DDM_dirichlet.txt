@@ -44,19 +44,11 @@ model {
     	alpha_w[2] <- 1
     	alpha_w[3] <- 1
 
-    	# Session 2: symmetric uniform prior over simplex
-    	#alpha_w_AT[1] <- 1
-    	#alpha_w_AT[2] <- 1
-    	#alpha_w_AT[3] <- 1
-
 	# Define group priors for weights
 	# -----------------------------------------------
 
 	mu_w[1:3] ~ ddirch(alpha_w[])
 	kappa ~ dgamma(1, 0.1) # inter-subject variability
-
-	#mu_w_AT[1:3] ~ ddirch(alpha_w_AT[])
-	#kappa_AT ~ dgamma(1, 0.1)
 
 	# change parameters in ALR space
 	mu_dalr1 ~ dnorm(0,1)
@@ -139,14 +131,8 @@ model {
 		# ----------
 
 		wT[s, 1:3]    ~ ddirch(mu_w[]    * kappa)    
-    		#wT_AT[s, 1:3] ~ ddirch(mu_w_AT[] * kappa_AT) 
 
-		# Derived group-level change parameters
-		#dw[s, 1] <- wT_AT[s, 1] - wT[s, 1]   # change in price weight
-		#dw[s, 2] <- wT_AT[s, 2] - wT[s, 2]   # change in energy weight
-		#dw[s, 3] <- wT_AT[s, 3] - wT[s, 3]   # change in popularity weight
-
-		# Transform session 1 weights to Addititve Log-Ration (ALR) space
+		# Transform session 1 weights to Addititve Log-Ratio (ALR) space
 		alr1[s] <- log(wT[s,1] / wT[s,3]) # log(price / popularity)
 		alr2[s] <- log(wT[s,2] / wT[s,3]) # log(energy / popularity)
 
