@@ -1,0 +1,32 @@
+#maaDDM simulation
+model {
+	##########################
+	# model the data
+	##########################
+
+	#JAGS for loop specifies the distributional assumptions for the variable that is defined within its body
+	for (i in 1:N) {
+
+		#specify parameters depending on sessions
+		weight1[i] <- wT[Subject[i],1]*equals(Session[i],1) + wT_AT[Subject[i],1]*equals(Session[i],2)
+		weight2[i] <- wT[Subject[i],2]*equals(Session[i],1) + wT_AT[Subject[i],2]*equals(Session[i],2)
+		weight3[i] <- wT[Subject[i],3]*equals(Session[i],1) + wT_AT[Subject[i],3]*equals(Session[i],2)
+
+		alpha_x[i] <- alpha[Subject[i]]*equals(Session[i],1) + alpha_AT[Subject[i]]*equals(Session[i],2)
+
+		scaling_x[i] <- scaling[Subject[i]]*equals(Session[i],1) + scaling_AT[Subject[i]]*equals(Session[i],2)
+
+		tau_x[i] <- tau[Subject[i]]*equals(Session[i],1) + tau_AT[Subject[i]]*equals(Session[i],2)
+
+		sp_x[i] <- sp[Subject[i]]*equals(Session[i],1) + sp_AT[Subject[i]]*equals(Session[i],2)
+
+
+		#calculate mean drift rate mu
+		mu[i] <- weight1[i]*(Price_Eco[i]-Price_NonEco[i]) + weight2[i]*(Energy_Eco[i]-Energy_NonEco[i]) + weight3[i]*(Popularity_Eco[i]-Popularity_NonEco[i])
+		
+		#draw from wiener distribution
+		x[i] ~ dwiener(alpha_x[i], tau_x[i], sp_x[i], scaling_x[i] * mu[i])
+
+	}
+	
+}
