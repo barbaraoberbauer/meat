@@ -49,6 +49,6 @@ plot_posterior_predictives <- function(session_value, title){
       x = "Response Time (in sec)",
       y = "Frequency",
     ) + 
-    coord_cartesian(ylim = c(-130, 190), xlim = c(0, maxRT+1)) 
+    coord_cartesian(ylim = c(-130, 220), xlim = c(0, maxRT+1)) 
   
 }
