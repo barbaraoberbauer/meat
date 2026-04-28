@@ -20,7 +20,7 @@ if(!is.null(dev.list())) dev.off()
 packages <- c("tidyverse",
               "dplyr",
               "ggplot2",
-              "cowplot",
+              "patchwork",
               "bayestestR")
 
 # Function to check if a package is installed
@@ -117,14 +117,17 @@ df_subset <- df_subset[order(df_subset$id_new),]
 # calculate max empirical response time to determine bins
 maxRT <- (max(df_subset$t_decision)/1000) + 2 #extend max response time so that max RT is also in bin
 
+# # determine binwidth
+# binwidth <- 1.4
+# 
+# # create breaks
+# breaks <- seq(0, 
+#               maxRT, 
+#               by = binwidth)
 
-# determine binwidth
-binwidth <- 1.4
+n_breaks <- 25
 
-# create breaks
-breaks <- seq(0, 
-              maxRT, 
-              by = binwidth)
+breaks <- seq(0, maxRT, length.out = n_breaks)
 
 
 # calculate frequencies
@@ -137,7 +140,10 @@ frequency <- df_subset %>%
 
 # add mid of bins to frequency
 # calculate mid bins
-mid_bins <- seq(binwidth/2, length.out = length(breaks)-1, by = binwidth)
+# mid_bins <- seq(binwidth/2, length.out = length(breaks)-1, by = binwidth)
+# frequency$mid_bins <- rep(mid_bins, 4)
+
+mid_bins <- (breaks[-length(breaks)] + breaks[-1]) / 2
 frequency$mid_bins <- rep(mid_bins, 4)
 
 # set up data frame to store frequencies from simulation runs
@@ -176,30 +182,6 @@ for (run in 1:ncol(simResults)) {
   
 }
 
-### Calculate BCIs ---------
-
-###### Equal-tail BCIs ------
-
-# Define the boundaries for quantiles
-# lower_boundary <- 0.025
-# upper_boundary <- 0.975
-# 
-# # calculate bcis for each row
-# frequencies_sim$lower_bci <- apply(frequencies_sim[,5:ncol(frequencies_sim)],
-#                                    1,
-#                                    function(row) quantile(row, lower_boundary, na.rm = FALSE))
-# 
-# frequencies_sim$upper_bci <- apply(frequencies_sim[,5:ncol(frequencies_sim)],
-#                                    1,
-#                                    function(row) quantile(row, upper_boundary, na.rm = FALSE))
-# 
-# # add lower and upper bci to empirical data (frequency)
-# frequency <- frequency %>%
-#   left_join(frequencies_sim %>%
-#               select(session, choice, bins, lower_bci, upper_bci), 
-#             by = c("session", "choice", "bins"))
-# 
-# rm(binwidth, breaks, lower_boundary, upper_boundary, maxRT, run)
 
 ###### HDIs --------
 
@@ -241,27 +223,11 @@ post_pred_session_1 <- plot_posterior_predictives(1, "Session 1")
 post_pred_session_2 <- plot_posterior_predictives(2, "Session 2")
 
 ### Arrange Plots in Grid
-posterior_predictives <- plot_grid(# plots
-  post_pred_session_1 + theme(legend.position = "none"),
-  post_pred_session_2 + theme(legend.position = "none"),
-  
-  # settings
-  ncol = 2,
-  labels = c("a", "b"),
-  label_size = 20
-)
-
-# get legend
-legend <- get_legend(post_pred_session_1 + 
-                       guides(color = guide_legend(nrow = 1)) +
-                       theme(legend.position = "bottom"))
-
-
-posterior_predictives <- plot_grid(posterior_predictives,
-                                   legend,
-                                   ncol = 1,
-                                   rel_heights = c(1, .1))
-
+posterior_predictives <- (post_pred_session_1 +
+  post_pred_session_2 + 
+  plot_layout(guides = 'collect',
+              axis_title = 'collect')) &
+  theme(legend.position = 'bottom')
 
 # save plot
 filename <- paste0("figures/posterior_predictives_ddm_dirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".png")
