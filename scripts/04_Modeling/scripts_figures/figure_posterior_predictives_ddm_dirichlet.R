@@ -60,10 +60,10 @@ load("data/preprocessedDataReplication.RData")
 
 ### Specify subset of data ----
 
-dataset <- "original"
+dataset <- "replication"
 # datasets: "original", "replication"
 
-translation_of_interest <- "environmental_friendliness"
+translation_of_interest <- "rating_add"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
 
@@ -75,7 +75,7 @@ group_of_interest <- "price_translation_present"
 # groups: "price_translation_absent", "price_translation_present"
 # only applicable to original data
 
-time <- "20260424_0727"
+time <- "20260422_2135"
 # time stamp of data generation
 
 
@@ -266,3 +266,6 @@ posterior_predictives <- plot_grid(posterior_predictives,
 # save plot
 filename <- paste0("figures/posterior_predictives_ddm_dirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".png")
 ggsave(filename, posterior_predictives, width = 12, height = 6)
+
+filenameRDS <- paste0("figures/posterior_predictives_ddm_dirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
+saveRDS(posterior_predictives, filenameRDS)
