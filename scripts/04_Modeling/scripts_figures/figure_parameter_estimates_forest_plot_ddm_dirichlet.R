@@ -366,16 +366,16 @@ group_param_estimates <- plot_grid(# plots
   vjust = 1.2
 )
 
-# # get legend
-# legend <- get_legend(pboundary +
-#                        guides(color = guide_legend(nrow = 1)) +
-#                        theme(legend.position = "bottom"))
-# 
-# # add legend
-# group_param_estimates <- plot_grid(group_param_estimates,
-#                                    legend,
-#                                    ncol = 1,
-#                                    rel_heights = c(1, .1))
+# get legend
+legend <- get_legend(pboundary +
+                       guides(color = guide_legend(nrow = 1)) +
+                       theme(legend.position = "bottom"))
+
+# add legend
+group_param_estimates <- plot_grid(group_param_estimates,
+                                   legend,
+                                   ncol = 1,
+                                   rel_heights = c(1, .1))
 
 
 
@@ -383,5 +383,7 @@ group_param_estimates <- plot_grid(# plots
 filename <- paste0("figures/group_param_estimates_forest_DDM_Dirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".pdf")
 ggsave(filename, group_param_estimates, width = 12, height = 11)
 
+filenameRDS <- paste0("figures/group_param_estimates_forest_DDM_Dirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
+saveRDS(group_param_estimates, filenameRDS)
 
 
