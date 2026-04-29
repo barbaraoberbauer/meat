@@ -20,7 +20,8 @@ if(!is.null(dev.list())) dev.off()
 packages <- c("tidyverse",
               "dplyr",
               "rjags",
-              "runjags")
+              "runjags",
+              "ggplot2")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -40,6 +41,11 @@ library(tidyverse)
 library(dplyr)
 library(rjags)
 library(runjags)
+library(ggplot2)
+
+# Load theme
+source("R/theme.R")
+theme_set(themeMEAT())
 
 # Load function written by John Kruschke for diagnostics
 # https://github.com/boboppie/kruschke-doing_bayesian_data_analysis/blob/master/2e/DBDA2E-utilities.R
@@ -52,10 +58,10 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-dataset <- "original"
+dataset <- "replication"
 # datasets: "original", "replication"
 
-translation_of_interest <- "environmental_friendliness"
+translation_of_interest <- "rating_add"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
 
@@ -67,7 +73,7 @@ group_of_interest <- "price_translation_present"
 # groups: "price_translation_absent", "price_translation_present"
 # only applicable to original data
 
-time <- "20260424_0727"
+time <- "20260422_2135"
 # time stamp of data generation
 
 
@@ -121,6 +127,54 @@ summary_statistics <- add.summary(runJagsOut,
 # Rhats (Gelman-Rubin statistic) --------
 
 Rhats <- summary_statistics$psrf
+
+### Plot Rhats -----
+
+# Extract only group-level params (much faster)
+group_params <- grep("^mu_", varnames(as.mcmc.list(runJagsOut)), value = TRUE)
+mcmc_subset <- as.mcmc.list(runJagsOut)[, group_params]  # subset chains
+
+gr <- gelman.diag(mcmc_subset, multivariate = FALSE)  
+
+param_labels <- c(
+  "mu_alpha"    = "Boundary",
+  "mu_dalpha"   = "Δ Boundary",
+  "mu_scaling"  = "Scaling",
+  "mu_dscaling" = "Δ Scaling",
+  "mu_tau"      = "Non-decision Time",
+  "mu_dtau"     = "Δ Non-decision Time",
+  "mu_w[1]"     = "Weight Price",
+  "mu_w[2]"     = "Weight Consumption",
+  "mu_w[3]"     = "Weight Popularity",
+  "mu_dalr1"    = "Δ Weight Ratio 1",
+  "mu_dalr2"    = "Δ Weight Ratio 2",
+  "mu_sp"       = "Starting Point",
+  "mu_dsp"      = "Δ Starting Point"
+)
+
+rhat_df <- data.frame(
+  parameter = rownames(gr$psrf),
+  point_est = gr$psrf[, 1],
+  upper_ci  = gr$psrf[, 2]
+)
+
+# Plot
+plotRhats <- ggplot(rhat_df, aes(y = reorder(parameter, 
+                                point_est))) +
+  geom_vline(xintercept = 1.05,
+             linewidth = 1.2,
+             linetype = "dashed", 
+             color = color_error) +
+  geom_pointrange(aes(x = point_est, 
+                      xmin = point_est,  # lower bound = point estimate 
+                      xmax = upper_ci),
+                  linewidth = 1,
+                  size = 0.8) +
+  scale_y_discrete(labels = param_labels) + 
+  labs(x = "Rhat", y = NULL, title = "Gelman-Rubin Statistic")
+
+filenameRDS <- paste0("figures/RhatsDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
+saveRDS(plotRhats, filenameRDS)
 
 
 # Monte Carlo Standard Error --------
