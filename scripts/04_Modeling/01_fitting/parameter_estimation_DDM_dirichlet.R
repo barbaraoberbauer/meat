@@ -66,10 +66,10 @@ load("data/preprocessedDataReplication.RData")
 
 ### Specify subset of data ----
 
-dataset <- "replication"
+dataset <- "original"
 # datasets: "original", "replication"
 
-translation_of_interest <- "rating_add"
+translation_of_interest <- "environmental_friendliness"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace", "rating_replace"
 
@@ -174,9 +174,11 @@ monitor <- c(
   "mu_scaling",
   "sigma_scaling",
   "mu_w", 
-  "mu_w_AT",
-  "kappa", 
-  "kappa_AT",
+  "kappa",
+  "mu_dalr1",
+  "sigma_dalr1",
+  "mu_dalr2",
+  "sigma_dalr2",
   "mu_dalpha",
   "sigma_dalpha",
   "mu_dscaling",
@@ -191,7 +193,6 @@ monitor <- c(
   # Subject parameters
   "wT",
   "wT_AT",
-  "dw",
   "alpha",
   "dalpha",
   "alpha_AT",
@@ -354,50 +355,109 @@ hdi <- list()
 
 ### HDIs weights -------
 
-weights <- combined_mcmcfin %>%
-  select(starts_with("wT"))
+# weights <- combined_mcmcfin %>%
+#   select(starts_with("wT"))
+# 
+# start_strings <- c("wT[", "wT_AT[")
+# end_strings <- c(",1]", ",2]", ",3]")
+# 
+# weight_parameters <- matrix(NA, nrow = 2, ncol = 3)
+# weight_subj_parameters <- array(NA, dim = c(2, 3, SampleSize))
+# 
+# # loop through sessions
+# for (session in 1:2) {
+#   
+#   # loop through attributes
+#   for (att in 1:3) {
+#     
+#     attribute <- weights %>%
+#       select(starts_with(start_strings[session]) & ends_with(end_strings[att]))
+#     
+#     subj_parameter <- colMeans(attribute)
+#     
+#     param <- mean(subj_parameter)
+#     
+#     # save results
+#     weight_parameters[session, att] <- param
+#     weight_subj_parameters[session, att, ] <- subj_parameter
+#     
+#   }
+# 
+# }
+# 
+# hdi$w_price <- list(hdi_baseline = HDIofMCMC(weight_subj_parameters[1, 1, ]),
+#                     hdi_manipulation = HDIofMCMC(weight_subj_parameters[2, 1, ]),
+#                     hdi_change = HDIofMCMC(weight_subj_parameters[2, 1, ] -
+#                                              weight_subj_parameters[1, 1, ]))
+# 
+# hdi$w_consumption <- list(hdi_baseline = HDIofMCMC(weight_subj_parameters[1, 2, ]),
+#                     hdi_manipulation = HDIofMCMC(weight_subj_parameters[2, 2, ]),
+#                     hdi_change = HDIofMCMC(weight_subj_parameters[2, 2, ] -
+#                                              weight_subj_parameters[1, 2, ]))
+# 
+# hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(weight_subj_parameters[1, 3, ]),
+#                           hdi_manipulation = HDIofMCMC(weight_subj_parameters[2, 3, ]),
+#                           hdi_change = HDIofMCMC(weight_subj_parameters[2, 3, ] -
+#                                                    weight_subj_parameters[1, 3, ]))
 
-start_strings <- c("wT[", "wT_AT[")
-end_strings <- c(",1]", ",2]", ",3]")
 
-weight_parameters <- matrix(NA, nrow = 2, ncol = 3)
-weight_subj_parameters <- array(NA, dim = c(2, 3, SampleSize))
+# ######### Alternative hierarchical ########
+# 
+# hdi$w_price <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$`mu_w[1]`),
+#                     hdi_manipulation = HDIofMCMC(combined_mcmcfin$`mu_w_AT[1]`),
+#                     hdi_manipulation = HDIofMCMC(combined_mcmcfin$`mu_w_AT[1]` -
+#                                                    combined_mcmcfin$`mu_w[1]`))
+# 
+# hdi$w_consumption <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$`mu_w[2]`),
+#                     hdi_manipulation = HDIofMCMC(combined_mcmcfin$`mu_w_AT[2]`),
+#                     hdi_manipulation = HDIofMCMC(combined_mcmcfin$`mu_w_AT[2]` -
+#                                                    combined_mcmcfin$`mu_w[2]`))
+# 
+# hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$`mu_w[3]`),
+#                           hdi_manipulation = HDIofMCMC(combined_mcmcfin$`mu_w_AT[3]`),
+#                           hdi_manipulation = HDIofMCMC(combined_mcmcfin$`mu_w_AT[3]` -
+#                                                          combined_mcmcfin$`mu_w[3]`))
 
-# loop through sessions
-for (session in 1:2) {
-  
-  # loop through attributes
-  for (att in 1:3) {
-    
-    attribute <- weights %>%
-      select(starts_with(start_strings[session]) & ends_with(end_strings[att]))
-    
-    subj_parameter <- colMeans(attribute)
-    
-    param <- mean(subj_parameter)
-    
-    # save results
-    weight_parameters[session, att] <- param
-    weight_subj_parameters[session, att, ] <- subj_parameter
-    
-  }
+######### Alternative hierarchical within design ########
 
-}
+# Extract posterior samples
+mu_w_samples    <- as.matrix(combined_mcmcfin)[, c("mu_w[1]", "mu_w[2]", "mu_w[3]")]
+mu_dalr1_samples <- as.matrix(combined_mcmcfin)[, "mu_dalr1"]
+mu_dalr2_samples <- as.matrix(combined_mcmcfin)[, "mu_dalr2"]
 
-hdi$w_price <- list(hdi_baseline = HDIofMCMC(weight_subj_parameters[1, 1, ]),
-                    hdi_manipulation = HDIofMCMC(weight_subj_parameters[2, 1, ]),
-                    hdi_change = HDIofMCMC(weight_subj_parameters[2, 1, ] -
-                                             weight_subj_parameters[1, 1, ]))
+# Forward transform group mean Session 1 weights to ALR space
+mu_alr1 <- log(mu_w_samples[,1] / mu_w_samples[,3])
+mu_alr2 <- log(mu_w_samples[,2] / mu_w_samples[,3])
 
-hdi$w_consumption <- list(hdi_baseline = HDIofMCMC(weight_subj_parameters[1, 2, ]),
-                    hdi_manipulation = HDIofMCMC(weight_subj_parameters[2, 2, ]),
-                    hdi_change = HDIofMCMC(weight_subj_parameters[2, 2, ] -
-                                             weight_subj_parameters[1, 2, ]))
+# Add group mean change
+mu_alr1_AT <- mu_alr1 + mu_dalr1_samples
+mu_alr2_AT <- mu_alr2 + mu_dalr2_samples
 
-hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(weight_subj_parameters[1, 3, ]),
-                          hdi_manipulation = HDIofMCMC(weight_subj_parameters[2, 3, ]),
-                          hdi_change = HDIofMCMC(weight_subj_parameters[2, 3, ] -
-                                                   weight_subj_parameters[1, 3, ]))
+# Back-transform to simplex
+exp1_AT <- exp(mu_alr1_AT)
+exp2_AT <- exp(mu_alr2_AT)
+denom_AT <- 1 + exp1_AT + exp2_AT
+
+mu_w_AT_1 <- exp1_AT / denom_AT   # group mean price weight, Session 2
+mu_w_AT_2 <- exp2_AT / denom_AT   # group mean energy weight, Session 2
+mu_w_AT_3 <- 1       / denom_AT   # group mean popularity weight, Session 2
+
+# Save in HDIs
+
+hdi$w_price <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$`mu_w[1]`),
+                    hdi_manipulation = HDIofMCMC(unname(mu_w_AT_1)),
+                    hdi_manipulation = HDIofMCMC(unname(mu_w_AT_1) -
+                                                   combined_mcmcfin$`mu_w[1]`))
+
+hdi$w_consumption <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$`mu_w[2]`),
+                    hdi_manipulation = HDIofMCMC(unname(mu_w_AT_2)),
+                    hdi_manipulation = HDIofMCMC(unname(mu_w_AT_2) -
+                                                   combined_mcmcfin$`mu_w[2]`))
+
+hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$`mu_w[3]`),
+                          hdi_manipulation = HDIofMCMC(unname(mu_w_AT_3)),
+                          hdi_manipulation = HDIofMCMC(unname(mu_w_AT_3) -
+                                                         combined_mcmcfin$`mu_w[3]`))
 
 
 ### HDIs other parameters -------
