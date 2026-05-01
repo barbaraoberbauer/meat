@@ -127,19 +127,20 @@ plotChoiceProbReplication <- fun_plot_choice_prob(aggReplication[["df_agg_id"]],
                                                   labelsReplication, 
                                                   "Replication")
 
-# Combine plots
-
-plotChoiceProb <- 
-  plotChoiceProbOriginal + 
-  plotChoiceProbReplication + 
-  plot_layout(guides = 'collect',
-              axis_title = 'collect') &
-  theme(legend.position = 'top')
+# # Combine plots
+# 
+# plotChoiceProb <- 
+#   plotChoiceProbOriginal + 
+#   plotChoiceProbReplication + 
+#   plot_layout(guides = 'collect',
+#               axis_title = 'collect') &
+#   theme(legend.position = 'top')
 
 
 
 # Save plot
-save(plotChoiceProb, file = "figures/figure3a.RData")
-#ggsave("figures/choice_probability_me.png", fig_choice_prob, width = 6, height = 5)
+save(plotChoiceProbOriginal, 
+     plotChoiceProbReplication,
+     file = "figures/plots_choiceprob.RData")
 
 

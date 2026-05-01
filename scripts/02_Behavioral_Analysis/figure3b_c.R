@@ -177,8 +177,14 @@ plotRt <-
 
 
 # Save plot
-save(plotAtt, plotRt, file = "figures/figure3b_c.RData")
+#save(plotAtt, plotRt, file = "figures/figure3b_c.RData")
+save(plotRtOriginal,
+     plotRtReplication,
+     file = "figures/plots_rt.RData")
 
+save(plotAttOriginal,
+     plotAttReplication,
+     file = "figures/plots_att.RData")
   
 
 

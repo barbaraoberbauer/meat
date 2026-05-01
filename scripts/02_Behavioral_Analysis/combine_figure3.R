@@ -47,32 +47,45 @@ rm(package, packages, is_package_installed)
 
 ### Load plots ---------
 
-load("figures/figure3a.RData")
-load("figures/figure3b_c.RData")
+load("figures/plots_choiceprob.RData")
+load("figures/plots_rt.RData")
+load("figures/plots_att.RData")
 
 
 # Combine plots --------
 
-top <- 
-  wrap_elements(plotChoiceProb) +
-  labs(tag = "a")
+top <- plotChoiceProbOriginal + plotChoiceProbReplication +
+  plot_layout(guides = 'collect', 
+              axis_titles = 'collect') &
+  theme(legend.position = 'top')
 
-left_bottom <-
-  wrap_elements(plotAtt) +
-  labs(tag = "b")
+left_bottom <- (plotRtOriginal / plotRtReplication +
+  plot_layout(
+        heights = c(4, 5),
+        guides = 'collect', 
+        axis_titles = "collect"
+      )) &
+  theme(legend.position = 'bottom')
 
-right_bottom <-
-  wrap_elements(plotRt) +
-  labs(tag = "c")
+right_bottom <- (plotAttOriginal / plotAttReplication +
+  plot_layout(
+    heights = c(4, 5),
+    guides = 'collect', 
+    axis_titles = "collect"
+  )) &
+  theme(legend.position = 'bottom')
+  
+bottom <- wrap_plots(left_bottom, right_bottom, ncol = 2)
 
-bottom <- left_bottom | right_bottom
 
-final_plot <- (top / bottom) &
+final_plot <- (top / bottom) +
+  plot_layout(heights = c(1, 2)) +
+  plot_annotation(
+    tag_levels = list(c('a', '', 'b', '', 'c', ''))  
+  ) &
   theme(
-    plot.margin = margin(t = 2,
-                         r = 5,
-                         b = 2,
-                         l = 5)
+    plot.margin = margin(t = 2, r = 5, b = 2, l = 5),
+    plot.tag = element_text(size = 20, face = "bold")  
   )
 
 
