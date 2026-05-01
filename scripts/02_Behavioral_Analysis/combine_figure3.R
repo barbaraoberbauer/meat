@@ -20,7 +20,8 @@ if(!is.null(dev.list())) dev.off()
 packages <- c("tidyverse",
               "dplyr",
               "ggplot2",
-              "patchwork")
+              "patchwork",
+              "grid")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -40,7 +41,7 @@ library(tidyverse)
 library(dplyr)
 library(ggplot2)
 library(patchwork)
-
+library(grid)
 
 rm(package, packages, is_package_installed)
 
@@ -54,15 +55,43 @@ load("figures/plots_att.RData")
 
 # Combine plots --------
 
+
 top <- plotChoiceProbOriginal + plotChoiceProbReplication +
   plot_layout(guides = 'collect', 
               axis_titles = 'collect') &
   theme(legend.position = 'top')
 
+blank <- wrap_elements(grid::textGrob(""))
+
+top_with_spacer <- wrap_plots(blank, top, 
+                              ncol = 2,
+                              widths = c(0.1, 2))
+
+# Add row labels as left-side plot titles
+original_label <- wrap_elements(
+  grid::textGrob("Original", 
+                 rot = 90,
+                 #hjust = 0.5,
+                 #vjust = 1,  
+                 gp = grid::gpar(fontsize = 18, fontface = "bold"))
+)
+
+replication_label <- wrap_elements(
+  grid::textGrob("Replication", 
+                 rot = 90, 
+                 #hjust = 0.5,
+                 #vjust = 1,  
+                 gp = grid::gpar(fontsize = 18, fontface = "bold"))
+)
+
+# Stack labels vertically as a narrow column
+label_column <- original_label / replication_label +
+  plot_layout(heights = c(4, 5))  
+
 left_bottom <- (plotRtOriginal / plotRtReplication +
   plot_layout(
         heights = c(4, 5),
-        guides = 'collect', 
+        guides = 'collect',
         axis_titles = "collect"
       )) &
   theme(legend.position = 'bottom')
@@ -70,30 +99,32 @@ left_bottom <- (plotRtOriginal / plotRtReplication +
 right_bottom <- (plotAttOriginal / plotAttReplication +
   plot_layout(
     heights = c(4, 5),
-    guides = 'collect', 
+    guides = 'collect',
     axis_titles = "collect"
   )) &
   theme(legend.position = 'bottom')
-  
-bottom <- wrap_plots(left_bottom, right_bottom, ncol = 2)
 
+# Add label column as first column in bottom
+bottom <- wrap_plots(label_column, left_bottom, right_bottom, 
+                     ncol = 3,
+                     widths = c(0.1, 1, 1)) &
+  theme(plot.margin = margin(t = 2, r = 17, b = 2, l = 17))
 
-final_plot <- (top / bottom) +
+final_plot <- (top_with_spacer / bottom) +
   plot_layout(heights = c(1, 2)) +
   plot_annotation(
-    tag_levels = list(c('a', '', 'b', '', 'c', ''))  
+    tag_levels = list(c('', 'a', '', '', '', 'b', '', 'c', ''))
   ) &
   theme(
-    plot.margin = margin(t = 2, r = 5, b = 2, l = 5),
-    plot.tag = element_text(size = 20, face = "bold")  
+    plot.tag = element_text(size = 20, face = "bold")
   )
+
 
 
 # Save plot ------------
 
-ggsave("figures/figure3.pdf", 
+ggsave("figures/figure3.png", 
        final_plot, 
-       width = 12,
-       height = 12,
-       units = "in",
-       device = cairo_pdf)
+       width = 11,
+       height = 10,
+       units = "in")

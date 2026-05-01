@@ -121,7 +121,7 @@ fun_plot_rt <- function(data, condition_labels){
     geom_vline(xintercept = 0, 
                linetype = 'dashed', 
                size = 1.5, 
-               color = "lightgrey") +
+               color = "darkgrey") +
     geom_point(size = 3.5) +
     geom_errorbar(aes(xmin = asymp.LCL, 
                       xmax = asymp.UCL), 
