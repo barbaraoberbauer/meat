@@ -104,8 +104,9 @@ df_agg_id %>%
        fill = "Session") +
   theme(strip.background = element_rect(color = "black",
                                         fill = "white"),
-        strip.text = element_text(face = "bold"))
+        strip.text = element_text(face = "bold",
+                                  size = 12))
 
 # Save plot
-ggsave("figures/choice_probability.png", fig_choice_prob, width = 10, height = 6)
+ggsave("figures/choice_probability.png", fig_choice_prob, width = 10, height = 5)
 
