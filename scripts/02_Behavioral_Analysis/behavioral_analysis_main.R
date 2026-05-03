@@ -421,6 +421,8 @@ fixed_effects_rt_function <- function(data){
 fixedEffectsRtOriginal <- fixed_effects_rt_function(dfOriginal)
 fixedEffectsRtReplication <- fixed_effects_rt_function(dfReplication)
 
+# Singularity warning for the replication study may be ignored, the full model is non singular
+
 # also look at significant fixed effects for conditions which are a direct replication
 # of the original study (control, emission add, rating add)
 fixedEffectsRtDirectReplication <- fixed_effects_rt_function(dfReplication %>%
