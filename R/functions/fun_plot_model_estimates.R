@@ -28,7 +28,7 @@ plot_model_estimates <- function(data, data_red, xtitle, xlim, labels){
     
     labs(
       x = xtitle,
-      y = "Consumption Translation",
+      y = "Experimental Condition",
       color = "Price Translation"
     ) +
     coord_cartesian(xlim = xlim) +

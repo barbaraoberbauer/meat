@@ -116,14 +116,15 @@ p_rt <- plot_model_estimates(results_rt,
   
 ### Arrange grids -----
 
-plot_att_rt <- plot_grid(p_att,
-                         p_rt,
+plot_att_rt <- plot_grid(p_rt,
+                         p_att,
                          ncol = 2,
-                         labels = c("a", "b")
+                         labels = c("a", "b"),
+                         label_size = 20
 )
 
 # save plot
-ggsave("figures/plot_att_rt.png", plot_att_rt, width = 9, height = 4.5)
+ggsave("figures/plot_att_rt.png", plot_att_rt, width = 11, height = 5)
 
 
 
