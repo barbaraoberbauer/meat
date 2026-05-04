@@ -97,7 +97,8 @@ plotEcoChoiceDwellTime <- function(data, labels, title){
   plot <- ggplot(data, aes(x = binMean, y = ecoProb, color = session)) +
     geom_hline(yintercept = 0.5,
                linetype = "dashed",
-               color = "darkgrey") +
+               linewidth = 1,
+               color = "black") +
     geom_point(size = 3) +
     geom_line(linewidth = 0.7) +
     geom_errorbar(aes(ymin = ecoProb - 2 * seEcoProb, 
@@ -108,8 +109,8 @@ plotEcoChoiceDwellTime <- function(data, labels, title){
                nrow = 2,
                labeller = labeller(consumption_translation = labels)) +
     coord_cartesian(ylim = c(0,1)) + 
-    labs(x = "Normalized dwell time difference (eco - other)", 
-         y = "P(Eco Choice)",
+    labs(x = "Normalized Dwell Time Difference (Eco - Other)", 
+         y = "Probability of Choosing \nMore Ecological Option",
          title = title,
          color = "Session") +
     theme(strip.background = element_blank(),
@@ -144,12 +145,11 @@ plotChooseEcoProbabilityNorm <-
 
 
 # Save plot
-ggsave("figures/figureKrajbich.pdf", 
+ggsave("figures/figureKrajbich.png", 
        plotChooseEcoProbabilityNorm, 
-       width = 12,
-       height = 9,
-       units = "in",
-       device = cairo_pdf)
+       width = 10,
+       height = 7,
+       units = "in")
 
 
 
