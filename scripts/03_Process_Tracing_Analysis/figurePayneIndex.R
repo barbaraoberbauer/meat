@@ -54,50 +54,6 @@ load("data/preprocessedDataReplication.RData")
 
 # Calculate within alternative and within attribute transitions ------
 
-# dfReplicationProcess$withinAttribute <- NA
-# dfReplicationProcess$withinAlternative <- NA
-# 
-# # within option
-# 
-# for (row in 1:nrow(dfReplicationProcess)) {
-#   
-#   if (dfReplicationProcess$fixNum[row] != 1) {
-#     
-#     # is the fixated option non-eco?
-#     currentOption <- grepl("NonEco", dfReplicationProcess$name[row], fixed = TRUE)
-#     previousOption <- grepl("NonEco", dfReplicationProcess$name[row-1], fixed = TRUE)
-#     
-#     # if both are either true or false, the transition was withinOption
-#     ifelse(currentOption == previousOption, dfReplicationProcess$withinAlternative[row] <- 1,
-#            dfReplicationProcess$withinAlternative[row] <- 0)
-#     
-#   }
-#   
-# }
-# 
-# # within attribute
-# 
-# for (row in 1:nrow(dfReplicationProcess)) {
-#   
-#   if (dfReplicationProcess$fixNum[row] != 1) {
-#     
-#     # is the fixated option non-eco?
-#     currentAttribute <- str_remove(dfReplicationProcess$name[row], "NonEco")
-#     currentAttribute <- str_remove(currentAttribute, "Eco")
-#     
-#     previousAttribute <- str_remove(dfReplicationProcess$name[row-1], "NonEco")
-#     previousAttribute <- str_remove(previousAttribute, "Eco")
-#     
-#     # if both are either true or false, the transition was withinOption
-#     ifelse(currentAttribute == previousAttribute, dfReplicationProcess$withinAttribute[row] <- 1,
-#            dfReplicationProcess$withinAttribute[row] <- 0)
-#     
-#   }
-#   
-# }
-
-# AI suggestion is faster 
-
 dfReplicationProcess <- dfReplicationProcess %>%
   group_by(id, session, consumption_translation, trial, task) %>%
   mutate(
@@ -156,11 +112,10 @@ ggplot(data = PayneIndex,
        fill = "Session")
   
 # Save plot
-ggsave("figures/figurePayneIndex.pdf", 
+ggsave("figures/figurePayneIndex.png", 
        plotPayneIndex, 
-       width = 9,
-       height = 6,
-       units = "in",
-       device = cairo_pdf)
+       width = 7,
+       height = 5,
+       units = "in")
 
 
