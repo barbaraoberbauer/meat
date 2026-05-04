@@ -77,6 +77,8 @@ dfReplication$ddt_scaled <- scale(dfReplication$ddt_eco_noneco_norm)
 # test whether the relationship between dwell time (advantage on ecological option) and choice differs
 # across conditions and sessions
 
+### Check for Significant Fixed Effects -------
+
 fixed_effects_function <- function(data){
   
   fixed_effects_choice <- afex::mixed(choice ~ (1 | id) + session * ddt_scaled *
@@ -94,6 +96,7 @@ fixed_effects_function <- function(data){
 fixedEffectsOriginal <- fixed_effects_function(dfOriginal)
 fixedEffectsReplication <- fixed_effects_function(dfReplication)
 
+### Set up model ----
 
 choice_dwellTime_model_function <- function(data){
   
@@ -119,21 +122,32 @@ summary(dwellTimeChoiceOriginal)
 summary(dwellTimeChoiceReplication)
 
 
+### EMM Comparison -------
+
+emtrend_function <- function(choice_model) {
+  
+  trends <- emtrends(choice_model,
+                     ~ session * consumption_translation,
+                     var = "ddt_scaled")
+  
+  # Compare sessions only within each consumption_translation level
+  trend_session_pairs <- pairs(trends, 
+                               simple = "session",
+                               reverse = TRUE)
+  
+  confint_session_pairs <- confint(trend_session_pairs)
+  
+  return(list(
+    trends                = trends,
+    trend_session_pairs   = trend_session_pairs,
+    confint_session_pairs = confint_session_pairs
+  ))
+}
+
+trendsOriginal    <- emtrend_function(dwellTimeChoiceOriginal)
+trendsReplication <- emtrend_function(dwellTimeChoiceReplication)
 
 
-
-
-##########################
-
-dfOriginal_subgroup <- dfOriginal %>%
-  filter(consumption_translation == "emissions")
-
-choice_model <- glmer(choice ~ (ddt_eco_noneco_norm + (t_consumption1 - t_consumption0) +
-                        (t_price1 - t_price0) + (t_popularity1 - t_popularity0)) * session + (1 | session), 
-                      data = dfOriginal_subgroup, 
-                      family = binomial(link = "logit"), 
-                      control = glmerControl(optimizer="bobyqa", 
-                                             optCtrl = list(maxfun=2e5)))
 
 
 
