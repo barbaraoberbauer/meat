@@ -213,72 +213,30 @@ monitor <- c(
 
 ### Set up initial values ------
 
-# sd <- 0.1
-# 
-# GenInits = function() {
-# 
-#   mu_alpha = rnorm(1, 6, sd)
-#   sigma_alpha = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_tau = rnorm(1, 0.5, sd)
-#   sigma_tau = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_scaling = rnorm(1, 1, sd)
-#   sigma_scaling = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_w1 = rnorm(1, 0, sd)
-#   sigma_w1 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_w2 = rnorm(1, 0, sd)
-#   sigma_w2 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_sp = rnorm(1, 0.5, sd)
-#   sigma_sp = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_dw1 = rnorm(1, 0, sd)
-#   sigma_dw1 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_dw2 = rnorm(1, 0, sd)
-#   sigma_dw2 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_dtheta = rnorm(1, 0, sd)
-#   sigma_dtheta = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_dphi = rnorm(1, 0, sd)
-#   sigma_dphi = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_dalpha = rnorm(1, 0, sd)
-#   sigma_dalpha = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_dscaling = rnorm(1, 0, sd)
-#   sigma_dscaling = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_dtau = rnorm(1, 0, sd)
-#   sigma_dtau = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-#   mu_dsp = rnorm(1, 0, sd)
-#   sigma_dsp = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-# 
-#   list(
-#     mu_alpha = mu_alpha,
-#     sigma_alpha = sigma_alpha,
-#     mu_tau = mu_tau,
-#     sigma_tau = sigma_tau,
-#     mu_scaling = mu_scaling,
-#     sigma_scaling = sigma_scaling,
-#     mu_w1 = mu_w1,
-#     sigma_w1 = sigma_w1,
-#     mu_w2 = mu_w2,
-#     sigma_w2 = sigma_w2,
-#     mu_sp = mu_sp,
-#     sigma_sp = sigma_sp,
-#     mu_dw1 = mu_dw1,
-#     sigma_dw1 = sigma_dw1,
-#     mu_dw2 = mu_dw2,
-#     sigma_dw2 = sigma_dw2,
-#     mu_dalpha = mu_dalpha,
-#     sigma_dalpha = sigma_dalpha,
-#     mu_dscaling = mu_dscaling,
-#     sigma_dscaling = sigma_dscaling,
-#     mu_dtau = mu_dtau,
-#     sigma_dtau = sigma_dtau,
-#     mu_dsp = mu_dsp,
-#     sigma_dsp = sigma_dsp
-#   )
-# 
-# }
+GenInits <- function() list(
+  # Group weights — start near equal
+  mu_w    = c(1/3, 1/3, 1/3),
+  mu_w_AT = c(1/3, 1/3, 1/3),
+  
+  # Kappa — start at moderate concentration
+  kappa    = 10,
+  kappa_AT = 10,
+  
+  # ALR change parameters — start at no change
+  mu_dalr1 = 0,
+  mu_dalr2 = 0,
+  
+  # Other parameters
+  mu_alpha   = 8,
+  mu_tau     = 0.3,
+  mu_scaling = 1,
+  mu_sp      = 0.5
+)
 
 
 ### Set model specifications ------
 
-nchains <- 4
+nchains <- 6
 nAdaptSteps <- 5000
 nBurninSteps <- 25000
 nUseSteps = nchains * 6500 # total number of used steps
@@ -308,7 +266,7 @@ runJagsOut <- run.jags(method = "parallel",
                        module = "wiener",
                        data = dat,
                        n.chains = nchains,
-                       #inits = GenInits(),
+                       inits = GenInits(),
                        adapt = nAdaptSteps,
                        burnin = nBurninSteps,
                        sample = ceiling(nUseSteps/nchains),
@@ -354,71 +312,6 @@ combined_mcmcfin <- as.data.frame(do.call(rbind, mcmcfin))
 hdi <- list()
 
 ### HDIs weights -------
-
-# weights <- combined_mcmcfin %>%
-#   select(starts_with("wT"))
-# 
-# start_strings <- c("wT[", "wT_AT[")
-# end_strings <- c(",1]", ",2]", ",3]")
-# 
-# weight_parameters <- matrix(NA, nrow = 2, ncol = 3)
-# weight_subj_parameters <- array(NA, dim = c(2, 3, SampleSize))
-# 
-# # loop through sessions
-# for (session in 1:2) {
-#   
-#   # loop through attributes
-#   for (att in 1:3) {
-#     
-#     attribute <- weights %>%
-#       select(starts_with(start_strings[session]) & ends_with(end_strings[att]))
-#     
-#     subj_parameter <- colMeans(attribute)
-#     
-#     param <- mean(subj_parameter)
-#     
-#     # save results
-#     weight_parameters[session, att] <- param
-#     weight_subj_parameters[session, att, ] <- subj_parameter
-#     
-#   }
-# 
-# }
-# 
-# hdi$w_price <- list(hdi_baseline = HDIofMCMC(weight_subj_parameters[1, 1, ]),
-#                     hdi_manipulation = HDIofMCMC(weight_subj_parameters[2, 1, ]),
-#                     hdi_change = HDIofMCMC(weight_subj_parameters[2, 1, ] -
-#                                              weight_subj_parameters[1, 1, ]))
-# 
-# hdi$w_consumption <- list(hdi_baseline = HDIofMCMC(weight_subj_parameters[1, 2, ]),
-#                     hdi_manipulation = HDIofMCMC(weight_subj_parameters[2, 2, ]),
-#                     hdi_change = HDIofMCMC(weight_subj_parameters[2, 2, ] -
-#                                              weight_subj_parameters[1, 2, ]))
-# 
-# hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(weight_subj_parameters[1, 3, ]),
-#                           hdi_manipulation = HDIofMCMC(weight_subj_parameters[2, 3, ]),
-#                           hdi_change = HDIofMCMC(weight_subj_parameters[2, 3, ] -
-#                                                    weight_subj_parameters[1, 3, ]))
-
-
-# ######### Alternative hierarchical ########
-# 
-# hdi$w_price <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$`mu_w[1]`),
-#                     hdi_manipulation = HDIofMCMC(combined_mcmcfin$`mu_w_AT[1]`),
-#                     hdi_manipulation = HDIofMCMC(combined_mcmcfin$`mu_w_AT[1]` -
-#                                                    combined_mcmcfin$`mu_w[1]`))
-# 
-# hdi$w_consumption <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$`mu_w[2]`),
-#                     hdi_manipulation = HDIofMCMC(combined_mcmcfin$`mu_w_AT[2]`),
-#                     hdi_manipulation = HDIofMCMC(combined_mcmcfin$`mu_w_AT[2]` -
-#                                                    combined_mcmcfin$`mu_w[2]`))
-# 
-# hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$`mu_w[3]`),
-#                           hdi_manipulation = HDIofMCMC(combined_mcmcfin$`mu_w_AT[3]`),
-#                           hdi_manipulation = HDIofMCMC(combined_mcmcfin$`mu_w_AT[3]` -
-#                                                          combined_mcmcfin$`mu_w[3]`))
-
-######### Alternative hierarchical within design ########
 
 # Extract posterior samples
 mu_w_samples    <- as.matrix(combined_mcmcfin)[, c("mu_w[1]", "mu_w[2]", "mu_w[3]")]
