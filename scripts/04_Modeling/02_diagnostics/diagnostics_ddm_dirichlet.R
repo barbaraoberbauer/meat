@@ -121,6 +121,7 @@ summary_statistics <- add.summary(runJagsOut,
                                            "mu_w[3]",
                                            "mu_dalr1",
                                            "mu_dalr2",
+                                           "kappa",
                                            "mu_sp",       # starting point bias
                                            "mu_dsp"))      
 
@@ -132,6 +133,7 @@ Rhats <- summary_statistics$psrf
 
 # Extract only group-level params (much faster)
 group_params <- grep("^mu_", varnames(as.mcmc.list(runJagsOut)), value = TRUE)
+group_params <- c(group_params, "kappa")
 mcmc_subset <- as.mcmc.list(runJagsOut)[, group_params]  # subset chains
 
 gr <- gelman.diag(mcmc_subset, multivariate = FALSE)  
@@ -148,6 +150,7 @@ param_labels <- c(
   "mu_w[3]"     = "Weight Popularity",
   "mu_dalr1"    = "Δ Weight Ratio 1",
   "mu_dalr2"    = "Δ Weight Ratio 2",
+  "kappa"       = "Kappa",
   "mu_sp"       = "Starting Point",
   "mu_dsp"      = "Δ Starting Point"
 )
@@ -252,6 +255,13 @@ diagMCMC(codaObject = mcmcfin, parName = "mu_dalr2")
 
 openGraph(height=5, width=7)
 plotPost(mcmcfin[, "mu_dalr2"], main="mu_dalr2", xlab=bquote(mu_dalr2))
+
+###### Kappa ----
+
+diagMCMC(codaObject = mcmcfin, parName = "kappa")
+
+openGraph(height=5, width=7)
+plotPost(mcmcfin[, "kappa"], main="kappa", xlab=bquote(kappa))
 
 
 
