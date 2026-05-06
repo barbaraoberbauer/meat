@@ -286,8 +286,8 @@ plotFixPropDifAll <-
 # Save plot
 ggsave("figures/figureProporitonalDwellTimeDifferences.png", 
        plotFixPropDifAll, 
-       width = 12,
-       height = 8,
+       width = 10,
+       height = 7,
        units = "in")
  
 
