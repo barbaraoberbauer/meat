@@ -249,7 +249,7 @@ plotFixPropsDif <- function(dat, labels, title){
     facet_wrap(~consumption_translation, 
                nrow = 1,
                labeller = labeller(consumption_translation = labels)) + 
-    scale_fill_manual(values = scales::alpha(color_attributes, 0.5),
+    scale_fill_manual(values = scales::alpha(color_attributes, 0.6),
                       labels = labelsDwellTimeProportions,
                       breaks = c("difFixPropPrice", 
                                  "difFixPropConsumption", 
@@ -274,19 +274,21 @@ plotFixPropDifReplication <- plotFixPropsDif(aggFixPropsDifReplication, labelsRe
 # Combine plots
 
 plotFixPropDifAll <- 
-  plotFixPropDifOriginal / 
+  plotFixPropDifOriginal /
+  plot_spacer() /
   plotFixPropDifReplication + 
-  plot_layout(guides = 'collect',
+  plot_layout(heights = c(1, 0.3, 1),
+              guides = 'collect',
               axis_title = 'collect') &
-  theme(legend.position = 'bottom')
+  theme(legend.position = 'bottom',
+        plot.margin = margin(2, 2, 2, 2))
 
 # Save plot
-ggsave("figures/figureProporitonalDwellTimeDifferences.pdf", 
+ggsave("figures/figureProporitonalDwellTimeDifferences.png", 
        plotFixPropDifAll, 
        width = 12,
-       height = 10,
-       units = "in",
-       device = cairo_pdf)
+       height = 8,
+       units = "in")
  
 
 
