@@ -147,8 +147,98 @@ emtrend_function <- function(choice_model) {
 trendsOriginal    <- emtrend_function(dwellTimeChoiceOriginal)
 trendsReplication <- emtrend_function(dwellTimeChoiceReplication)
 
+# Calculate dwell time on consumption --------
+
+dfOriginal$ddt_consumption <- rowSums(dfOriginal[,c("t_consumption0",
+                                                    "t_consumption1",
+                                                    "t_consumption_translation0",
+                                                    "t_consumption_translation1")],
+                                      na.rm = TRUE)
+
+dfOriginal$ddt_consumption_norm <- dfOriginal$ddt_consumption/(dfOriginal$t_option1 + dfOriginal$t_option0)
+dfOriginal$ddt_consumption_scaled <- scale(dfOriginal$ddt_consumption_norm)
+dfOriginal$ddt_consumption <- dfOriginal$ddt_consumption/1000 # in sec
 
 
+dfReplication$ddt_consumption <- rowSums(dfReplication[,c("t_consumption0",
+                                                          "t_consumption1",
+                                                          "t_consumption_translation0",
+                                                          "t_consumption_translation1")],
+                                         na.rm = TRUE)
+
+dfReplication$ddt_consumption_norm <- dfReplication$ddt_consumption/(dfReplication$t_option1 + dfReplication$t_option0)
+dfReplication$ddt_consumption_scaled <- scale(dfReplication$ddt_consumption_norm)
+dfReplication$ddt_consumption <- dfReplication$ddt_consumption/1000 # in sec
 
 
+# Influence of consumption attention on choice --------
+
+### Check for Significant Fixed Effects -------
+
+fixed_effects_consumption <- function(data){
+  
+  fixed_effects_choice <- afex::mixed(choice ~ (1 | id) + session * ddt_consumption_scaled *
+                                        consumption_translation, 
+                                      data = data, 
+                                      family = binomial(link = "logit"), 
+                                      control = glmerControl(optimizer="bobyqa", 
+                                                             optCtrl = list(maxfun=2e5)),
+                                      method = 'LRT')
+  
+  return(fixed_effects_choice)
+  
+}
+
+fixedEffectsConsumptionOriginal <- fixed_effects_consumption(dfOriginal)
+fixedEffectsConsumptionReplication <- fixed_effects_consumption(dfReplication)
+
+### Set up model ----
+
+choice_dwellTimeConsumption_model_function <- function(data){
+  
+  # Effect of translation of energy and water consumption (no translation/control) on product choice  
+  contrasts(data$consumption_translation) <- 
+    contr.treatment(levels(data$consumption_translation), base = 1)
+  
+  model <- glmer(choice ~ (1 | id) + session * ddt_consumption_scaled *
+                   consumption_translation,, 
+                 data = data, 
+                 family = binomial(link = "logit"), 
+                 control = glmerControl(optimizer="bobyqa", 
+                                        optCtrl = list(maxfun=2e5)))
+  
+  return(model)
+  
+}
+
+dwellTimeConsumptionChoiceOriginal <- choice_dwellTimeConsumption_model_function(dfOriginal)
+dwellTimeConsumptionChoiceReplication <- choice_dwellTimeConsumption_model_function(dfReplication)
+
+summary(dwellTimeConsumptionChoiceOriginal)
+summary(dwellTimeConsumptionChoiceReplication)
+
+### EMM Comparison -------
+
+emtrendConsumption_function <- function(choice_model) {
+  
+  trends <- emtrends(choice_model,
+                     ~ session * consumption_translation,
+                     var = "ddt_consumption_scaled")
+  
+  # Compare sessions only within each consumption_translation level
+  trend_session_pairs <- pairs(trends, 
+                               simple = "session",
+                               reverse = TRUE)
+  
+  confint_session_pairs <- confint(trend_session_pairs)
+  
+  return(list(
+    trends                = trends,
+    trend_session_pairs   = trend_session_pairs,
+    confint_session_pairs = confint_session_pairs
+  ))
+}
+
+trendsConsumptionOriginal    <- emtrendConsumption_function(dwellTimeConsumptionChoiceOriginal)
+trendsConsumptionReplication <- emtrendConsumption_function(dwellTimeConsumptionChoiceReplication)
 
