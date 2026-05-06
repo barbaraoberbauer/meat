@@ -78,7 +78,7 @@ dfReplication$ddt_consumption <- dfReplication$ddt_consumption/1000 # in sec
 # Normalized Probability Choosing Eco - Dwell Time on Consumption --------
 
 # number of bins
-n_bins <- 6
+n_bins <- 10
 
 calculateEcoChoiceDwellTimeConsumption <- function(data){
   
@@ -116,8 +116,8 @@ plotEcoChoiceDwellTime <- function(data, labels, title){
                nrow = 2,
                labeller = labeller(consumption_translation = labels)) +
     coord_cartesian(ylim = c(0,1)) + 
-    labs(x = "Relative dwell time on consumption (and its translation)", 
-         y = "P(Eco Choice)",
+    labs(x = "Relative Dwell Time on Consumption (and its Translation)", 
+         y = "Probability of Choosing \nMore Ecological Option",
          title = title,
          color = "Session") +
     theme(strip.background = element_blank(),
@@ -144,18 +144,19 @@ plotChooseEcoProbabilityConsumptionNormReplication <-
 
 plotChooseEcoProbabilityConsumptionNorm <- 
   plotChooseEcoProbabilityConsumptionNormOriginal + 
+  plot_spacer() +
   plotChooseEcoProbabilityConsumptionNormReplication + 
-  plot_layout(widths = c(1,1.5),
+  plot_layout(widths = c(1, 0.1, 1.5),
               guides = 'collect',
               axis_title = 'collect') &
-  theme(legend.position = 'bottom')
+  theme(legend.position = 'bottom',
+        plot.margin = margin(2, 2, 2, 2))
 
 
 # Save plot
-ggsave("figures/figureKrajbichAttribute.pdf", 
+ggsave("figures/figureKrajbichAttribute.png", 
        plotChooseEcoProbabilityConsumptionNorm, 
-       width = 12,
-       height = 9,
-       units = "in",
-       device = cairo_pdf)
+       width = 10,
+       height = 7,
+       units = "in")
 

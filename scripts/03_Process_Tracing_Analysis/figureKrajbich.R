@@ -136,12 +136,14 @@ plotChooseEcoProbabilityNormReplication <-
 # Combine plots
 
 plotChooseEcoProbabilityNorm <- 
-  plotChooseEcoProbabilityNormOriginal + 
+  plotChooseEcoProbabilityNormOriginal +
+  plot_spacer() +
   plotChooseEcoProbabilityNormReplication + 
-  plot_layout(widths = c(1,1.5),
+  plot_layout(widths = c(1, 0.1, 1.5),
               guides = 'collect',
               axis_title = 'collect') &
-  theme(legend.position = 'bottom')
+  theme(legend.position = 'bottom',
+        plot.margin = margin(2, 2, 2, 2))
 
 
 # Save plot
