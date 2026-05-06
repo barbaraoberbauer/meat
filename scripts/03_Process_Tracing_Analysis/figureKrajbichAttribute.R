@@ -105,7 +105,8 @@ plotEcoChoiceDwellTime <- function(data, labels, title){
   plot <- ggplot(data, aes(x = binMean, y = ecoProb, color = session)) +
     geom_hline(yintercept = 0.5,
                linetype = "dashed",
-               color = "darkgrey") +
+               linewidth = 1,
+               color = "black") +
     geom_point(size = 3) +
     geom_line(linewidth = 0.7) +
     geom_errorbar(aes(ymin = ecoProb - 2 * seEcoProb, 
