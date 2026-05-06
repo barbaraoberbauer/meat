@@ -63,10 +63,10 @@ load("data/preprocessedDataReplication.RData")
 
 ### Specify subset of data ----
 
-dataset <- "replication"
+dataset <- "original"
 # datasets: "original", "replication"
 
-translation_of_interest <- "rating_add"
+translation_of_interest <- "environmental_friendliness"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace", "rating_replace"
 
@@ -423,78 +423,56 @@ hdi <- list()
 
 ### HDIs weights -------
 
-# see Hellmann, S., Busch, N., Hof, L., & Pachur, T. (2025). Bias by Variance: How Common Parameter Transformations in Hierarchical Models Distort Group-Level Estimates.
-# for correct mapping of group-level means onto the parameter scale
+# Extract posterior samples
+mu_w_samples    <- as.matrix(combined_mcmcfin)[, c("mu_w[1]", "mu_w[2]", "mu_w[3]")]
+mu_dalr1_samples <- as.matrix(combined_mcmcfin)[, "mu_dalr1"]
+mu_dalr2_samples <- as.matrix(combined_mcmcfin)[, "mu_dalr2"]
 
-###### price -------
+# Forward transform group mean Session 1 weights to ALR space
+mu_alr1 <- log(mu_w_samples[,1] / mu_w_samples[,3])
+mu_alr2 <- log(mu_w_samples[,2] / mu_w_samples[,3])
 
-map_input_w1 <- combined_mcmcfin$mu_w1/sqrt(1 + combined_mcmcfin$sigma_w1^2)
-map_input_dw1 <- combined_mcmcfin$mu_dw1/sqrt(1 + combined_mcmcfin$sigma_dw1)
+# Add group mean change
+mu_alr1_AT <- mu_alr1 + mu_dalr1_samples
+mu_alr2_AT <- mu_alr2 + mu_dalr2_samples
 
-hdi$w_price <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_w1)),
-                    hdi_manipulation = HDIofMCMC(pnorm(map_input_w1 + map_input_dw1)),
-                    hdi_change = HDIofMCMC(pnorm(map_input_w1 + map_input_dw1) -
-                                             pnorm(map_input_w1)))
+# Back-transform to simplex
+exp1_AT <- exp(mu_alr1_AT)
+exp2_AT <- exp(mu_alr2_AT)
+denom_AT <- 1 + exp1_AT + exp2_AT
 
+mu_w_AT_1 <- exp1_AT / denom_AT   # group mean price weight, Session 2
+mu_w_AT_2 <- exp2_AT / denom_AT   # group mean energy weight, Session 2
+mu_w_AT_3 <- 1       / denom_AT   # group mean popularity weight, Session 2
 
-###### consumption -------
+# Save in HDIs
 
-map_input_w2 <- combined_mcmcfin$mu_w2/sqrt(1 + combined_mcmcfin$sigma_w2^2)
-map_input_dw2 <- combined_mcmcfin$mu_dw2/sqrt(1 + combined_mcmcfin$sigma_dw2^2)
+hdi$w_price <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$`mu_w[1]`),
+                    hdi_manipulation = HDIofMCMC(unname(mu_w_AT_1)),
+                    hdi_manipulation = HDIofMCMC(unname(mu_w_AT_1) -
+                                                   combined_mcmcfin$`mu_w[1]`))
 
-hdi$w_consumption <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_w2)),
-                          hdi_manipulation = HDIofMCMC(pnorm(map_input_w2 +
-                                                               map_input_dw2)),
-                          hdi_change = HDIofMCMC(pnorm(map_input_w2 + map_input_dw2) -
-                                                   pnorm(map_input_w2)))
+hdi$w_consumption <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$`mu_w[2]`),
+                          hdi_manipulation = HDIofMCMC(unname(mu_w_AT_2)),
+                          hdi_manipulation = HDIofMCMC(unname(mu_w_AT_2) -
+                                                         combined_mcmcfin$`mu_w[2]`))
 
-
-###### popularity -------
-
-combined_mcmcfin$mu_w3 <- 1 - pnorm(map_input_w1) - pnorm(map_input_w2)
-combined_mcmcfin$mu_w3_AT <- 1 - 
-  pnorm(map_input_w1 + map_input_dw1) - 
-  pnorm(map_input_w2 + map_input_dw2)
-
-hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_w3),
-                          hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_w3_AT),
-                          hdi_change = HDIofMCMC(combined_mcmcfin$mu_w3_AT - combined_mcmcfin$mu_w3))
+hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$`mu_w[3]`),
+                         hdi_manipulation = HDIofMCMC(unname(mu_w_AT_3)),
+                         hdi_manipulation = HDIofMCMC(unname(mu_w_AT_3) -
+                                                        combined_mcmcfin$`mu_w[3]`))
 
 
 ### HDIs attentional parameters -------
 
-if (bounded == TRUE) {
+hdi$theta <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_theta),
+                  hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta),
+                  hdi_change = HDIofMCMC(combined_mcmcfin$mu_dtheta))
   
-  map_input_theta <- combined_mcmcfin$mu_theta/sqrt(1 + combined_mcmcfin$sigma_theta^2)
-  map_input_dtheta <- combined_mcmcfin$mu_dtheta/sqrt(1 + combined_mcmcfin$sigma_dtheta^2)
+hdi$phi <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_phi),
+                hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi),
+                hdi_change = HDIofMCMC(combined_mcmcfin$mu_dphi))
   
-  hdi$theta <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_theta)),
-                            hdi_manipulation = HDIofMCMC(pnorm(map_input_theta + map_input_dtheta)),
-                            hdi_change = HDIofMCMC(pnorm(map_input_theta + map_input_dtheta) -
-                                                     pnorm(map_input_dtheta)))
-  
-  map_input_phi <- combined_mcmcfin$mu_phi/sqrt(1 + combined_mcmcfin$sigma_phi^2)
-  map_input_dphi <- combined_mcmcfin$mu_dphi/sqrt(1 + combined_mcmcfin$sigma_dphi^2)
-  
-  hdi$phi <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_phi)),
-                    hdi_manipulation = HDIofMCMC(pnorm(map_input_phi + map_input_dphi)),
-                    hdi_change = HDIofMCMC(pnorm(map_input_phi + map_input_dphi) -
-                                             pnorm(map_input_dphi)))
-  
-  
-} else if (bounded == FALSE) {
-  
-  hdi$theta <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_theta),
-                    hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta),
-                    hdi_change = HDIofMCMC(combined_mcmcfin$mu_dtheta))
-  
-  hdi$phi <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_phi),
-                    hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi),
-                    hdi_change = HDIofMCMC(combined_mcmcfin$mu_dphi))
-  
-}
-
-
 
 ### HDIs other parameters -------
 
@@ -529,17 +507,17 @@ hdi$sp <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_sp),
 
 if (dataset == "replication") {
   
-  filename <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".rds")
+  filename <- paste0("data/modeling/hdimaaDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
   
 } else if (dataset == "original") {
   
   if (run_subgroups_separately == FALSE) {
     
-    filename <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", file_extension, "_", time, ".rds")
+    filename <- paste0("data/modeling/hdimaaDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
     
   } else if (run_subgroups_separately == TRUE) {
     
-    filename <- paste0("data/modeling/hdi", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", file_extension, "_", time, ".rds")
+    filename <- paste0("data/modeling/hdimaaDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", time, ".rds")
     
   }
   
