@@ -75,7 +75,24 @@ color_change <-"black"
 color_gender <- c("#D4CB92", "#395C6B")
 
 # colors attribute
-color_attributes <- c("#B5543A", "#4E6E58", "#D4B483")
+#color_attributes <- c("#EB821A", "#6BA89C", "#23373B")
+
+color_attributes <- c("#B8A0D4", "#D4457A", "#4A2070")
+
+# Option 1: Light lavender, bright pink, deep purple
+c("#B8A0D4", "#D4457A", "#4A2070")
+
+# Option 2: Soft lilac, hot pink, dark plum
+c("#C4A8E0", "#C42080", "#3D1455")
+
+# Option 3: Periwinkle, magenta, dark berry
+c("#8E82C9", "#D4308A", "#5C1A6B")
+
+# Option 4: Pale lavender, vivid magenta, near-black purple
+c("#C0A8E8", "#C41E8A", "#2D0A45")
+
+# Option 5: Mid purple, hot pink, dark wine
+c("#7B52B8", "#E0208A", "#4A0A3A")
 
 
 # labels
