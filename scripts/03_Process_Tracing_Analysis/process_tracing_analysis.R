@@ -25,7 +25,8 @@ packages <- c("tidyverse",
               "dplyr",
               "lmerTest",
               "emmeans",
-              "afex")
+              "afex",
+              "FSA")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -49,6 +50,7 @@ library(dplyr)
 library(lmerTest)
 library(emmeans)
 library(afex)
+library(FSA)
 
 
 rm(package, packages, is_package_installed)
@@ -241,4 +243,231 @@ emtrendConsumption_function <- function(choice_model) {
 
 trendsConsumptionOriginal    <- emtrendConsumption_function(dwellTimeConsumptionChoiceOriginal)
 trendsConsumptionReplication <- emtrendConsumption_function(dwellTimeConsumptionChoiceReplication)
+
+# Calculate proportional dwell time differences ------
+
+### Calculate dwell time proportions ------
+
+calculate_fix_props <- function(dat, dataset){
+  
+  fixProps <- data.frame(price_0 = rep(NA, nrow(dat)),
+                         consumption_0 = rep(NA, nrow(dat)),
+                         popularity_0 = rep(NA, nrow(dat)),
+                         price_1 = rep(NA, nrow(dat)),
+                         consumption_1 = rep(NA, nrow(dat)),
+                         popularity_1 = rep(NA, nrow(dat))) 
+  
+  # attributes and their translation are treated as one attribute for simplicity
+  # depending on dataset, summarize price and price translation
+  if (dataset == "original") {
+    
+    fixProps$price_0 <- rowSums(dat[, c("t_price0", "t_price_translation0")], na.rm = TRUE)/1000
+    fixProps$price_1 <- rowSums(dat[, c("t_price1", "t_price_translation1")], na.rm = TRUE)/1000
+    
+  } else if (dataset == "replication") {
+    
+    fixProps$price_0 <- dat$t_price0/1000
+    fixProps$price_1 <- dat$t_price1/1000
+    
+  }
+  
+  fixProps$consumption_0 <- rowSums(dat[, c("t_consumption0", "t_consumption_translation0")], na.rm = TRUE)/1000
+  fixProps$popularity_0 <- dat$t_popularity0/1000
+  fixProps$consumption_1 <- rowSums(dat[, c("t_consumption1", "t_consumption_translation1")], na.rm = TRUE)/1000
+  fixProps$popularity_1 <- dat$t_popularity1/1000
+  
+  # divide by total duration of the trial
+  #fixProps <- fixProps/abs(df_subset$t_decision) #take absolute value instead of +/- coded RT
+  fixProps <- fixProps/dat$t_total # divide by total dwell time
+  
+  # normalize each trial to 1
+  fixProps <- fixProps/rowSums(fixProps)
+  
+  return(fixProps)
+  
+}
+
+fixPropsOriginal <- calculate_fix_props(dfOriginal, "original")
+fixPropsReplication <- calculate_fix_props(dfReplication, "replication")
+
+# add dwell time proportions to data frames
+fixPropsOriginal <- cbind(fixPropsOriginal, dfOriginal[, c("task", 
+                                                           "id", 
+                                                           "session", 
+                                                           "consumption_translation")])
+fixPropsReplication <- cbind(fixPropsReplication, dfReplication[, c("task", 
+                                                                    "id", 
+                                                                    "session", 
+                                                                    "consumption_translation")])
+
+# calculate net dwell time on attributes
+
+fixPropsOriginal$price_all <- (fixPropsOriginal$price_0 + fixPropsOriginal$price_1)/2
+fixPropsOriginal$consumption_all <- (fixPropsOriginal$consumption_0 + fixPropsOriginal$consumption_1)/2
+fixPropsOriginal$popularity_all <- (fixPropsOriginal$popularity_0 + fixPropsOriginal$popularity_1)/2
+
+fixPropsReplication$price_all <- (fixPropsReplication$price_0 + fixPropsReplication$price_1)/2
+fixPropsReplication$consumption_all <- (fixPropsReplication$consumption_0 + fixPropsReplication$consumption_1)/2
+fixPropsReplication$popularity_all <- (fixPropsReplication$popularity_0 + fixPropsReplication$popularity_1)/2
+
+### Inspect differences between conditions and sessions -------
+
+calculate_session_differences <- function(fixPropsDat){
+  
+  aggFixPropsDat <- fixPropsDat %>%
+    group_by(id, session, consumption_translation) %>%
+    summarize(meanFixPropPrice = mean(price_all),
+              meanFixPropConsumption = mean(consumption_all),
+              meanFixPropPopularity = mean(popularity_all))
+  
+  aggFixPropsDat <- aggFixPropsDat %>%
+    pivot_wider(id_cols = c(id, consumption_translation),
+                names_from = session,
+                values_from = c(contains("meanFix")),
+                names_glue = "{.value}_s{session}") %>%
+    filter(!if_any(everything(), is.na)) # filter subjects with missing values
+  
+  # calculate difference in proportional dwell times between sessions
+  aggFixPropsDat$difFixPropPrice <- aggFixPropsDat$meanFixPropPrice_s2 -
+    aggFixPropsDat$meanFixPropPrice_s1
+  
+  aggFixPropsDat$difFixPropConsumption <- aggFixPropsDat$meanFixPropConsumption_s2 -
+    aggFixPropsDat$meanFixPropConsumption_s1
+  
+  aggFixPropsDat$difFixPropPopularity <- aggFixPropsDat$meanFixPropPopularity_s2 -
+    aggFixPropsDat$meanFixPropPopularity_s1
+  
+  # keep only session values and transform to long format
+  aggFixPropsDat_long <- aggFixPropsDat %>%
+    select(id, consumption_translation, difFixPropPrice, difFixPropConsumption, difFixPropPopularity) %>%
+    pivot_longer(cols = c(contains("difFix")),
+                 names_to = c("attribute"),
+                 values_to = "fixProp")
+  
+  return(aggFixPropsDat_long)
+  
+}
+
+aggFixPropsDifOriginal <- calculate_session_differences(fixPropsOriginal)
+aggFixPropsDifReplication <- calculate_session_differences(fixPropsReplication)
+
+### Run one-sample t-tests vs. mu = 0 for each condition and attribute ---
+
+# normality is not met for all attributes
+aggFixPropsDifOriginal %>%
+  group_by(consumption_translation, attribute) %>%
+  summarise(p_shapiro = shapiro.test(fixProp)$p.value, .groups = "drop")
+
+aggFixPropsDifReplication %>%
+  group_by(consumption_translation, attribute) %>%
+  summarise(p_shapiro = shapiro.test(fixProp)$p.value, .groups = "drop")
+
+testAgainst0 <- function(aggFixProps){
+  
+  results <- aggFixProps %>%
+    group_by(consumption_translation, attribute) %>%
+    summarise(
+      n        = n(),
+      median   = median(fixProp, na.rm = TRUE),
+      sd       = sd(fixProp, na.rm = TRUE),
+      t_stat   = wilcox.test(fixProp, mu = 0)$statistic,
+      df_t     = wilcox.test(fixProp, mu = 0)$parameter,
+      p_value  = wilcox.test(fixProp, mu = 0)$p.value,
+      ci_low   = wilcox.test(fixProp, mu = 0)$conf.int[1],
+      ci_high  = wilcox.test(fixProp, mu = 0)$conf.int[2],
+      .groups  = "drop"
+    )
+  
+  # Apply FDR correction across all tests
+  results <- results %>%
+    mutate(p_adjusted = p.adjust(p_value, method = "BH"))
+  
+  return(results)
+  
+}
+
+testAgainst0Original <- testAgainst0(aggFixPropsDifOriginal)
+testAgainst0Replication <- testAgainst0(aggFixPropsDifReplication)
+
+
+### Compare results to control groups ------
+
+# Run Dunn's test per attribute, control as reference
+
+testAgainstControl <- function(aggFixProps){
+  
+  results_within <- aggFixProps %>%
+    group_by(sample, attribute) %>%
+    summarise(
+      dunn = list(
+        dunnTest(fixProp ~ consumption_translation,
+                 data = cur_data(),
+                 method = "bh")$res %>%
+          filter(grepl("control", Comparison))  # keep only comparisons involving control
+      ),
+      .groups = "drop"
+    ) %>%
+    unnest(dunn)
+  
+  return(results_within)
+
+}
+
+testAgainstCpntrolOriginal <- testAgainstControl(aggFixPropsDifOriginal)
+testAgainstControlReplication <- testAgainstControl(aggFixPropsDifReplication)
+
+### Combine datasets and check for differences between samples -----
+
+aggFixPropsDifOriginal$sample <- "original"
+aggFixPropsDifReplication$sample <- "replication"
+
+aggFixPropsDifReplication$id <- as.character(aggFixPropsDifReplication$id)
+
+aggFixPropsDifAll <- rbind(aggFixPropsDifOriginal, aggFixPropsDifReplication)
+
+# filter comparable conditions
+
+comparable_conditions <- c("control", "emissions", "environmental_friendliness",
+                           "emission_add", "rating_add")
+
+aggFixPropsDifAll <- aggFixPropsDifAll %>%
+  filter(consumption_translation %in% comparable_conditions)
+
+# rename conditions
+
+aggFixPropsDifAll$consumption_translation[aggFixPropsDifAll$consumption_translation == "emissions"] <- "emission_add"
+
+aggFixPropsDifAll$consumption_translation[aggFixPropsDifAll$consumption_translation == "environmental_friendliness"] <- "rating_add"
+
+### Inspect differences between samples -------
+
+# Run independent t-tests for each condition × attribute
+
+# check for normality
+
+# normality is not met for all attributes
+aggFixPropsDifAll %>%
+  group_by(consumption_translation, attribute, sample) %>%
+  summarise(p_shapiro = shapiro.test(fixProp)$p.value, .groups = "drop")
+
+results_between <- aggFixPropsDifAll %>%
+  group_by(consumption_translation, attribute) %>%
+  summarise(
+    n_per_sample = list(table(sample)),
+    mean_s1      = mean(fixProp[sample == "original"], na.rm = TRUE),
+    mean_s2      = mean(fixProp[sample == "replication"], na.rm = TRUE),
+    t_stat       = wilcox.test(fixProp ~ sample)$statistic,
+    df_t         = wilcox.test(fixProp ~ sample)$parameter,
+    p_value      = wilcox.test(fixProp ~ sample)$p.value,
+    ci_low       = wilcox.test(fixProp ~ sample)$conf.int[1],
+    ci_high      = wilcox.test(fixProp ~ sample)$conf.int[2],
+    .groups      = "drop"
+  ) %>%
+  mutate(p_adjusted = p.adjust(p_value, method = "BH"))
+
+
+
+
+
+
 
