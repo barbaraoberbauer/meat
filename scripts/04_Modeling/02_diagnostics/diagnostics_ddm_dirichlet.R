@@ -58,10 +58,10 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-dataset <- "replication"
+dataset <- "original"
 # datasets: "original", "replication"
 
-translation_of_interest <- "rating_add"
+translation_of_interest <- "environmental_friendliness"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
 
@@ -73,7 +73,7 @@ group_of_interest <- "price_translation_present"
 # groups: "price_translation_absent", "price_translation_present"
 # only applicable to original data
 
-time <- "20260422_2135"
+time <- "20260507_0453"
 # time stamp of data generation
 
 
