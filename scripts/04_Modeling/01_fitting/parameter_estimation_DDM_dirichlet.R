@@ -216,12 +216,10 @@ monitor <- c(
 GenInits <- function() list(
   # Group weights — start near equal
   mu_w    = c(1/3, 1/3, 1/3),
-  mu_w_AT = c(1/3, 1/3, 1/3),
-  
+
   # Kappa — start at moderate concentration
-  kappa    = 10,
-  kappa_AT = 10,
-  
+  log_kappa  = 1,
+
   # ALR change parameters — start at no change
   mu_dalr1 = 0,
   mu_dalr2 = 0,
