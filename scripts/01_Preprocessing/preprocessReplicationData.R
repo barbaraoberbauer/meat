@@ -268,6 +268,24 @@ df$t_option1 <- tmp$t_option1
 df <- dplyr::mutate(df, diff_t_options = ((t_option1 - t_option0)/(t_option1 + t_option0)))
 remove(tmp)
 
+# Calculate time between sessions -----
+
+dfSubmitted <- df %>%
+  group_by(id, session) %>%
+  summarize(dateCompleted = first(submitted))
+
+dfSubmittedWide <- dfSubmitted %>%
+  pivot_wider(names_from = session,
+              values_from = dateCompleted)
+
+dfSubmittedWide <- dfSubmittedWide %>%
+  rename(session1 = `1`, session2 = `2`)
+
+dfSubmittedWide$TimeBetweenSessions <- dfSubmittedWide$session2 - dfSubmittedWide$session1
+
+mean(dfSubmittedWide$TimeBetweenSessions)
+sd(dfSubmittedWide$TimeBetweenSessions)
+
 # Data Cleaning ---------
 
 # Count trials before data cleaning
