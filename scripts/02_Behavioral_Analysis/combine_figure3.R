@@ -69,7 +69,7 @@ top_with_spacer <- wrap_plots(blank, top,
 
 # Add row labels as left-side plot titles
 original_label <- wrap_elements(
-  grid::textGrob("Original", 
+  grid::textGrob("Study 1", 
                  rot = 90,
                  #hjust = 0.5,
                  #vjust = 1,  
@@ -77,7 +77,7 @@ original_label <- wrap_elements(
 )
 
 replication_label <- wrap_elements(
-  grid::textGrob("Replication", 
+  grid::textGrob("Study 2", 
                  rot = 90, 
                  #hjust = 0.5,
                  #vjust = 1,  

@@ -121,11 +121,11 @@ fun_plot_choice_prob <- function(data, condition_labels, title){
 
 plotChoiceProbOriginal <- fun_plot_choice_prob(aggOriginal[["df_agg_id"]], 
                                                labelsOriginal, 
-                                               "Original")
+                                               "Study 1")
 
 plotChoiceProbReplication <- fun_plot_choice_prob(aggReplication[["df_agg_id"]], 
                                                   labelsReplication, 
-                                                  "Replication")
+                                                  "Study 2")
 
 # # Combine plots
 # 
