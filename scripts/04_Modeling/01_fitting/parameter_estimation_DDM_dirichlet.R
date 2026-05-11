@@ -174,7 +174,7 @@ monitor <- c(
   "mu_scaling",
   "sigma_scaling",
   "mu_w", 
-  "kappa",
+  #"kappa",
   "mu_dalr1",
   "sigma_dalr1",
   "mu_dalr2",
@@ -218,7 +218,7 @@ GenInits <- function() list(
   mu_w    = c(1/3, 1/3, 1/3),
 
   # Kappa — start at moderate concentration
-  log_kappa  = 1,
+  #log_kappa  = 1,
 
   # ALR change parameters — start at no change
   mu_dalr1 = 0,
