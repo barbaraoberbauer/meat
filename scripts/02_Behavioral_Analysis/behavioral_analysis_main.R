@@ -27,7 +27,8 @@ packages <- c("tidyverse",
               "dplyr",
               "lmerTest",
               "emmeans",
-              "afex")
+              "afex",
+              "broom.mixed")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -51,6 +52,7 @@ library(dplyr)
 library(lmerTest)
 library(emmeans)
 library(afex)
+library(broom.mixed)
 
 
 rm(package, packages, is_package_installed)
@@ -60,6 +62,50 @@ rm(package, packages, is_package_installed)
 
 load("data/preprocessedDataOriginal.RData")
 load("data/preprocessedDataReplication.RData")
+
+
+# Combine datasets for comparisons ------
+
+# find common columns
+common_cols <- intersect(colnames(dfOriginal), colnames(dfReplication))
+
+# subset datasets for these columns
+dfOriginal_subset <- dfOriginal[, common_cols]
+dfReplication_subset <- dfReplication[, common_cols]
+
+# add information about sample
+dfOriginal_subset$sample <- "original"
+dfReplication_subset$sample <- "replication"
+
+# combine samples
+dfBothSamples <- rbind(dfOriginal_subset, dfReplication_subset)
+
+# turn variable sample into factor
+dfBothSamples$sample <- as.factor(dfBothSamples$sample)
+
+# filter for conditions that are equivalent across samples
+common_conditions <- c("control", "emissions", "environmental_friendliness",
+                           "emission_add", "rating_add")
+
+dfBothSamples <- dfBothSamples %>%
+  filter(consumption_translation %in% common_conditions)
+
+# rename conditions
+dfBothSamples$consumption_translation[dfBothSamples$consumption_translation == "emissions"] <- 
+  "emission_add"
+
+dfBothSamples$consumption_translation[dfBothSamples$consumption_translation == "environmental_friendliness"] <- 
+  "rating_add"
+
+# drop unused levels
+dfBothSamples$consumption_translation <- droplevels(dfBothSamples$consumption_translation)
+
+# remove unnecessary variables
+rm(dfOriginal_subset,
+   dfReplication_subset,
+   common_conditions,
+   common_cols)
+
 
 # Product Choice -----
 
@@ -125,6 +171,10 @@ Anova(baselineChoiceReplication)
 ### Check for Significant Fixed Effects -------
 
 fixed_effects_function <- function(data){
+  
+  # Effect of translation of energy and water consumption (no translation/control) on product choice  
+  contrasts(data$consumption_translation) <- 
+    contr.treatment(levels(data$consumption_translation), base = 1)
   
   fixed_effects_choice <- afex::mixed(choice ~ (session | id) + (1 | task) + session * consumption_translation, 
                                       data = data, 
@@ -195,6 +245,82 @@ emm_function <- function(choice_model){
 emmOriginal <- emm_function(choiceModelOriginal)
 emmReplication <- emm_function(choiceModelReplication)
 
+
+### Compare studies -------
+
+# Baseline model 
+
+baseline_compare_studies <- function(data_combined){
+  
+  contrasts(data_combined$consumption_translation) <- 
+    contr.treatment(levels(data_combined$consumption_translation), base = 1)
+  
+  data_combined_s1 <- subset(data_combined, session == 1)
+  
+  baseline_model <- afex::mixed(
+    choice ~ consumption_translation * sample + (1 | id) + (1 | task),
+    data = data_combined_s1,
+    family = binomial(link = "logit"),
+    control = glmerControl(optimizer = "bobyqa",
+                           optCtrl = list(maxfun = 2e5)),
+    method = "LRT"
+  )
+  
+  return(baseline_model)
+}
+
+baselineChoiceCombined <- baseline_compare_studies(dfBothSamples)
+
+
+# Fixed effects
+
+fixed_effects_combined_function <- function(data_combined){
+  
+  contrasts(data_combined$consumption_translation) <- 
+    contr.treatment(levels(data_combined$consumption_translation), base = 1)
+  
+  # Fit combined model
+  combined_model <- afex::mixed(
+    choice ~ (session | id) + (1 | task) + 
+      session * consumption_translation * sample,
+    data = data_combined,
+    family = binomial(link = "logit"),
+    control = glmerControl(optimizer = "bobyqa",
+                           optCtrl = list(maxfun = 2e5)),
+    method = "LRT"
+  )
+  
+  return(combined_model)
+  
+}
+
+fixedEffectsCombined <- fixed_effects_combined_function(dfBothSamples)
+
+# Perform emmeans comparison
+
+emm_compare_studies <- function(combined_model){
+  
+  EMM <- emmeans(combined_model,
+                 ~ consumption_translation * session * sample,
+                 type = "response")
+  
+  # Get session contrasts (t1 vs t2) for each condition x sample combination
+  emm_session <- pairs(EMM, reverse = TRUE, simple = "session")
+  
+  # Then compare those session contrasts between samples
+  emm_interaction <- pairs(emm_session, simple = "sample")
+  
+  emm_interaction_confint <- confint(emm_interaction)
+  
+  return(list(
+    emm_session = emm_session,
+    emm_interaction = emm_interaction,
+    emm_interaction_confint = emm_interaction_confint
+  ))
+  
+}
+
+emmCombined <- emm_compare_studies(fixedEffectsCombined)
 
 # Attention -----
 
@@ -376,7 +502,6 @@ rt_descriptives_function <- function(data){
 rtDescriptivesOriginal <- rt_descriptives_function(dfOriginal)
 rtDescriptivesReplication <- rt_descriptives_function(dfReplication)
 
-
 ### RT Consistency in Session 1 between Conditions ------
 
 baseline_rt <- function(data){
@@ -387,7 +512,7 @@ baseline_rt <- function(data){
   # Fit a model without the session interaction
   rt_model_session1 <- glmer(t_decision/1000 ~ consumption_translation + (1 | id) + (1 | task), 
                              data = data_session1, 
-                             family = "inverse.gaussian"(link='identity'),
+                             family = Gamma(link = "log"),
                              control = glmerControl(optimizer="bobyqa", 
                                                     optCtrl = list(maxfun=2e5)))
   
@@ -407,9 +532,12 @@ Anova(baselineRtReplication)
 
 fixed_effects_rt_function <- function(data){
   
-  fixed_effects_rt <- afex::mixed(t_decision/1000 ~ (session | id) + (1 | task) + session * consumption_translation, 
+  contrasts(data$consumption_translation) <- 
+    contr.treatment(levels(data$consumption_translation), base = 1)
+  
+  fixed_effects_rt <- afex::mixed(t_decision/1000 ~ (1 | id) + (1 | task) + session * consumption_translation, 
                                   data = data, 
-                                  family = "Gamma"(link='identity'), 
+                                  family = Gamma(link = "log"), 
                                   control = glmerControl(optimizer="bobyqa", 
                                                          optCtrl = list(maxfun=2e5)),
                                   method = 'LRT')
@@ -420,6 +548,23 @@ fixed_effects_rt_function <- function(data){
 
 fixedEffectsRtOriginal <- fixed_effects_rt_function(dfOriginal)
 fixedEffectsRtReplication <- fixed_effects_rt_function(dfReplication)
+
+# Convergence warning for original data may be ignored. Although a small gradient warning persisted, parameter estimates were consistent across multiple optimizers, suggesting the model had practically converged.
+
+# full_model <- glmer(
+#   t_decision/1000 ~ (1 | id) + (1 | task) + session * consumption_translation,
+#   data = dfOriginal,
+#   family = Gamma(link = "log"),
+#   control = glmerControl(optimizer = "bobyqa",
+#                          optCtrl = list(maxfun = 2e6))
+# )
+# all_fits <- allFit(full_model)
+# summary(all_fits)
+# 
+# # Compare estimates across optimizers
+# all_fits_df <- as.data.frame(summary(all_fits)$fixef)
+# print(all_fits_df)
+
 
 # Singularity warning for the replication study may be ignored, the full model is non singular
 
@@ -439,9 +584,9 @@ rt_model_function <- function(data){
   contrasts(data$consumption_translation) <- 
     contr.treatment(levels(data$consumption_translation), base = 1)
   
-  rt_model <- glmer(t_decision/1000 ~ (session | id) + (1 | task) + session * consumption_translation, 
+  rt_model <- glmer(t_decision/1000 ~ (1 | id) + (1 | task) + session * consumption_translation, 
                     data = data, 
-                    family = "Gamma"(link='identity'), 
+                    family = Gamma(link = "log"), 
                     control = glmerControl(optimizer="bobyqa", 
                                            optCtrl = list(maxfun=2e5)))
   
@@ -458,8 +603,6 @@ summary(rtModelReplication)
 
 ### EMM Comparison -------
 
-### EMM Comparison -------
-
 emm_rt_function <- function(rt_model){
   
   EMM_rt <- emmeans(rt_model, 
@@ -467,25 +610,25 @@ emm_rt_function <- function(rt_model){
                     type = "response")
   
   emm_session_rt <- pairs(EMM_rt, reverse = TRUE, simple = "session")
-  
+
   emm_session_rt_confint <- confint(emm_session_rt)
-  
+
   # extract estimates
-  results_rt <- as.data.frame(summary(emm_session_rt_confint))[c('consumption_translation',
-                                                                 'estimate', 
-                                                                 'SE',
-                                                                 'asymp.LCL',
-                                                                 'asymp.UCL')]
-  
-  # round to four decimals
-  results_rt[,c('estimate', 
+  results_rt <- as.data.frame(emm_session_rt_confint)[c('consumption_translation',
+                                                        'ratio',
+                                                        'SE',
+                                                        'asymp.LCL',
+                                                        'asymp.UCL')]
+
+  #round to four decimals
+  results_rt[,c('ratio',
                 'SE',
                 'asymp.LCL',
-                'asymp.UCL')] <- round(results_rt[,c('estimate', 
+                'asymp.UCL')] <- round(results_rt[,c('ratio',
                                                      'SE',
                                                      'asymp.LCL',
                                                      'asymp.UCL')], 4)
-  
+
   return(list(
     emm_session = emm_session_rt,
     emm_session_confint = emm_session_rt_confint,
@@ -497,8 +640,61 @@ emm_rt_function <- function(rt_model){
 emmRtOriginal <- emm_rt_function(rtModelOriginal)
 emmRtReplication <- emm_rt_function(rtModelReplication)
 
+### Compare studies -------
 
-# Save results
+# Baseline model 
+
+baseline_rt_compare_studies <- function(data_combined){
+  
+  data_combined_s1 <- subset(data_combined, session == 1)
+  
+  # rescale rt for convergence
+  #data_combined_s1$rt_scaled <- scale(data_combined_s1$t_decision / 1000)[,1]
+  
+  baseline_model <- afex::mixed(
+    t_decision/1000 ~ consumption_translation * sample + (1 | id) + (1 | task),
+    data = data_combined_s1,
+    family = Gamma(link = "log"),
+    control = glmerControl(optimizer="bobyqa", 
+                           optCtrl = list(maxfun=2e5)),
+    method = "LRT"
+  )
+  
+  return(baseline_model)
+}
+
+baselineRTCombined <- baseline_rt_compare_studies(dfBothSamples)
+
+
+# Fixed effects
+
+fixed_effects_rt_combined_function <- function(data_combined){
+  
+  contrasts(data_combined$consumption_translation) <- 
+    contr.treatment(levels(data_combined$consumption_translation), base = 1)
+  
+  fixed_effects_combined_rt <- afex::mixed(t_decision/1000 ~ (1 | id) + (1 | task) + session * consumption_translation, 
+                                  data = data_combined, 
+                                  family = Gamma(link = "log"), 
+                                  control = glmerControl(optimizer="bobyqa", 
+                                                         optCtrl = list(maxfun=2e5)),
+                                  method = 'LRT')
+  
+  return(fixed_effects_combined_rt)
+  
+}
+
+fixedEffectsCombinedRT <- fixed_effects_rt_combined_function(dfBothSamples)
+
+
+
+
+
+
+
+
+
+# Save results -----
 behavioralResultsOriginal <- list(att = emmAttOriginal[["results_att"]],
                                   rt = emmRtOriginal[["results_rt"]])
 
