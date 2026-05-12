@@ -231,13 +231,25 @@ emm_function <- function(choice_model){
                  ~ consumption_translation * session, 
                  type = "response")
   
+  # compare between sessions
   emm_session <- pairs(EMM, reverse = TRUE, simple = "session")
   
   emm_session_confint <- confint(emm_session)
   
+  # compare session effects to control group
+  emm_vs_control <- contrast(EMM,
+                             interaction = list(
+                               session = "consec",
+                               consumption_translation = "trt.vs.ctrl"
+                             ),
+                             type = "response")
+  emm_vs_control_confint <- confint(emm_vs_control)
+  
   return(list(
     emm_session = emm_session,
-    emm_session_confint = emm_session_confint
+    emm_session_confint = emm_session_confint,
+    emm_vs_control = emm_vs_control,
+    emm_vs_control_confint = emm_vs_control_confint
   ))
   
 }
@@ -363,7 +375,7 @@ baseline_att <- function(data){
   data_session1 <- subset(data, session == 1)
   
   # Fit a model without the session interaction
-  att_model_session1 <- lmer(diff_t_options ~ consumption_translation + (1 | id) + (1 | task), 
+  att_model_session1 <- lmer(diff_t_options ~ consumption_translation + (1 | task), 
                              data = data_session1, 
                              REML = FALSE,
                              control = lmerControl(optimizer="bobyqa", 
@@ -438,9 +450,20 @@ emm_att_function <- function(attention_model){
                      ~ consumption_translation * session, 
                      type = "response")
   
+  # compare across sessions
   emm_session_att <- pairs(EMM_att, reverse = TRUE, simple = "session")
-  
   emm_session_att_confint <- confint(emm_session_att)
+  
+  # compare session effects to control group
+  emm_vs_control <- contrast(EMM_att,
+                             interaction = list(
+                               session = "consec",
+                               consumption_translation = "trt.vs.ctrl"
+                             ),
+                             type = "response")
+  emm_vs_control_confint <- confint(emm_vs_control)
+  
+  
   
   # extract estimates
   results_att <- as.data.frame(summary(emm_session_att_confint))[c('consumption_translation',
@@ -461,13 +484,63 @@ emm_att_function <- function(attention_model){
   return(list(
     emm_session = emm_session_att,
     emm_session_confint = emm_session_att_confint,
-    results_att = results_att
+    results_att = results_att,
+    emm_vs_control = emm_vs_control,
+    emm_vs_control_confint = emm_vs_control_confint
   ))
   
 }
 
 emmAttOriginal <- emm_att_function(attentionModelOriginal)
 emmAttReplication <- emm_att_function(attentionModelReplication)
+
+### Compare studies -------
+
+# Baseline model 
+
+baseline_compare_att_studies <- function(data_combined){
+  
+  data_combined_s1 <- subset(data_combined, session == 1)
+  
+  baseline_model <- afex::mixed(
+    diff_t_options ~ consumption_translation * sample + (1 | task),
+    data = data_combined_s1,
+    control = lmerControl(optimizer = "bobyqa",
+                           optCtrl = list(maxfun = 2e5)),
+    method = "LRT"
+  )
+  
+  return(baseline_model)
+}
+
+baselineAttCombined <- baseline_compare_att_studies(dfBothSamples)
+
+
+# Fixed effects
+
+fixed_effects_att_combined_function <- function(data_combined){
+  
+  contrasts(data_combined$consumption_translation) <- 
+    contr.treatment(levels(data_combined$consumption_translation), base = 1)
+  
+  # Fit combined model
+  combined_model <- afex::mixed(
+    diff_t_options ~ (1 | id) + (1 | task) + session * consumption_translation * sample,
+    data = data_combined,
+    REML = FALSE,
+    control = lmerControl(optimizer = "bobyqa",
+                           optCtrl = list(maxfun = 2e5)),
+    method = "LRT"
+  )
+  
+  return(combined_model)
+  
+}
+
+fixedEffectsAttCombined <- fixed_effects_att_combined_function(dfBothSamples)
+
+# No post-hoc tests need to be performed as three-way interaction between condition,
+# session, and sample is not significant
 
 
 # Response Times ----
@@ -512,7 +585,7 @@ baseline_rt <- function(data){
   # Fit a model without the session interaction
   rt_model_session1 <- glmer(t_decision/1000 ~ consumption_translation + (1 | id) + (1 | task), 
                              data = data_session1, 
-                             family = Gamma(link = "log"),
+                             family = inverse.gaussian(link = "identity"),
                              control = glmerControl(optimizer="bobyqa", 
                                                     optCtrl = list(maxfun=2e5)))
   
@@ -535,9 +608,9 @@ fixed_effects_rt_function <- function(data){
   contrasts(data$consumption_translation) <- 
     contr.treatment(levels(data$consumption_translation), base = 1)
   
-  fixed_effects_rt <- afex::mixed(t_decision/1000 ~ (1 | id) + (1 | task) + session * consumption_translation, 
+  fixed_effects_rt <- afex::mixed(t_decision/1000 ~ (1 | task) + session * consumption_translation, 
                                   data = data, 
-                                  family = Gamma(link = "log"), 
+                                  family = inverse.gaussian(link = "identity"), 
                                   control = glmerControl(optimizer="bobyqa", 
                                                          optCtrl = list(maxfun=2e5)),
                                   method = 'LRT')
@@ -548,25 +621,6 @@ fixed_effects_rt_function <- function(data){
 
 fixedEffectsRtOriginal <- fixed_effects_rt_function(dfOriginal)
 fixedEffectsRtReplication <- fixed_effects_rt_function(dfReplication)
-
-# Convergence warning for original data may be ignored. Although a small gradient warning persisted, parameter estimates were consistent across multiple optimizers, suggesting the model had practically converged.
-
-# full_model <- glmer(
-#   t_decision/1000 ~ (1 | id) + (1 | task) + session * consumption_translation,
-#   data = dfOriginal,
-#   family = Gamma(link = "log"),
-#   control = glmerControl(optimizer = "bobyqa",
-#                          optCtrl = list(maxfun = 2e6))
-# )
-# all_fits <- allFit(full_model)
-# summary(all_fits)
-# 
-# # Compare estimates across optimizers
-# all_fits_df <- as.data.frame(summary(all_fits)$fixef)
-# print(all_fits_df)
-
-
-# Singularity warning for the replication study may be ignored, the full model is non singular
 
 # also look at significant fixed effects for conditions which are a direct replication
 # of the original study (control, emission add, rating add)
@@ -584,9 +638,9 @@ rt_model_function <- function(data){
   contrasts(data$consumption_translation) <- 
     contr.treatment(levels(data$consumption_translation), base = 1)
   
-  rt_model <- glmer(t_decision/1000 ~ (1 | id) + (1 | task) + session * consumption_translation, 
+  rt_model <- glmer(t_decision/1000 ~ (1 | task) + session * consumption_translation, 
                     data = data, 
-                    family = Gamma(link = "log"), 
+                    family = inverse.gaussian(link="identity"), 
                     control = glmerControl(optimizer="bobyqa", 
                                            optCtrl = list(maxfun=2e5)))
   
@@ -609,29 +663,40 @@ emm_rt_function <- function(rt_model){
                     ~ consumption_translation * session, 
                     type = "response")
   
+  # session effect within each condition
   emm_session_rt <- pairs(EMM_rt, reverse = TRUE, simple = "session")
-
   emm_session_rt_confint <- confint(emm_session_rt)
-
+  
   # extract estimates
   results_rt <- as.data.frame(emm_session_rt_confint)[c('consumption_translation',
-                                                        'ratio',
+                                                        'estimate',
                                                         'SE',
                                                         'asymp.LCL',
                                                         'asymp.UCL')]
 
   #round to four decimals
-  results_rt[,c('ratio',
+  results_rt[,c('estimate',
                 'SE',
                 'asymp.LCL',
-                'asymp.UCL')] <- round(results_rt[,c('ratio',
+                'asymp.UCL')] <- round(results_rt[,c('estimate',
                                                      'SE',
                                                      'asymp.LCL',
                                                      'asymp.UCL')], 4)
+  
+  # compare session effects to control group
+  emm_vs_control <- contrast(EMM_rt,
+                             interaction = list(
+                               session = "consec",
+                               consumption_translation = "trt.vs.ctrl"
+                             ),
+                             type = "response")
+  emm_vs_control_confint <- confint(emm_vs_control)
 
   return(list(
     emm_session = emm_session_rt,
     emm_session_confint = emm_session_rt_confint,
+    emm_vs_control = emm_vs_control,
+    emm_vs_control_confint = emm_vs_control_confint,
     results_rt = results_rt
   ))
   
@@ -652,9 +717,10 @@ baseline_rt_compare_studies <- function(data_combined){
   #data_combined_s1$rt_scaled <- scale(data_combined_s1$t_decision / 1000)[,1]
   
   baseline_model <- afex::mixed(
-    t_decision/1000 ~ consumption_translation * sample + (1 | id) + (1 | task),
+    t_decision/1000 ~ consumption_translation * sample + (1 | task),
     data = data_combined_s1,
-    family = Gamma(link = "log"),
+    #family = Gamma(link = "log"),
+    family = inverse.gaussian(link="identity"),
     control = glmerControl(optimizer="bobyqa", 
                            optCtrl = list(maxfun=2e5)),
     method = "LRT"
@@ -673,10 +739,9 @@ fixed_effects_rt_combined_function <- function(data_combined){
   contrasts(data_combined$consumption_translation) <- 
     contr.treatment(levels(data_combined$consumption_translation), base = 1)
   
-  fixed_effects_combined_rt <- afex::mixed(t_decision/1000 ~ (1 | id) + (1 | task) + session * consumption_translation, 
+  fixed_effects_combined_rt <- afex::mixed(t_decision/1000 ~ (1 | task) + session * consumption_translation * sample, 
                                   data = data_combined, 
-                                  family = Gamma(link = "log"), 
-                                  control = glmerControl(optimizer="bobyqa", 
+                                  family = inverse.gaussian(link = "identity"),                                   control = glmerControl(optimizer="bobyqa", 
                                                          optCtrl = list(maxfun=2e5)),
                                   method = 'LRT')
   
@@ -686,12 +751,31 @@ fixed_effects_rt_combined_function <- function(data_combined){
 
 fixedEffectsCombinedRT <- fixed_effects_rt_combined_function(dfBothSamples)
 
+# Perform emmeans comparison
 
+emm_rt_compare_studies <- function(combined_model){
+  
+  EMM <- emmeans(combined_model,
+                 ~ consumption_translation * session * sample,
+                 type = "response")
+  
+  # Get session contrasts (t1 vs t2) for each condition x sample combination
+  emm_session <- pairs(EMM, reverse = TRUE, simple = "session")
+  
+  # Compare those session contrasts between samples
+  emm_interaction <- pairs(emm_session, simple = "sample")
+  
+  emm_interaction_confint <- confint(emm_interaction)
+  
+  return(list(
+    emm_session = emm_session,
+    emm_interaction = emm_interaction,
+    emm_interaction_confint = emm_interaction_confint
+  ))
+  
+}
 
-
-
-
-
+emmRTCombined <- emm_rt_compare_studies(fixedEffectsCombinedRT)
 
 
 # Save results -----
