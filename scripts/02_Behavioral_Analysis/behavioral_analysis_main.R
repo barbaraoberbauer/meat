@@ -191,13 +191,6 @@ fixed_effects_function <- function(data){
 fixedEffectsOriginal <- fixed_effects_function(dfOriginal)
 fixedEffectsReplication <- fixed_effects_function(dfReplication)
 
-# also look at significant fixed effects for conditions which are a direct replication
-# of the original study (control, emission add, rating add)
-fixedEffectsDirectReplication <- fixed_effects_function(dfReplication %>%
-                                                          filter(consumption_translation == "control" |
-                                                                   consumption_translation == "emission_add" |
-                                                                   consumption_translation == "rating_add"))
-
 ### Set up model ----
 
 choice_model_function <- function(data){
@@ -411,13 +404,6 @@ fixed_effects_att_function <- function(data){
 fixedEffectsAttOriginal <- fixed_effects_att_function(dfOriginal)
 fixedEffectsAttReplication <- fixed_effects_att_function(dfReplication)
 
-# also look at significant fixed effects for conditions which are a direct replication
-# of the original study (control, emission add, rating add)
-fixedEffectsAttDirectReplication <- fixed_effects_att_function(dfReplication %>%
-                                                          filter(consumption_translation == "control" |
-                                                                   consumption_translation == "emission_add" |
-                                                                   consumption_translation == "rating_add"))
-
 ### Set up model -------
 
 att_model_function <- function(data){
@@ -621,13 +607,6 @@ fixed_effects_rt_function <- function(data){
 
 fixedEffectsRtOriginal <- fixed_effects_rt_function(dfOriginal)
 fixedEffectsRtReplication <- fixed_effects_rt_function(dfReplication)
-
-# also look at significant fixed effects for conditions which are a direct replication
-# of the original study (control, emission add, rating add)
-fixedEffectsRtDirectReplication <- fixed_effects_rt_function(dfReplication %>%
-                                                          filter(consumption_translation == "control" |
-                                                                   consumption_translation == "emission_add" |
-                                                                   consumption_translation == "rating_add"))
 
 
 ### Set up model ----
