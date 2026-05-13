@@ -71,6 +71,72 @@ dfReplication$ddt_eco_noneco <- (dfReplication$t_option1 - dfReplication$t_optio
 dfReplication$ddt_eco_noneco_norm <- (dfReplication$t_option1 - dfReplication$t_option0)/(dfReplication$t_option1 + dfReplication$t_option0)
 dfReplication$ddt_scaled <- scale(dfReplication$ddt_eco_noneco_norm)
 
+# Calculate dwell time on consumption --------
+
+dfOriginal$ddt_consumption <- rowSums(dfOriginal[,c("t_consumption0",
+                                                    "t_consumption1",
+                                                    "t_consumption_translation0",
+                                                    "t_consumption_translation1")],
+                                      na.rm = TRUE)
+
+dfOriginal$ddt_consumption_norm <- dfOriginal$ddt_consumption/(dfOriginal$t_option1 + dfOriginal$t_option0)
+dfOriginal$ddt_consumption_scaled <- scale(dfOriginal$ddt_consumption_norm)
+dfOriginal$ddt_consumption <- dfOriginal$ddt_consumption/1000 # in sec
+
+
+dfReplication$ddt_consumption <- rowSums(dfReplication[,c("t_consumption0",
+                                                          "t_consumption1",
+                                                          "t_consumption_translation0",
+                                                          "t_consumption_translation1")],
+                                         na.rm = TRUE)
+
+dfReplication$ddt_consumption_norm <- dfReplication$ddt_consumption/(dfReplication$t_option1 + dfReplication$t_option0)
+dfReplication$ddt_consumption_scaled <- scale(dfReplication$ddt_consumption_norm)
+dfReplication$ddt_consumption <- dfReplication$ddt_consumption/1000 # in sec
+
+
+# Combine datasets for comparisons ------
+
+# find common columns
+common_cols <- intersect(colnames(dfOriginal), colnames(dfReplication))
+
+# subset datasets for these columns
+dfOriginal_subset <- dfOriginal[, common_cols]
+dfReplication_subset <- dfReplication[, common_cols]
+
+# add information about sample
+dfOriginal_subset$sample <- "original"
+dfReplication_subset$sample <- "replication"
+
+# combine samples
+dfBothSamples <- rbind(dfOriginal_subset, dfReplication_subset)
+
+# turn variable sample into factor
+dfBothSamples$sample <- as.factor(dfBothSamples$sample)
+
+# filter for conditions that are equivalent across samples
+common_conditions <- c("control", "emissions", "environmental_friendliness",
+                       "emission_add", "rating_add")
+
+dfBothSamples <- dfBothSamples %>%
+  filter(consumption_translation %in% common_conditions)
+
+# rename conditions
+dfBothSamples$consumption_translation[dfBothSamples$consumption_translation == "emissions"] <- 
+  "emission_add"
+
+dfBothSamples$consumption_translation[dfBothSamples$consumption_translation == "environmental_friendliness"] <- 
+  "rating_add"
+
+# drop unused levels
+dfBothSamples$consumption_translation <- droplevels(dfBothSamples$consumption_translation)
+
+# remove unnecessary variables
+rm(dfOriginal_subset,
+   dfReplication_subset,
+   common_conditions,
+   common_cols)
+
 
 # Influence of option attention on choice ----
 
@@ -149,28 +215,23 @@ emtrend_function <- function(choice_model) {
 trendsOriginal    <- emtrend_function(dwellTimeChoiceOriginal)
 trendsReplication <- emtrend_function(dwellTimeChoiceReplication)
 
-# Calculate dwell time on consumption --------
+### Compare studies -----
 
-dfOriginal$ddt_consumption <- rowSums(dfOriginal[,c("t_consumption0",
-                                                    "t_consumption1",
-                                                    "t_consumption_translation0",
-                                                    "t_consumption_translation1")],
-                                      na.rm = TRUE)
+combined_fixed_effects_function <- function(data_combined){
+  
+  fixed_effects_choice <- afex::mixed(choice ~ (1 | id) + session * ddt_scaled *
+                                        consumption_translation * sample, 
+                                      data = data_combined, 
+                                      family = binomial(link = "logit"), 
+                                      control = glmerControl(optimizer="bobyqa", 
+                                                             optCtrl = list(maxfun=2e5)),
+                                      method = 'LRT')
+  
+  return(fixed_effects_choice)
+  
+}
 
-dfOriginal$ddt_consumption_norm <- dfOriginal$ddt_consumption/(dfOriginal$t_option1 + dfOriginal$t_option0)
-dfOriginal$ddt_consumption_scaled <- scale(dfOriginal$ddt_consumption_norm)
-dfOriginal$ddt_consumption <- dfOriginal$ddt_consumption/1000 # in sec
-
-
-dfReplication$ddt_consumption <- rowSums(dfReplication[,c("t_consumption0",
-                                                          "t_consumption1",
-                                                          "t_consumption_translation0",
-                                                          "t_consumption_translation1")],
-                                         na.rm = TRUE)
-
-dfReplication$ddt_consumption_norm <- dfReplication$ddt_consumption/(dfReplication$t_option1 + dfReplication$t_option0)
-dfReplication$ddt_consumption_scaled <- scale(dfReplication$ddt_consumption_norm)
-dfReplication$ddt_consumption <- dfReplication$ddt_consumption/1000 # in sec
+fixedEffectsCombined <- combined_fixed_effects_function(dfBothSamples)
 
 
 # Influence of consumption attention on choice --------
