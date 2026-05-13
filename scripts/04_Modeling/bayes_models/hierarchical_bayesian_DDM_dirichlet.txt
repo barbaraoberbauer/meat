@@ -40,15 +40,15 @@ model {
 	# Fixed base concentration (uniformative)
 
 	# Session 1: symmetric uniform prior over simplex
-    	alpha_w[1] <- 1
-    	alpha_w[2] <- 1
-    	alpha_w[3] <- 1
+    	alpha_w[1] <- 5
+    	alpha_w[2] <- 5
+    	alpha_w[3] <- 5
 
 	# Define group priors for weights
 	# -----------------------------------------------
 
 	mu_w[1:3] ~ ddirch(alpha_w[])
-	kappa <- 5 # fixed value         
+	kappa ~ dgamma(1, 0.1)         
 
 	# change parameters in ALR space
 	mu_dalr1 ~ dnorm(0,1)

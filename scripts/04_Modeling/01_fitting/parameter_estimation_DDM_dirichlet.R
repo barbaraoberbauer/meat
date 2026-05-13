@@ -25,7 +25,8 @@ packages <- c("tidyverse",
               "dplyr",
               "parallel",
               "bayestestR",
-              "truncnorm")
+              "truncnorm",
+              "MCMCpack")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -174,7 +175,7 @@ monitor <- c(
   "mu_scaling",
   "sigma_scaling",
   "mu_w", 
-  #"kappa",
+  "kappa",
   "mu_dalr1",
   "sigma_dalr1",
   "mu_dalr2",
@@ -213,23 +214,29 @@ monitor <- c(
 
 ### Set up initial values ------
 
-GenInits <- function() list(
-  # Group weights — start near equal
-  mu_w    = c(1/3, 1/3, 1/3),
-
-  # Kappa — start at moderate concentration
-  #log_kappa  = 1,
-
-  # ALR change parameters — start at no change
-  mu_dalr1 = 0,
-  mu_dalr2 = 0,
+GenInits <- function() {
+  # Generate random but sensible starting weights
+  # using a tight Dirichlet to stay close to equal
+  w_init <- as.vector(MCMCpack::rdirichlet(1, c(10, 10, 10)))
   
-  # Other parameters
-  mu_alpha   = 8,
-  mu_tau     = 0.3,
-  mu_scaling = 1,
-  mu_sp      = 0.5
-)
+  list(
+    # Group weights — random but close to equal
+    mu_w     = w_init,
+    
+    # Kappa — start at moderate concentration
+    kappa    = 5,
+    
+    # ALR change parameters — start at no change
+    mu_dalr1 = 0,
+    mu_dalr2 = 0,
+    
+    # Other parameters
+    mu_alpha   = 8,
+    mu_tau     = 0.3,
+    mu_scaling = 1,
+    mu_sp      = 0.5
+  )
+}
 
 
 ### Set model specifications ------
