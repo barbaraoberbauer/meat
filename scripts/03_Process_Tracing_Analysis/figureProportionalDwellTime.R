@@ -268,8 +268,8 @@ plotFixPropsDif <- function(dat, labels, title){
   
 }
 
-plotFixPropDifOriginal <- plotFixPropsDif(aggFixPropsDifOriginal, labelsOriginal, "Original")
-plotFixPropDifReplication <- plotFixPropsDif(aggFixPropsDifReplication, labelsReplication, "Replication")
+plotFixPropDifOriginal <- plotFixPropsDif(aggFixPropsDifOriginal, labelsOriginal, "Study 1")
+plotFixPropDifReplication <- plotFixPropsDif(aggFixPropsDifReplication, labelsReplication, "Study 2")
 
 # Combine plots
 

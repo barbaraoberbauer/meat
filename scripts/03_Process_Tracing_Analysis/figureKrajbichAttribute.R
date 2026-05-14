@@ -134,12 +134,12 @@ plotEcoChoiceDwellTime <- function(data, labels, title){
 plotChooseEcoProbabilityConsumptionNormOriginal <- 
   plotEcoChoiceDwellTime(chooseEcoProbabilityConsumptionNormOriginal, 
                          labelsOriginal,
-                         "Original")
+                         "Study 1")
 
 plotChooseEcoProbabilityConsumptionNormReplication <- 
   plotEcoChoiceDwellTime(chooseEcoProbabilityConsumptionNormReplication, 
                          labelsReplication,
-                         "Replication")
+                         "Study 2")
 
 # Combine plots
 
