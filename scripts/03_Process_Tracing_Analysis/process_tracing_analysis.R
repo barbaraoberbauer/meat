@@ -233,6 +233,28 @@ combined_fixed_effects_function <- function(data_combined){
 
 fixedEffectsCombined <- combined_fixed_effects_function(dfBothSamples)
 
+# check marginal means 
+
+emm_compare_studies_slopes <- function(combined_model){
+  
+  slopes <- emtrends(combined_model,
+                     ~ sample,
+                     var = "ddt_scaled")
+  
+  # Compare slopes between samples
+  slopes_comparison <- pairs(slopes, reverse = TRUE)
+  slopes_confint <- confint(slopes_comparison)
+  
+  return(list(
+    slopes = slopes,
+    slopes_comparison = slopes_comparison,
+    slopes_confint = slopes_confint
+  ))
+}
+
+emmSlopesCombined <- emm_compare_studies_slopes(fixedEffectsCombined)
+
+
 
 # Influence of consumption attention on choice --------
 
@@ -304,6 +326,29 @@ emtrendConsumption_function <- function(choice_model) {
 
 trendsConsumptionOriginal    <- emtrendConsumption_function(dwellTimeConsumptionChoiceOriginal)
 trendsConsumptionReplication <- emtrendConsumption_function(dwellTimeConsumptionChoiceReplication)
+
+### Compare studies -----
+
+fixed_effects_consumption_combined <- function(data_combined){
+  
+  fixed_effects_choice <- afex::mixed(choice ~ (1 | id) + session * ddt_consumption_scaled *
+                                        consumption_translation * sample, 
+                                      data = data_combined, 
+                                      family = binomial(link = "logit"), 
+                                      control = glmerControl(optimizer="bobyqa", 
+                                                             optCtrl = list(maxfun=2e5)),
+                                      method = 'LRT')
+  
+  return(fixed_effects_choice)
+  
+}
+
+fixedEffectsConsumptionCombined <- fixed_effects_consumption_combined(dfBothSamples)
+
+
+
+
+
 
 # Calculate proportional dwell time differences ------
 
