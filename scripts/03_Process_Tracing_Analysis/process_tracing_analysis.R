@@ -345,8 +345,26 @@ fixed_effects_consumption_combined <- function(data_combined){
 
 fixedEffectsConsumptionCombined <- fixed_effects_consumption_combined(dfBothSamples)
 
+# check marginal means 
 
+emm_compare_studies_slopes_consumption <- function(combined_model){
+  
+  slopes <- emtrends(combined_model,
+                     ~ sample,
+                     var = "ddt_consumption_scaled")
+  
+  # Compare slopes between samples
+  slopes_comparison <- pairs(slopes, reverse = TRUE)
+  slopes_confint <- confint(slopes_comparison)
+  
+  return(list(
+    slopes = slopes,
+    slopes_comparison = slopes_comparison,
+    slopes_confint = slopes_confint
+  ))
+}
 
+emmSlopesCombinedConsumption <- emm_compare_studies_slopes_consumption(fixedEffectsConsumptionCombined)
 
 
 
