@@ -434,164 +434,228 @@ fixPropsReplication$price_all <- (fixPropsReplication$price_0 + fixPropsReplicat
 fixPropsReplication$consumption_all <- (fixPropsReplication$consumption_0 + fixPropsReplication$consumption_1)/2
 fixPropsReplication$popularity_all <- (fixPropsReplication$popularity_0 + fixPropsReplication$popularity_1)/2
 
-### Inspect differences between conditions and sessions -------
 
-calculate_session_differences <- function(fixPropsDat){
-  
-  aggFixPropsDat <- fixPropsDat %>%
-    group_by(id, session, consumption_translation) %>%
-    summarize(meanFixPropPrice = mean(price_all),
-              meanFixPropConsumption = mean(consumption_all),
-              meanFixPropPopularity = mean(popularity_all))
-  
-  aggFixPropsDat <- aggFixPropsDat %>%
-    pivot_wider(id_cols = c(id, consumption_translation),
-                names_from = session,
-                values_from = c(contains("meanFix")),
-                names_glue = "{.value}_s{session}") %>%
-    filter(!if_any(everything(), is.na)) # filter subjects with missing values
-  
-  # calculate difference in proportional dwell times between sessions
-  aggFixPropsDat$difFixPropPrice <- aggFixPropsDat$meanFixPropPrice_s2 -
-    aggFixPropsDat$meanFixPropPrice_s1
-  
-  aggFixPropsDat$difFixPropConsumption <- aggFixPropsDat$meanFixPropConsumption_s2 -
-    aggFixPropsDat$meanFixPropConsumption_s1
-  
-  aggFixPropsDat$difFixPropPopularity <- aggFixPropsDat$meanFixPropPopularity_s2 -
-    aggFixPropsDat$meanFixPropPopularity_s1
-  
-  # keep only session values and transform to long format
-  aggFixPropsDat_long <- aggFixPropsDat %>%
-    select(id, consumption_translation, difFixPropPrice, difFixPropConsumption, difFixPropPopularity) %>%
-    pivot_longer(cols = c(contains("difFix")),
-                 names_to = c("attribute"),
-                 values_to = "fixProp")
-  
-  return(aggFixPropsDat_long)
-  
-}
+### Fit generalized linear mixed models, separately for all attributes -------
 
-aggFixPropsDifOriginal <- calculate_session_differences(fixPropsOriginal)
-aggFixPropsDifReplication <- calculate_session_differences(fixPropsReplication)
-
-### Run one-sample t-tests vs. mu = 0 for each condition and attribute ---
-
-# normality is not met for all attributes
-aggFixPropsDifOriginal %>%
-  group_by(consumption_translation, attribute) %>%
-  summarise(p_shapiro = shapiro.test(fixProp)$p.value, .groups = "drop")
-
-aggFixPropsDifReplication %>%
-  group_by(consumption_translation, attribute) %>%
-  summarise(p_shapiro = shapiro.test(fixProp)$p.value, .groups = "drop")
-
-testAgainst0 <- function(aggFixProps){
+fixed_effects_proportional_dwelltimes <- function(dat){
   
-  results <- aggFixProps %>%
-    group_by(consumption_translation, attribute) %>%
-    summarise(
-      n        = n(),
-      median   = median(fixProp, na.rm = TRUE),
-      sd       = sd(fixProp, na.rm = TRUE),
-      t_stat   = wilcox.test(fixProp, mu = 0)$statistic,
-      df_t     = wilcox.test(fixProp, mu = 0)$parameter,
-      p_value  = wilcox.test(fixProp, mu = 0)$p.value,
-      ci_low   = wilcox.test(fixProp, mu = 0)$conf.int[1],
-      ci_high  = wilcox.test(fixProp, mu = 0)$conf.int[2],
-      .groups  = "drop"
-    )
-  
-  # Apply FDR correction across all tests
-  results <- results %>%
-    mutate(p_adjusted = p.adjust(p_value, method = "BH"))
-  
-  return(results)
-  
-}
+  # use control as reference level
+  contrasts(data$consumption_translation) <- 
+    contr.treatment(levels(data$consumption_translation), base = 1)
 
-testAgainst0Original <- testAgainst0(aggFixPropsDifOriginal)
-testAgainst0Replication <- testAgainst0(aggFixPropsDifReplication)
-
-
-### Compare results to control groups ------
-
-# Run Dunn's test per attribute, control as reference
-
-testAgainstControl <- function(aggFixProps){
+  fixed_effects_price <- afex::mixed(price_all ~ (1 | task) + (1 | id) + consumption_translation * session,
+                                      data = dat,
+                                      control = lmerControl(optimizer="bobyqa",
+                                                             optCtrl = list(maxfun=2e5)),
+                                      method = 'LRT')
   
-  results_within <- aggFixProps %>%
-    group_by(sample, attribute) %>%
-    summarise(
-      dunn = list(
-        dunnTest(fixProp ~ consumption_translation,
-                 data = cur_data(),
-                 method = "bh")$res %>%
-          filter(grepl("control", Comparison))  # keep only comparisons involving control
-      ),
-      .groups = "drop"
-    ) %>%
-    unnest(dunn)
+  fixed_effects_consumption <- afex::mixed(consumption_all ~ (1 | task) + (1 | id) + consumption_translation * session,
+                                     data = dat,
+                                     control = lmerControl(optimizer="bobyqa",
+                                                           optCtrl = list(maxfun=2e5)),
+                                     method = 'LRT')
   
-  return(results_within)
+  fixed_effects_popularity <- afex::mixed(popularity_all ~ (1 | task) + (1 | id) + consumption_translation * session,
+                                     data = dat,
+                                     control = lmerControl(optimizer="bobyqa",
+                                                           optCtrl = list(maxfun=2e5)),
+                                     method = 'LRT')
+  
+
+  return(list(fixed_effects_price = fixed_effects_price,
+              fixed_effects_consumption = fixed_effects_consumption,
+              fixed_effects_popularity = fixed_effects_popularity))
 
 }
 
-testAgainstCpntrolOriginal <- testAgainstControl(aggFixPropsDifOriginal)
-testAgainstControlReplication <- testAgainstControl(aggFixPropsDifReplication)
+fixedEffectsProportionalDTOriginal <- fixed_effects_proportional_dwelltimes(fixPropsOriginal)
+fixedEffectsProportionalDTReplication <- fixed_effects_proportional_dwelltimes(fixPropsReplication)
 
-### Combine datasets and check for differences between samples -----
 
-aggFixPropsDifOriginal$sample <- "original"
-aggFixPropsDifReplication$sample <- "replication"
+### Calculate marginal means -------
 
-aggFixPropsDifReplication$id <- as.character(aggFixPropsDifReplication$id)
+emm_proportional_dt <- function(fixed_effects_list, choice_model){
+  
+  # Price
+  emm_price <- emmeans(fixed_effects_list$fixed_effects_price, 
+                       ~ consumption_translation * session)
+  emm_price_session <- pairs(emm_price, reverse = TRUE, simple = "session")
+  emm_price_vs_control <- contrast(emm_price,
+                                   interaction = list(
+                                     session = "consec",
+                                     consumption_translation = "trt.vs.ctrl"
+                                   ))
+  
+  # Consumption
+  emm_consumption <- emmeans(fixed_effects_list$fixed_effects_consumption,
+                             ~ consumption_translation * session)
+  emm_consumption_session <- pairs(emm_consumption, reverse = TRUE, simple = "session")
+  emm_consumption_vs_control <- contrast(emm_consumption,
+                                         interaction = list(
+                                           session = "consec",
+                                           consumption_translation = "trt.vs.ctrl"
+                                         ))
+  
+  # Popularity
+  emm_popularity <- emmeans(fixed_effects_list$fixed_effects_popularity,
+                            ~ consumption_translation * session)
+  emm_popularity_session <- pairs(emm_popularity, reverse = TRUE, simple = "session")
+  emm_popularity_vs_control <- contrast(emm_popularity,
+                                        interaction = list(
+                                          consumption_translation = "trt.vs.ctrl",
+                                          session = "consec"
+                                        ))
+  
+  return(list(
+    price = list(emm = emm_price, 
+                 session = emm_price_session,
+                 vs_control = emm_price_vs_control,
+                 confint = confint(emm_price_session)),
+    consumption = list(emm = emm_consumption,
+                       session = emm_consumption_session,
+                       vs_control = emm_consumption_vs_control,
+                       confint = confint(emm_consumption_session)),
+    popularity = list(emm = emm_popularity,
+                      session = emm_popularity_session,
+                      vs_control = emm_popularity_vs_control,
+                      confint = confint(emm_popularity_session))
+  ))
+}
 
-aggFixPropsDifAll <- rbind(aggFixPropsDifOriginal, aggFixPropsDifReplication)
+emmProportionalDTOriginal <- emm_proportional_dt(fixedEffectsProportionalDTOriginal)
+emmProportionalDTReplication <- emm_proportional_dt(fixedEffectsProportionalDTReplication)
 
-# filter comparable conditions
 
-comparable_conditions <- c("control", "emissions", "environmental_friendliness",
-                           "emission_add", "rating_add")
+### Combine datasets for dwell times  -------
 
-aggFixPropsDifAll <- aggFixPropsDifAll %>%
-  filter(consumption_translation %in% comparable_conditions)
+# find common columns
+common_cols <- intersect(colnames(fixPropsOriginal), colnames(fixPropsReplication))
+
+# subset datasets for these columns
+fixPropsOriginal_subset <- fixPropsOriginal[, common_cols]
+fixPropsReplication_subset <- fixPropsReplication[, common_cols]
+
+# add information about sample
+fixPropsOriginal_subset$sample <- "original"
+fixPropsReplication_subset$sample <- "replication"
+
+# combine samples
+fixPropsBothSamples <- rbind(fixPropsOriginal_subset, fixPropsReplication_subset)
+
+# turn variable sample into factor
+fixPropsBothSamples$sample <- as.factor(fixPropsBothSamples$sample)
+
+# filter for conditions that are equivalent across samples
+common_conditions <- c("control", "emissions", "environmental_friendliness",
+                       "emission_add", "rating_add")
+
+fixPropsBothSamples <- fixPropsBothSamples %>%
+  filter(consumption_translation %in% common_conditions)
 
 # rename conditions
+fixPropsBothSamples$consumption_translation[fixPropsBothSamples$consumption_translation == "emissions"] <- 
+  "emission_add"
 
-aggFixPropsDifAll$consumption_translation[aggFixPropsDifAll$consumption_translation == "emissions"] <- "emission_add"
+fixPropsBothSamples$consumption_translation[fixPropsBothSamples$consumption_translation == "environmental_friendliness"] <- 
+  "rating_add"
 
-aggFixPropsDifAll$consumption_translation[aggFixPropsDifAll$consumption_translation == "environmental_friendliness"] <- "rating_add"
+# drop unused levels
+fixPropsBothSamples$consumption_translation <- droplevels(fixPropsBothSamples$consumption_translation)
 
-### Inspect differences between samples -------
+# remove unnecessary variables
+rm(fixPropsOriginal_subset,
+   fixPropsReplication_subset,
+   common_conditions,
+   common_cols)
 
-# Run independent t-tests for each condition × attribute
+###### Calculate fixed effects ------
 
-# check for normality
+fixed_effects_proportional_dwelltimes_combined <- function(dat){
+  
+  fixed_effects_price <- afex::mixed(price_all ~ (1 | task) + (1 | id) + consumption_translation * session * sample,
+                                     data = dat,
+                                     control = lmerControl(optimizer="bobyqa",
+                                                           optCtrl = list(maxfun=2e5)),
+                                     method = 'LRT')
+  
+  fixed_effects_consumption <- afex::mixed(consumption_all ~ (1 | task) + (1 | id) + consumption_translation * session * sample,
+                                           data = dat,
+                                           control = lmerControl(optimizer="bobyqa",
+                                                                 optCtrl = list(maxfun=2e5)),
+                                           method = 'LRT')
+  
+  fixed_effects_popularity <- afex::mixed(popularity_all ~ (1 | task) + (1 | id) + consumption_translation * session * sample,
+                                          data = dat,
+                                          control = lmerControl(optimizer="bobyqa",
+                                                                optCtrl = list(maxfun=2e5)),
+                                          method = 'LRT')
+  
+  
+  return(list(fixed_effects_price = fixed_effects_price,
+              fixed_effects_consumption = fixed_effects_consumption,
+              fixed_effects_popularity = fixed_effects_popularity))
+  
+}
 
-# normality is not met for all attributes
-aggFixPropsDifAll %>%
-  group_by(consumption_translation, attribute, sample) %>%
-  summarise(p_shapiro = shapiro.test(fixProp)$p.value, .groups = "drop")
+fixedEffectsProportionalDTCombined <- fixed_effects_proportional_dwelltimes_combined(fixPropsBothSamples)
 
-results_between <- aggFixPropsDifAll %>%
-  group_by(consumption_translation, attribute) %>%
-  summarise(
-    n_per_sample = list(table(sample)),
-    mean_s1      = mean(fixProp[sample == "original"], na.rm = TRUE),
-    mean_s2      = mean(fixProp[sample == "replication"], na.rm = TRUE),
-    t_stat       = wilcox.test(fixProp ~ sample)$statistic,
-    df_t         = wilcox.test(fixProp ~ sample)$parameter,
-    p_value      = wilcox.test(fixProp ~ sample)$p.value,
-    ci_low       = wilcox.test(fixProp ~ sample)$conf.int[1],
-    ci_high      = wilcox.test(fixProp ~ sample)$conf.int[2],
-    .groups      = "drop"
-  ) %>%
-  mutate(p_adjusted = p.adjust(p_value, method = "BH"))
+###### Estimate marginal means ------
 
+emm_proportional_dt_combined <- function(fixed_effects_list){
+  
+  get_contrasts <- function(model){
+    
+    emm <- emmeans(model, ~ consumption_translation * session * sample)
+    
+    # 1. Session effect within each condition and sample
+    emm_session <- pairs(emm, reverse = TRUE, simple = "session")
+    
+    # 2. Compare each condition's session effect against control within each sample
+    emm_vs_control <- contrast(emm,
+                               interaction = list(
+                                 consumption_translation = "trt.vs.ctrl",
+                                 session = "consec"
+                               ),
+                               by = "sample")
+    
+    # 3. Compare session effects between conditions (all pairwise) within each sample
+    emm_between_conditions <- contrast(emm,
+                                       interaction = list(
+                                         consumption_translation = "pairwise",
+                                         session = "consec"
+                                       ),
+                                       by = "sample")
+    
+    # 4. Compare condition vs control contrasts between samples
+    emm_vs_control_between_samples <- pairs(emm_vs_control,
+                                            simple = "sample",
+                                            reverse = TRUE)
+    
+    # 5. Compare session effects between samples within each condition
+    emm_between_samples <- pairs(emm_session,
+                                 simple = "sample",
+                                 reverse = TRUE)
+    
+    return(list(
+      emm = emm,
+      emm_session = emm_session,
+      emm_vs_control = emm_vs_control,
+      emm_between_conditions = emm_between_conditions,
+      emm_vs_control_between_samples = emm_vs_control_between_samples,
+      emm_between_samples = emm_between_samples,
+      confint_session = confint(emm_session),
+      confint_vs_control = confint(emm_vs_control),
+      confint_between_conditions = confint(emm_between_conditions),
+      confint_vs_control_between_samples = confint(emm_vs_control_between_samples),
+      confint_between_samples = confint(emm_between_samples)
+    ))
+  }
+  
+  return(list(
+    price = get_contrasts(fixed_effects_list$fixed_effects_price),
+    consumption = get_contrasts(fixed_effects_list$fixed_effects_consumption),
+    popularity = get_contrasts(fixed_effects_list$fixed_effects_popularity)
+  ))
+}
 
-
-
-
-
-
+emmProportionalDTCombined <- emm_proportional_dt_combined(fixedEffectsProportionalDTCombined)
