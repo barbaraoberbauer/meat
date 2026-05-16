@@ -67,10 +67,10 @@ load("data/preprocessedDataReplication.RData")
 
 ### Specify subset of data ----
 
-dataset <- "original"
+dataset <- "replication"
 # datasets: "original", "replication"
 
-translation_of_interest <- "environmental_friendliness"
+translation_of_interest <- "rating_add"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace", "rating_replace"
 
@@ -215,15 +215,12 @@ monitor <- c(
 ### Set up initial values ------
 
 GenInits <- function() {
-  # Generate random but sensible starting weights
-  # using a tight Dirichlet to stay close to equal
-  w_init <- as.vector(MCMCpack::rdirichlet(1, c(10, 10, 10)))
   
   list(
-    # Group weights — random but close to equal
-    mu_w     = w_init,
+    # Group weights — start near equal
+    mu_w    = c(1/3, 1/3, 1/3),
     
-    # Kappa — start at moderate concentration
+    # Kappa — start at little concentration
     kappa    = 5,
     
     # ALR change parameters — start at no change
@@ -243,9 +240,9 @@ GenInits <- function() {
 
 nchains <- 6
 nAdaptSteps <- 5000
-nBurninSteps <- 25000
-nUseSteps = nchains * 6500 # total number of used steps
-nThinSteps <- 25
+nBurninSteps <- 30000
+nUseSteps = nchains * 8000 # total number of used steps
+nThinSteps <- 30
 
 ### Set model (text file) -----
 
