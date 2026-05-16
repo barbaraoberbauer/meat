@@ -68,23 +68,62 @@ dfReplicationProcess <- dfReplicationProcess %>%
   select(-attribute, -isNonEco) %>%  # remove helper columns if not needed
   ungroup()
 
-# Calculate Payne Index -----
+# Calculate total number of transitions
+
+dfReplicationProcess <- dfReplicationProcess %>%
+  mutate(totalNTransitions = withinAlternative + withinAttribute)
+
+# Add information about number of alternatives and dimensions to data frame
+
+dfReplicationProcess$NumAlternatives <- 2
+
+dfReplicationProcess$NumDimensions[dfReplicationProcess$session == 1] <- 3
+dfReplicationProcess$NumDimensions[dfReplicationProcess$session == 2 &
+                                     dfReplicationProcess$condition == "control"] <- 3
+dfReplicationProcess$NumDimensions[dfReplicationProcess$session == 2 &
+                                     dfReplicationProcess$condition != "control"] <- 4 
+
+
+
+# Calculate SM Index -----
 
 dfReplicationProcessSubset <- dfReplicationProcess %>%
   filter(fixNum != 1)
 
-PayneIndex <- dfReplicationProcessSubset %>%
-  group_by(id, session, consumption_translation) %>%
-  summarize(PI = (sum(withinAlternative) - sum(withinAttribute))/
-              (sum(withinAlternative) + sum(withinAttribute))
+# calculate transitions on trial level
+dfReplicationProcessSubset <- dfReplicationProcessSubset %>%
+  group_by(id, trial, session, consumption_translation) %>%
+  summarize(
+    withinAlternative = sum(withinAlternative, na.rm = FALSE),
+    withinAttribute = sum(withinAttribute, na.rm = FALSE),
+    totalNTransitions = sum(totalNTransitions, na.rm = FALSE),
+    NumAlternatives = first(NumAlternatives),
+    NumDimensions = first(NumDimensions)
+  )
+
+# filters trials with no transitions
+dfReplicationProcessSubset <- dfReplicationProcessSubset %>%
+  filter(totalNTransitions != 0)
+
+# calculate trial-wise index
+SMIndex <- dfReplicationProcessSubset %>%
+  group_by(id, trial, session, consumption_translation) %>%
+  summarize(SM = (sqrt(totalNTransitions) * ((NumAlternatives * NumDimensions/totalNTransitions) * 
+                                              (withinAlternative - withinAttribute) - (NumDimensions - NumAlternatives)))/
+              (sqrt(NumAlternatives^2 * (NumDimensions - 1) + NumDimensions^2 * (NumAlternatives - 1)))
             )
+
+# calculate participant-wise index
+SMIndexAg <- SMIndex %>%
+  group_by(id, session, consumption_translation) %>%
+  summarize(meanSM = mean(SM))
 
 # Plot Payne Index -----
 
-plotPayneIndex <- 
-ggplot(data = PayneIndex,
+plotSMIndex <- 
+ggplot(data = SMIndexAg,
        aes(x = consumption_translation,
-           y = PI,
+           y = meanSM,
            fill = session)) +
   geom_point(aes(color = session),
              position = position_jitterdodge(dodge.width = 0.5, 
@@ -107,13 +146,13 @@ ggplot(data = PayneIndex,
   scale_color_manual(values = color_sessions) +
   scale_x_discrete(labels = labelsReplication) +
   labs(x = "Experimental Condition", 
-       y = "Payne Index",
-       title = "Replication",
+       y = "SM Index",
+       title = "Study 2",
        fill = "Session")
   
 # Save plot
-ggsave("figures/figurePayneIndex.png", 
-       plotPayneIndex, 
+ggsave("figures/figureSMIndex.png", 
+       plotSMIndex, 
        width = 7,
        height = 5,
        units = "in")
