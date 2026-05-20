@@ -341,17 +341,17 @@ mu_w_AT_3 <- 1       / denom_AT   # group mean popularity weight, Session 2
 
 hdi$w_price <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$`mu_w[1]`),
                     hdi_manipulation = HDIofMCMC(unname(mu_w_AT_1)),
-                    hdi_manipulation = HDIofMCMC(unname(mu_w_AT_1) -
+                    hdi_change = HDIofMCMC(unname(mu_w_AT_1) -
                                                    combined_mcmcfin$`mu_w[1]`))
 
 hdi$w_consumption <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$`mu_w[2]`),
                     hdi_manipulation = HDIofMCMC(unname(mu_w_AT_2)),
-                    hdi_manipulation = HDIofMCMC(unname(mu_w_AT_2) -
+                    hdi_change = HDIofMCMC(unname(mu_w_AT_2) -
                                                    combined_mcmcfin$`mu_w[2]`))
 
 hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$`mu_w[3]`),
                           hdi_manipulation = HDIofMCMC(unname(mu_w_AT_3)),
-                          hdi_manipulation = HDIofMCMC(unname(mu_w_AT_3) -
+                          hdi_change = HDIofMCMC(unname(mu_w_AT_3) -
                                                          combined_mcmcfin$`mu_w[3]`))
 
 
