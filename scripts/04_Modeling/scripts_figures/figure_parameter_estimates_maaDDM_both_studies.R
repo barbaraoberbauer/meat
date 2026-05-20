@@ -243,7 +243,7 @@ plots_replication <- generate_all_plots(runJagsOutReplication, hdiReplication)
 
 # Combine plots -------
 
-### Weights -----
+### Weights and Attention -----
 
 original_label <- wrap_elements(
   grid::textGrob("Study 1", 
@@ -309,59 +309,52 @@ weight_attention_parameters <-
     plot.tag = element_text(size = 20, face = "bold")
   )
 
-# save plot
-filename <- paste0("figures/groupParamEstimatesBothStudiesWeightsAttention", "_", translation_of_interest, ".png")
-ggsave(filename, 
-       weight_attention_parameters, 
-       width = 11, height = 11)
 
+### Speed-accuracy parameters ----
 
-### Attentional parameters -----
-
-attentional_parameters <-
-  # theta
-  plots_original$density$theta +
-  plots_original$change$dTheta +
-  plots_replication$density$theta +
-  plots_replication$change$dTheta +
-  # phi
-  plots_original$density$phi +
-  plots_original$change$dPhi +
-  plots_replication$density$phi +
-  plots_replication$change$dPhi +
+speed_accuracy <-
+  # boundary separation
+  plots_original$density$boundary +
+  plots_original$change$dBoundary +
+  plots_replication$density$boundary +
+  plots_replication$change$dBoundary +
+  # starting point bias
+  plots_original$density$sp +
+  plots_original$change$dSp +
+  plots_replication$density$sp +
+  plots_replication$change$dSp +
+  # non-decision time
+  plots_original$density$ndt +
+  plots_original$change$dNdt +
+  plots_replication$density$ndt +
+  plots_replication$change$dNdt +
+  # drift scaling
+  plots_original$density$scaling +
+  plots_original$change$dScaling +
+  plots_replication$density$scaling +
+  plots_replication$change$dScaling +
   plot_layout(ncol = 4,
-              guides = 'collect') &
-  theme(legend.position = "none")
-#
-# 
-# ### Speed-accuracy parameters ----
-# 
-# speed_accuracy_parameters <- 
-#   # boundary separation
-#   plots_original$density$boundary +
-#   plots_original$change$dBoundary +
-#   plots_replication$density$boundary +
-#   plots_replication$change$dBoundary +
-#   # starting point bias
-#   plots_original$density$sp +
-#   plots_original$change$dSp +
-#   plots_replication$density$sp +
-#   plots_replication$change$dSp +
-#   # non-decision time
-#   plots_original$density$ndt +
-#   plots_original$change$dNdt +
-#   plots_replication$density$ndt +
-#   plots_replication$change$dNdt +
-#   # drift scaling
-#   plots_original$density$scaling +
-#   plots_original$change$dScaling +
-#   plots_replication$density$scaling +
-#   plots_replication$change$dScaling +
-#   plot_layout(ncol = 4,
-#               guides = 'collect') &
-#   theme(legend.position = "bottom")
+              guides = 'collect')
 
-# Combine all
+
+speed_accuracy_parameters <- 
+  (header / speed_accuracy) +
+  plot_layout(heights = c(1, 15), guides = 'collect') +
+  plot_annotation(
+    tag_levels = list(c('', '',
+                        'a', '', 'b', '',
+                        'c', '', 'd', '',
+                        'e', '', 'f', '',
+                        'g', '', 'h', ''))
+  ) &
+  theme(
+    plot.margin = margin(4, 4, 4, 4),
+    legend.position = "bottom",
+    plot.tag = element_text(size = 20, face = "bold")
+  )
+
+
+# Combine all -----
 
 all_plots <- 
   # price
@@ -410,46 +403,51 @@ all_plots <-
   plots_replication$density$scaling +
   plots_replication$change$dScaling +
   plot_layout(ncol = 4,
-              guides = 'collect') &
-  theme(legend.position = "bottom")
+              guides = 'collect') 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-all_plots <- wrap_elements(header) /
-  wrap_elements(weights) /
-  wrap_elements(attentional_parameters) /
-  wrap_elements(speed_accuracy_parameters) +
-  plot_layout(heights = c(0.75/11, 3.5/11, 2.75/11, 4.5/11)) +
+all_parameters <- 
+  (header / all_plots) +
+  plot_layout(heights = c(1, 15), guides = 'collect') +
   plot_annotation(
-    tag_levels = list(c('', 'a', 'b', 'c'))
+    tag_levels = list(c('', '',
+                        'a', '', 'b', '',
+                        'c', '', 'd', '',
+                        'e', '', 'f', '',
+                        'g', '', 'h', '',
+                        'i', '', 'j', '',
+                        'k', '', 'l', '',
+                        'm', '', 'n', '',
+                        'o', '', 'p', '',
+                        'q', '', 'r', ''))
   ) &
   theme(
-    plot.margin = margin(0, 0, 0, 0),
+    plot.margin = margin(4, 4, 4, 4),
+    legend.position = "bottom",
     plot.tag = element_text(size = 20, face = "bold")
   )
 
 
-# weight_parameters <- header/weights +
-#   plot_layout(heights = c(1,13))
 
-# save plot
-filename <- paste0("figures/groupParamEstimatesBothStudies", "_", translation_of_interest, ".png")
-ggsave(filename, all_plots, width = 10, height = 16, units = "in")
+# Save plots --------
+
+# save weights and attention plot
+filename <- paste0("figures/groupParamEstimatesBothStudiesWeightsAttention", "_", translation_of_interest, ".png")
+ggsave(filename, 
+       weight_attention_parameters, 
+       width = 11, height = 11)
+
+
+# save speed accuracy plot
+filename <- paste0("figures/groupParamEstimatesBothStudiesSpeedAccuracy", "_", translation_of_interest, ".png")
+ggsave(filename, 
+       speed_accuracy_parameters, 
+       width = 11, height = 8.8)
+
+
+# save all parameters
+filename <- paste0("figures/groupParamEstimatesBothStudiesAllParameters", "_", translation_of_interest, ".png")
+ggsave(filename, all_parameters, width = 11, height = 19.8, units = "in")
 
 
 
