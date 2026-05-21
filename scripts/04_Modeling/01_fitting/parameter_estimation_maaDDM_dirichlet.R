@@ -66,7 +66,7 @@ load("data/preprocessedDataReplication.RData")
 dataset <- "replication"
 # datasets: "original", "replication"
 
-translation_of_interest <- "emission_replace"
+translation_of_interest <- "rating_replace"
 
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace", "rating_replace"
