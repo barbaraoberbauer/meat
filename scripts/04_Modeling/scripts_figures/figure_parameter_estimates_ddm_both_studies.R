@@ -229,8 +229,6 @@ plots_replication <- generate_all_plots(runJagsOutReplication, hdiReplication)
 
 # Combine plots -------
 
-### Weights and Attention -----
-
 original_label <- wrap_elements(
   grid::textGrob("Study 1", 
                  #hjust = 0.5,
@@ -245,7 +243,45 @@ replication_label <- wrap_elements(
                  gp = grid::gpar(fontsize = 18, fontface = "bold"))
 )
 
-header <- original_label + replication_label 
+header <- original_label + replication_label
+
+# Combine weights -------
+
+weight_plots <- 
+  # price
+  plots_original$density$price + 
+  plots_original$change$dPrice +
+  plots_replication$density$price +
+  plots_replication$change$dPrice +
+  # consumption
+  plots_original$density$consumption + 
+  plots_original$change$dConsumption +
+  plots_replication$density$consumption +
+  plots_replication$change$dConsumption +
+  # popularity
+  plots_original$density$popularity + 
+  plots_original$change$dPopularity +
+  plots_replication$density$popularity +
+  plots_replication$change$dPopularity +
+  plot_layout(ncol = 4,
+              guides = 'collect') 
+
+weight_parameters <- 
+  (header / weight_plots) +
+  plot_layout(heights = c(1, 15), guides = 'collect') +
+  plot_annotation(
+    tag_levels = list(c('', '',
+                        'a', '', 'b', '',
+                        'c', '', 'd', '',
+                        'e', '', 'f', ''))
+  ) &
+  theme(
+    plot.margin = margin(4, 4, 4, 4),
+    legend.position = "bottom",
+    plot.tag = element_text(size = 20, face = "bold")
+  )
+
+
 
 # Combine all -----
 
@@ -315,6 +351,10 @@ all_parameters <-
 # save all parameters
 filename <- paste0("figures/groupParamEstimatesDDMBothStudiesAllParameters", "_", translation_of_interest, ".png")
 ggsave(filename, all_parameters, width = 11, height = 15.4, units = "in")
+
+# save weight parameters
+filename <- paste0("figures/groupParamEstimatesDDMBothStudiesWeightParameters", "_", translation_of_interest, ".png")
+ggsave(filename, weight_parameters, width = 11, height = 6.6, units = "in")
 
 
 
