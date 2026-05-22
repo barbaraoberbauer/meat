@@ -115,6 +115,8 @@ combined_mcmcfin_true <- as.data.frame(do.call(rbind, mcmcfin_true))
 
 # Calculate fixation proportions (fixprops) ------
 
+### Calculate fixation proportions (fixprops) ------
+
 # fixProps -> acquistion time for each attribute proportional to the total duration of the trial (vector containing six elements in our case)
 fixProps <- data.frame(price0 = rep(NA, nrow(df_subset)),
                        consumption0 = rep(NA, nrow(df_subset)),
@@ -124,15 +126,27 @@ fixProps <- data.frame(price0 = rep(NA, nrow(df_subset)),
                        popularity1 = rep(NA, nrow(df_subset))) 
 
 # attributes and their translation are treated as one attribute for simplicity
-fixProps$price0 <- rowSums(df_subset[, c("t_price0", "t_price_translation0")], na.rm = TRUE)/1000
+# depending on dataset, summarize price and price translation
+if (dataset == "original") {
+  
+  fixProps$price0 <- rowSums(df_subset[, c("t_price0", "t_price_translation0")], na.rm = TRUE)/1000
+  fixProps$price1 <- rowSums(df_subset[, c("t_price1", "t_price_translation1")], na.rm = TRUE)/1000
+  
+} else if (dataset == "replication") {
+  
+  fixProps$price0 <- df_subset$t_price0/1000
+  fixProps$price1 <- df_subset$t_price1/1000
+  
+}
+
 fixProps$consumption0 <- rowSums(df_subset[, c("t_consumption0", "t_consumption_translation0")], na.rm = TRUE)/1000
 fixProps$popularity0 <- df_subset$t_popularity0/1000
-fixProps$price1 <- rowSums(df_subset[, c("t_price1", "t_price_translation1")], na.rm = TRUE)/1000
 fixProps$consumption1 <- rowSums(df_subset[, c("t_consumption1", "t_consumption_translation1")], na.rm = TRUE)/1000
 fixProps$popularity1 <- df_subset$t_popularity1/1000
 
 # divide by total duration of the trial
-fixProps <- fixProps/df_subset$t_total
+#fixProps <- fixProps/abs(df_subset$t_decision) #take absolute value instead of +/- coded RT
+fixProps <- fixProps/df_subset$t_total # divide by total dwell time
 
 # normalize each trial to 1
 fixProps <- fixProps/rowSums(fixProps) 
