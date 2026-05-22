@@ -1,8 +1,7 @@
 #---
 # title: "Computational Mechanisms of Attribute Translations" 
 # author: Barbara Oberbauer (barbara.oberbauer@uni-hamburg.de)
-# last update: "2025-01-23"
-# produced under R version: 2024.09.0
+# purpose: estimate data that were simulated using the 10 most likely sets of parameters to perform model recovery
 #---
 
 # Load packages and read data ------
@@ -23,7 +22,8 @@ packages <- c("tidyverse",
               "parallel",
               "rjags",
               "runjags",
-              "truncnorm")
+              "truncnorm",
+              "MCMCpack")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -45,13 +45,14 @@ library(rjags)
 library(runjags)
 library(parallel)
 library(truncnorm)
+library(MCMCpack)
 
 # Load required modules
 load.module("wiener")
 
 # Load functions written by John Kruschke
 # https://github.com/boboppie/kruschke-doing_bayesian_data_analysis/blob/master/2e/DBDA2E-utilities.R
-source("functions/DBDA2E-utilities.R")
+source("R/functions/DBDA2E-utilities.R")
 
 rm(package, packages, is_package_installed)
 
@@ -60,23 +61,41 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-group_of_interest <- "environmental_friendliness"
-# groups: "control", "emissions", "operating_costs", "environmental_friendliness"
+dataset <- "original"
+# datasets: "original", "replication"
 
-# only supports unbounded model 
+translation_of_interest <- "environmental_friendliness"
+# translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
+# translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
 
-file_extension <- "_nobounds"
+time <- "20260519_0532"
+# time stamp of data generation
 
-filename <- paste0("data/simResults_", group_of_interest, file_extension, "_recovery", ".rds")
+filename <- paste0("data/modeling/simResultsmaaDDMDirichlet_recovery", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
 
 sim_results <- readRDS(filename)
 
 rm(filename)
 
-df <- readRDS("data/df.rds")
+# load behavioral data
 
+load("data/preprocessedDataOriginal.RData")
+load("data/preprocessedDataReplication.RData")
+
+if (dataset == "original") {
+  
+  df <- dfOriginal
+  
+} else if (dataset == "replication") {
+  
+  df <- dfReplication
+  
+}
+
+# set subset depending on condition
 df_subset <- df %>%
-  filter(consumption_translation == group_of_interest)
+  filter(consumption_translation == translation_of_interest)
+
 
 # assign new ids that are starting from 1 and increment by 1
 df_subset <- df_subset %>%
@@ -89,7 +108,7 @@ df_subset <- df_subset[order(df_subset$id_new),]
 SampleSize <- length(unique(df_subset$id_new))
 
 
-# Calculate fixation proportions (fixprops) ------
+### Calculate fixation proportions (fixprops) ------
 
 # fixProps -> acquistion time for each attribute proportional to the total duration of the trial (vector containing six elements in our case)
 fixProps <- data.frame(price0 = rep(NA, nrow(df_subset)),
@@ -100,18 +119,30 @@ fixProps <- data.frame(price0 = rep(NA, nrow(df_subset)),
                        popularity1 = rep(NA, nrow(df_subset))) 
 
 # attributes and their translation are treated as one attribute for simplicity
-fixProps$price0 <- rowSums(df_subset[, c("t_price0", "t_price_translation0")], na.rm = TRUE)/1000
+# depending on dataset, summarize price and price translation
+if (dataset == "original") {
+  
+  fixProps$price0 <- rowSums(df_subset[, c("t_price0", "t_price_translation0")], na.rm = TRUE)/1000
+  fixProps$price1 <- rowSums(df_subset[, c("t_price1", "t_price_translation1")], na.rm = TRUE)/1000
+  
+} else if (dataset == "replication") {
+  
+  fixProps$price0 <- df_subset$t_price0/1000
+  fixProps$price1 <- df_subset$t_price1/1000
+  
+}
+
 fixProps$consumption0 <- rowSums(df_subset[, c("t_consumption0", "t_consumption_translation0")], na.rm = TRUE)/1000
 fixProps$popularity0 <- df_subset$t_popularity0/1000
-fixProps$price1 <- rowSums(df_subset[, c("t_price1", "t_price_translation1")], na.rm = TRUE)/1000
 fixProps$consumption1 <- rowSums(df_subset[, c("t_consumption1", "t_consumption_translation1")], na.rm = TRUE)/1000
 fixProps$popularity1 <- df_subset$t_popularity1/1000
 
 # divide by total duration of the trial
-fixProps <- fixProps/(df_subset$t_decision/1000)
+#fixProps <- fixProps/abs(df_subset$t_decision) #take absolute value instead of +/- coded RT
+fixProps <- fixProps/df_subset$t_total # divide by total dwell time
 
 # normalize each trial to 1
-fixProps <- fixProps/rowSums(fixProps)
+fixProps <- fixProps/rowSums(fixProps) 
 
 
 # Estimate Parameters for Simulated Data ------
@@ -157,14 +188,12 @@ monitor <- c(
   "sigma_theta",
   "mu_phi",
   "sigma_phi",
-  "mu_w1",
-  "sigma_w1",
-  "mu_w2",
-  "sigma_w2",
-  "mu_dw1",
-  "sigma_dw1",
-  "mu_dw2",
-  "sigma_dw2",
+  "mu_w", 
+  "kappa",
+  "mu_dalr1",
+  "sigma_dalr1",
+  "mu_dalr2",
+  "sigma_dalr2",
   "mu_dtheta",
   "sigma_dtheta",
   "mu_dphi",
@@ -181,16 +210,8 @@ monitor <- c(
   "sigma_dsp",
   
   # Subject parameters
-  "w1",
-  "w1T",
-  "dw1",
-  "w1T_AT",
-  "w2",
-  "w2T",
-  "dw2",
-  "w3T",
-  "w3T_AT",
-  "w2T_AT",
+  "wT",
+  "wT_AT",
   "theta",
   "thetaT",
   "dtheta",
@@ -210,7 +231,11 @@ monitor <- c(
   "scaling_AT",
   "sp",
   "dsp",
-  "sp_AT"
+  "sp_AT",
+  
+  #likelihood
+  "loglik"
+  
 )
 
 ### Set up initial values ------
@@ -229,16 +254,8 @@ GenInits = function() {
   sigma_theta = rtruncnorm(1, a = 0, b = Inf, 1, sd)
   mu_phi = rnorm(1, 0.5, sd)
   sigma_phi = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-  mu_w1 = rnorm(1, 0, sd)
-  sigma_w1 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-  mu_w2 = rnorm(1, 0, sd)
-  sigma_w2 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
   mu_sp = rnorm(1, 0.5, sd)
   sigma_sp = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-  mu_dw1 = rnorm(1, 0, sd)
-  sigma_dw1 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-  mu_dw2 = rnorm(1, 0, sd)
-  sigma_dw2 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
   mu_dtheta = rnorm(1, 0, sd)
   sigma_dtheta = rtruncnorm(1, a = 0, b = Inf, 1, sd)
   mu_dphi = rnorm(1, 0, sd)
@@ -252,6 +269,9 @@ GenInits = function() {
   mu_dsp = rnorm(1, 0, sd)
   sigma_dsp = rtruncnorm(1, a = 0, b = Inf, 1, sd)
   
+  # group weights — random but close to equal, never near 0
+  w_init <- as.vector(MCMCpack::rdirichlet(1, c(10, 10, 10)))
+  
   list(
     mu_alpha = mu_alpha,
     sigma_alpha = sigma_alpha,
@@ -263,16 +283,8 @@ GenInits = function() {
     sigma_theta = sigma_theta,
     mu_phi = mu_phi,
     sigma_phi = sigma_phi,
-    mu_w1 = mu_w1,
-    sigma_w1 = sigma_w1,
-    mu_w2 = mu_w2,
-    sigma_w2 = sigma_w2,
     mu_sp = mu_sp,
     sigma_sp = sigma_sp,
-    mu_dw1 = mu_dw1,
-    sigma_dw1 = sigma_dw1,
-    mu_dw2 = mu_dw2,
-    sigma_dw2 = sigma_dw2,
     mu_dtheta = mu_dtheta,
     sigma_dtheta = sigma_dtheta,
     mu_dphi = mu_dphi,
@@ -284,10 +296,21 @@ GenInits = function() {
     mu_dtau = mu_dtau,
     sigma_dtau = sigma_dtau,
     mu_dsp = mu_dsp,
-    sigma_dsp = sigma_dsp
+    sigma_dsp = sigma_dsp,
+    
+    # Dirichlet weights — randomized across chains, kept near equal
+    mu_w     = w_init,
+    
+    # Kappa — fixed start
+    kappa    = 5,
+    
+    # ALR change parameters — start at no change
+    mu_dalr1 = 0,
+    mu_dalr2 = 0
   )
   
 }
+
 
 ### Set model specifications ------
 
@@ -299,7 +322,7 @@ nThinSteps <- 25
 
 ### Select model (text file) -----
 
-model_file <- "04_Modeling/bayes_models/hierarchical_bayesian_maaDDM_nobounds.txt"
+model_file <- "scripts/04_Modeling/bayes_models/hierarchical_bayesian_maaDDM_dirichlet.txt"
 
 # Run model ------
 
@@ -330,51 +353,7 @@ runJagsOut_recovery <- run.jags(method = "parallel",
 
 ### Save model output ------
 
-filename <- paste0("data/runJagsOut_recovery", rank_likelihood, "_", group_of_interest, file_extension, ".rds")
+filename <- paste0("data/recovery/runJagsOutmaaDDM_recovery", rank_likelihood, "_", dataset, "_", translation_of_interest, "_", time, ".rds")
 saveRDS(runJagsOut_recovery, file = filename)
 
 
-
-
-# ### Summary statistics -----
-# 
-# summary_statistics <- add.summary(runJagsOut_recovery,
-#                                   vars = c("mu_alpha",
-#                                            "mu_dalpha",
-#                                            "mu_scaling",
-#                                            "mu_dscaling",
-#                                            "mu_tau",
-#                                            "mu_dtau",
-#                                            "mu_theta",
-#                                            "mu_dtheta",
-#                                            "mu_phi",
-#                                            "mu_dphi",
-#                                            "mu_w1",
-#                                            "mu_dw1",
-#                                            "mu_w2",
-#                                            "mu_dw2",
-#                                            "mu_sp",
-#                                            "mu_dsp"))
-# 
-# ### retrieve summary for phi-transformed weights
-# 
-# # store as mcmc object
-# mcmcfin_recovery = as.mcmc.list(runJagsOut_recovery)
-# 
-# # combine chains
-# combined_mcmcfin_recovery <- as.data.frame(do.call(rbind, mcmcfin_recovery))
-# 
-# ###### price 
-# 
-# w_price <- list(hdi_baseline = HDIofMCMC(pnorm(combined_mcmcfin_recovery$mu_w1)),
-#                 hdi_manipulation = HDIofMCMC(pnorm(combined_mcmcfin_recovery$mu_w1 + combined_mcmcfin_recovery$mu_dw1)),
-#                 hdi_change = HDIofMCMC(pnorm(combined_mcmcfin_recovery$mu_w1 + combined_mcmcfin_recovery$mu_dw1) -
-#                                          pnorm(combined_mcmcfin_recovery$mu_w1)))
-# 
-# 
-# ###### consumption 
-# 
-# w_consumption <- list(hdi_baseline = HDIofMCMC(pnorm(combined_mcmcfin_recovery$mu_w2)),
-#                       hdi_manipulation = HDIofMCMC(pnorm(combined_mcmcfin_recovery$mu_w2 + combined_mcmcfin_recovery$mu_dw2)),
-#                       hdi_change = HDIofMCMC(pnorm(combined_mcmcfin_recovery$mu_w2 + combined_mcmcfin_recovery$mu_dw2) -
-#                                                pnorm(combined_mcmcfin_recovery$mu_w2)))
