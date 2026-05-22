@@ -27,7 +27,8 @@ packages <- c("tidyverse",
               "emmeans",
               "afex",
               "FSA",
-              "effectsize"
+              "effectsize",
+              "rjags"
               
 )
 
@@ -55,6 +56,7 @@ library(emmeans)
 library(afex)
 library(FSA)
 library(effectsize)
+library(rjags)
 
 
 rm(package, packages, is_package_installed)
@@ -64,6 +66,63 @@ rm(package, packages, is_package_installed)
 
 load("data/preprocessedDataOriginal.RData")
 load("data/preprocessedDataReplication.RData")
+
+runJagsOutReplication <- readRDS("data/modeling/runJagsOutmaaDDMDirichlet_replication_rating_add_20260518_2319.rds")
+
+# Set sample -------
+
+df_subset <- dfReplication %>%
+  filter(consumption_translation == "rating_add")
+
+# assign new ids that are starting from 1 and increment by 1
+df_subset <- df_subset %>%
+  mutate(id_new = dense_rank(id))
+
+# sort data frame according to id_new (starting from 1 to last participant)
+df_subset <- df_subset[order(df_subset$id_new),]
+
+# sample size
+SampleSize <- length(unique(df_subset$id_new))
+
+
+# Derive attribute weights -----
+
+# store as mcmc object
+mcmcfin = as.mcmc.list(runJagsOutReplication$mcmc)
+
+# combine chains
+combined_mcmcfin <- as.data.frame(do.call(rbind, mcmcfin))
+
+### Extract weights -----
+
+# function that determines the index of the parameter
+witch <- function(parameter_name){
+  which(colnames(mcmcfin[[1]]) == parameter_name)
+}
+
+wT_1 <- combined_mcmcfin[, witch("wT[1,1]") : (witch("wT[1,1]") + (SampleSize - 1))]
+wT_2 <- combined_mcmcfin[, witch("wT[1,2]") : (witch("wT[1,2]") + (SampleSize - 1))]
+wT_3 <- combined_mcmcfin[, witch("wT[1,3]") : (witch("wT[1,3]") + (SampleSize - 1))]
+
+wT_AT_1 <- combined_mcmcfin[, witch("wT_AT[1,1]") : (witch("wT_AT[1,1]") + (SampleSize - 1))]
+wT_AT_2 <- combined_mcmcfin[, witch("wT_AT[1,2]") : (witch("wT_AT[1,2]") + (SampleSize - 1))]
+wT_AT_3 <- combined_mcmcfin[, witch("wT_AT[1,3]") : (witch("wT_AT[1,3]") + (SampleSize - 1))]
+
+### Calculate subject-level parameter modes
+
+# write function that finds mode
+distMode <- function(x){
+  as.numeric(names(sort(-table(round(x,3))))[1])
+}
+
+participantWeights <- data.frame(
+  weight1 = apply(wT_1, 2, distMode),
+  weight2 = apply(wT_2, 2, distMode),
+  weight3 = apply(wT_3, 2, distMode),
+  weight1_AT = apply(wT_AT_1, 2, distMode),
+  weight2_AT = apply(wT_AT_2, 2, distMode),
+  weight3_AT = apply(wT_AT_3, 2, distMode)
+)
 
 # SM Index --------
 
