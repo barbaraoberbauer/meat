@@ -1,7 +1,6 @@
 #---
 # title: "Computational Mechanisms of Attribute Translations" 
 # author: Barbara Oberbauer (barbara.oberbauer@uni-hamburg.de)
-# last update: "2025-01-23"
 # produced under R version: 2024.09.0
 #---
 
@@ -49,7 +48,7 @@ load.module("wiener")
 
 # Load functions written by John Kruschke
 # https://github.com/boboppie/kruschke-doing_bayesian_data_analysis/blob/master/2e/DBDA2E-utilities.R
-source("functions/DBDA2E-utilities.R")
+source("R/functions/DBDA2E-utilities.R")
 
 rm(package, packages, is_package_installed)
 
@@ -58,23 +57,42 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-group_of_interest <- "environmental_friendliness"
-# groups: "control", "emissions", "operating_costs", "environmental_friendliness"
+dataset <- "original"
+# datasets: "original", "replication"
 
-# only supports unbounded model 
+translation_of_interest <- "environmental_friendliness"
+# translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
+# translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
 
-file_extension <- "_nobounds"
+time <- "20260519_0532"
+# time stamp of data generation
 
-filename <- paste0("data/runJagsOut_", group_of_interest, file_extension, ".rds")
+
+filename <- paste0("data/modeling/runJagsOutmaaDDMDirichlet_", dataset, "_", translation_of_interest, "_", time, ".rds")
 
 runJagsOut_true <- readRDS(filename)
 
 rm(filename)
 
-df <- readRDS("data/df.rds")
+# load behavioral data
 
+load("data/preprocessedDataOriginal.RData")
+load("data/preprocessedDataReplication.RData")
+
+if (dataset == "original") {
+  
+  df <- dfOriginal
+  
+} else if (dataset == "replication") {
+  
+  df <- dfReplication
+  
+}
+
+# set subset depending on condition
 df_subset <- df %>%
-  filter(consumption_translation == group_of_interest)
+  filter(consumption_translation == translation_of_interest)
+
 
 # assign new ids that are starting from 1 and increment by 1
 df_subset <- df_subset %>%
@@ -114,10 +132,10 @@ fixProps$consumption1 <- rowSums(df_subset[, c("t_consumption1", "t_consumption_
 fixProps$popularity1 <- df_subset$t_popularity1/1000
 
 # divide by total duration of the trial
-fixProps <- fixProps/(df_subset$t_decision/1000)
+fixProps <- fixProps/df_subset$t_total
 
 # normalize each trial to 1
-fixProps <- fixProps/rowSums(fixProps)
+fixProps <- fixProps/rowSums(fixProps) 
 
 
 # Determine best fitting parameters (highest log-likelihood) ------------
@@ -149,8 +167,7 @@ witch <- function(parameter_name){
 
 
 # select model file
-model_file <- "04_Modeling/bayes_models/simulation_maaDDM.txt"
-
+model_file <- "scripts/04_Modeling/bayes_models/simulation_maaDDM_dirichlet.txt"
 
 
 # Simulate Data --------
@@ -160,13 +177,17 @@ for (sim in 1:simRuns) {
   # determine position of simth likely parameter values
   idx <- which(loglik == loglik_sorted[sim])
   
+  # initialize matrices for weights
+  wT <- matrix(, nrow = SampleSize, ncol = 3)
+  wT_AT <- matrix(, nrow = SampleSize, ncol = 3)
+  
   # retrieve parameters
-  w1T <- unname(unlist(combined_mcmcfin_true[idx, witch("w1T[1]") : (witch("w1T[1]") + (SampleSize - 1))]))
-  w1T_AT <- unname(unlist(combined_mcmcfin_true[idx, witch("w1T_AT[1]") : (witch("w1T_AT[1]") + (SampleSize - 1))]))
-  w2T <- unname(unlist(combined_mcmcfin_true[idx, witch("w2T[1]") : (witch("w2T[1]") + (SampleSize - 1))]))
-  w2T_AT <- unname(unlist(combined_mcmcfin_true[idx, witch("w2T_AT[1]") : (witch("w2T_AT[1]") + (SampleSize - 1))]))
-  w3T <- unname(unlist(combined_mcmcfin_true[idx, witch("w3T[1]") : (witch("w3T[1]") + (SampleSize - 1))]))
-  w3T_AT <- unname(unlist(combined_mcmcfin_true[idx, witch("w3T_AT[1]") : (witch("w3T_AT[1]") + (SampleSize - 1))]))
+  wT[,1] <- unname(unlist(combined_mcmcfin_true[idx, witch("wT[1,1]") : (witch("wT[1,1]") + (SampleSize - 1))]))
+  wT[,2] <- unname(unlist(combined_mcmcfin_true[idx, witch("wT[1,2]") : (witch("wT[1,2]") + (SampleSize - 1))]))
+  wT[,3] <- unname(unlist(combined_mcmcfin_true[idx, witch("wT[1,3]") : (witch("wT[1,3]") + (SampleSize - 1))]))
+  wT_AT[,1] <- unname(unlist(combined_mcmcfin_true[idx, witch("wT_AT[1,1]") : (witch("wT_AT[1,1]") + (SampleSize - 1))]))
+  wT_AT[,2] <- unname(unlist(combined_mcmcfin_true[idx, witch("wT_AT[1,2]") : (witch("wT_AT[1,2]") + (SampleSize - 1))]))
+  wT_AT[,3] <- unname(unlist(combined_mcmcfin_true[idx, witch("wT_AT[1,3]") : (witch("wT_AT[1,3]") + (SampleSize - 1))]))
   thetaT <- unname(unlist(combined_mcmcfin_true[idx, witch("thetaT[1]") : (witch("thetaT[1]") + (SampleSize - 1))]))
   thetaT_AT <- unname(unlist(combined_mcmcfin_true[idx, witch("thetaT_AT[1]") : (witch("thetaT_AT[1]") + (SampleSize - 1))]))
   phiT <- unname(unlist(combined_mcmcfin_true[idx, witch("phiT[1]") : (witch("phiT[1]") + (SampleSize - 1))]))
@@ -199,12 +220,8 @@ for (sim in 1:simRuns) {
                   fixProps_Popularity_NonEco=fixProps$popularity0,
                   
                   # parameters
-                  w1T=w1T, 
-                  w1T_AT=w1T_AT,
-                  w2T=w2T,
-                  w2T_AT=w2T_AT,
-                  w3T=w3T,
-                  w3T_AT=w3T_AT, 
+                  wT = wT, 
+                  wT_AT = wT_AT,
                   thetaT=thetaT,
                   thetaT_AT=thetaT_AT, 
                   phiT=phiT, 
@@ -244,6 +261,9 @@ for (sim in 1:simRuns) {
 
 
 ### Save simulated data
-filename <- paste0("data/simResults_", group_of_interest, file_extension, "_recovery", ".rds")
+filename <- paste0("data/simResultsmaaDDMDirichlet", "_", "recovery", "_", dataset, "_", translation_of_interest, "_",  time, ".rds")
 saveRDS(sim_results, file = filename)
+
+saveRDS(sim_results, file = filename)
+
 
