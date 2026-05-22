@@ -20,7 +20,8 @@ if(!is.null(dev.list())) dev.off()
 packages <- c("tidyverse",
               "dplyr",
               "ggplot2",
-              "patchwork")
+              "patchwork",
+              "ggpubr")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -40,6 +41,7 @@ library(tidyverse)
 library(dplyr)
 library(ggplot2)
 library(patchwork)
+library(ggpubr)
 
 # Load theme
 source("R/theme.R")
