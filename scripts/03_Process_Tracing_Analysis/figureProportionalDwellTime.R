@@ -299,14 +299,9 @@ plotFixPropDifAll <-
     widths = c(0.15, 1),
     guides = "collect",
     axis_title = "collect"
-  ) +
-  plot_annotation(
-    tag_levels = list(c("a", "",
-                        "b", ""))
   ) &
   theme(legend.position = 'bottom',
-        plot.margin = margin(t = 7, r = 7, b = 7, l = 7),
-        plot.tag = element_text(size = 20, face = "bold"))
+        plot.margin = margin(t = 7, r = 7, b = 7, l = 7))
 
 
 
