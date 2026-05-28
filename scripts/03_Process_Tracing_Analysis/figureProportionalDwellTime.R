@@ -235,7 +235,7 @@ aggFixPropsDifReplication <- calculate_session_differences(fixPropsReplication)
 
 # Plot differences
 
-plotFixPropsDif <- function(dat, labels, title){
+plotFixPropsDif <- function(dat, labels){
   
   dat %>%
     ggplot(aes(x = fixProp,
@@ -255,33 +255,55 @@ plotFixPropsDif <- function(dat, labels, title){
                                  "difFixPropConsumption", 
                                  "difFixPropPopularity")) +
     labs(x = "Difference between Proportional Dwell Time (Session 2 - Session 1)", 
-         y = "Density",
-         title = title,
          fill = "Attribute") +
     theme(strip.background = element_blank(),
           strip.text = element_text(size = 12,
                                     face = "bold"),  # style for facet labels
           panel.border = element_rect(color = "black", fill = NA),
           axis.text.y = element_blank(),
-          axis.ticks.y = element_blank()
+          axis.ticks.y = element_blank(),
+          axis.title.y = element_blank()
     )
   
 }
 
-plotFixPropDifOriginal <- plotFixPropsDif(aggFixPropsDifOriginal, labelsOriginal, "Study 1")
-plotFixPropDifReplication <- plotFixPropsDif(aggFixPropsDifReplication, labelsReplication, "Study 2")
+plotFixPropDifOriginal <- plotFixPropsDif(aggFixPropsDifOriginal, labelsOriginal)
+plotFixPropDifReplication <- plotFixPropsDif(aggFixPropsDifReplication, labelsReplication)
 
 # Combine plots
 
-plotFixPropDifAll <- 
-  plotFixPropDifOriginal /
-  plot_spacer() /
-  plotFixPropDifReplication + 
-  plot_layout(heights = c(1, 0.3, 1),
-              guides = 'collect',
-              axis_title = 'collect') &
+# create header
+
+original_label <- wrap_elements(
+  grid::textGrob("Study 1", 
+                 rot = 90,
+                 #hjust = 0.5,
+                 #vjust = 1,  
+                 gp = grid::gpar(fontsize = 22, fontface = "bold"))
+)
+
+replication_label <- wrap_elements(
+  grid::textGrob("Study 2",
+                 rot = 90,
+                 #hjust = 0.5,
+                 #vjust = 1,  
+                 gp = grid::gpar(fontsize = 22, fontface = "bold"))
+)
+
+
+plotFixPropDifAll <-
+  original_label + plotFixPropDifOriginal +
+  replication_label + plotFixPropDifReplication +
+  plot_layout(
+    ncol = 2,
+    widths = c(0.15, 1),
+    guides = "collect",
+    axis_title = "collect"
+  ) &
   theme(legend.position = 'bottom',
-        plot.margin = margin(2, 2, 2, 2))
+        plot.margin = margin(t = 7, r = 7, b = 7, l = 7))
+
+
 
 # Save plot
 ggsave("figures/figureProporitonalDwellTimeDifferences.png", 
