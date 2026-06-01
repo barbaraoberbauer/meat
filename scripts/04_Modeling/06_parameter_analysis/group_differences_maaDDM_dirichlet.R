@@ -54,7 +54,7 @@ rm(package, packages, is_package_installed)
 
 runJagsOutGroup1 <- readRDS("data/modeling/runJagsOutmaaDDMDirichlet_replication_emission_add_20260521_1608.rds")
 
-runJagsOutGroup2 <- readRDS("data/modeling/runJagsOutmaaDDMDirichlet_replication_rating_add_20260518_2319.rds")
+runJagsOutGroup2 <- readRDS("data/modeling/runJagsOutmaaDDMDirichlet_replication_emission_replace_20260522_2028.rds")
 
 
 # Combine chains -----
@@ -167,10 +167,10 @@ calculate_condition_differences <- function(combinedMcmcfinGroup1,
 }
 
 conditionDifferences <- calculate_condition_differences(
-  combinedMcmcfinGroup2,
-  weightsATGroup2,
   combinedMcmcfinGroup1,
-  weightsATGroup1
+  weightsATGroup1,
+  combinedMcmcfinGroup2,
+  weightsATGroup2
 )
 
 
