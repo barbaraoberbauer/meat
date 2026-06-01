@@ -84,7 +84,7 @@ if (translation_of_interest == "environmental_friendliness") {
 } else if (translation_of_interest == "emissions") {
   
   toi_original <- "emissions"
-  toi_replication <- "emissions_add"
+  toi_replication <- "emission_add"
   
   xtitleChangePlot <- "Effect of Attr. Transl."
   
