@@ -50,17 +50,11 @@ rm(package, packages, is_package_installed)
 
 ### Load data ------
 
-# original
+# specify groups 
 
-runJagsOutOriginalEnvironmentalFriendliness <- readRDS("data/modeling/runJagsOutmaaDDMDirichlet_original_environmental_friendliness_20260519_0532.rds")
+runJagsOutGroup1 <- readRDS("data/modeling/runJagsOutmaaDDMDirichlet_replication_emission_add_20260521_1608.rds")
 
-runJagsOutOriginalControl <- readRDS("data/modeling/runJagsOutmaaDDMDirichlet_original_control_20260520_1453.rds")
-
-# replication
-
-runJagsOutReplicationRatingAdd <- readRDS("data/modeling/runJagsOutmaaDDMDirichlet_replication_rating_add_20260518_2319.rds")
-
-runJagsOutReplicationControl <- readRDS("data/modeling/runJagsOutmaaDDMDirichlet_replication_control_20260520_1545.rds")
+runJagsOutGroup2 <- readRDS("data/modeling/runJagsOutmaaDDMDirichlet_replication_emission_replace_20260522_2028.rds")
 
 
 # Combine chains -----
@@ -74,17 +68,11 @@ combine_chains <- function(runJagsOut){
   
 }
 
-combinedMcmcfinOriginalEnvironmentalFriendliness <-
-  combine_chains(runJagsOutOriginalEnvironmentalFriendliness)
+combinedMcmcfinGroup1 <-
+  combine_chains(runJagsOutGroup1)
 
-combinedMcmcfinOriginalControl <-
-  combine_chains(runJagsOutOriginalControl)
-
-combinedMcmcfinReplicationRatingAdd <-
-  combine_chains(runJagsOutReplicationRatingAdd)
-
-combinedMcmcfinReplicationControl <-
-  combine_chains(runJagsOutReplicationControl)
+combinedMcmcfinGroup2 <-
+  combine_chains(runJagsOutGroup2)
 
 
 # Calculate weights ---
@@ -122,17 +110,11 @@ calculate_weights <- function(combinedMcmcfin) {
   
 }
 
-weightsATOriginalEnvironmentalFriendliness <- 
-  calculate_weights(combinedMcmcfinOriginalEnvironmentalFriendliness)
+weightsATGroup1 <- 
+  calculate_weights(combinedMcmcfinGroup1)
 
-weightsATOriginalControl <- 
-  calculate_weights(combinedMcmcfinOriginalControl)
-
-weightsATReplicationRatingAdd <- 
-  calculate_weights(combinedMcmcfinReplicationRatingAdd)
-
-weightsATReplicationControl <- 
-  calculate_weights(combinedMcmcfinReplicationControl)
+weightsATGroup2 <- 
+  calculate_weights(combinedMcmcfinGroup2)
 
 
 # Calculate condition differences -----
@@ -184,17 +166,14 @@ calculate_condition_differences <- function(combinedMcmcfinGroup1,
   
 }
 
-OriginalControlEnvironmentalFriendliness <- calculate_condition_differences(
-  combinedMcmcfinOriginalControl,
-  weightsATOriginalControl,
-  combinedMcmcfinOriginalEnvironmentalFriendliness,
-  weightsATOriginalEnvironmentalFriendliness)
+conditionDifferences <- calculate_condition_differences(
+  combinedMcmcfinGroup1,
+  weightsATGroup1,
+  combinedMcmcfinGroup2,
+  weightsATGroup2
+)
 
-ReplicationControlRatingAdd <- calculate_condition_differences(
-  combinedMcmcfinReplicationControl,
-  weightsATReplicationControl,
-  combinedMcmcfinReplicationRatingAdd,
-  weightsATReplicationRatingAdd)
+
 
 
 

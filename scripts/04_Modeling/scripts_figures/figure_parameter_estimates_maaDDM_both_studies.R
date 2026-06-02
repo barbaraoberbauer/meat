@@ -64,11 +64,11 @@ rm(package, packages, is_package_installed)
 # specify subset of data 
 
 # translations of interest: control, emissions, environmental_friendliness (these conditions are identical across studies)
-translation_of_interest <- "environmental_friendliness"
+translation_of_interest <- "emissions"
 
 # time stamp of data generation
-time_original <- "20260519_0532"
-time_replication <- "20260518_2319"
+time_original <- "20260521_1418"
+time_replication <- "20260521_1608"
 
 
 # get runJagsOut and HDI
@@ -84,7 +84,7 @@ if (translation_of_interest == "environmental_friendliness") {
 } else if (translation_of_interest == "emissions") {
   
   toi_original <- "emissions"
-  toi_replication <- "emissions_add"
+  toi_replication <- "emission_add"
   
   xtitleChangePlot <- "Effect of Attr. Transl."
   
