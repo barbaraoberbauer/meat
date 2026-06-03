@@ -148,7 +148,7 @@ fixProps <- fixProps/rowSums(fixProps)
 # Estimate Parameters for Simulated Data ------
 
 # recover parameters for the data set simulated using the parameter set with rank likelihood (1-10)
-rank_likelihood <- 5 # 1 = most likely parameter set was used for simulating the data
+rank_likelihood <- 6 # 1 = most likely parameter set was used for simulating the data
 
 ### Put data in list ------
 
