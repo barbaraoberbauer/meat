@@ -279,7 +279,7 @@ original_label <- wrap_elements(
                  rot = 90,
                  #hjust = 0.5,
                  #vjust = 1,  
-                 gp = grid::gpar(fontsize = 22, fontface = "bold"))
+                 gp = grid::gpar(fontsize = 20, fontface = "bold"))
 )
 
 replication_label <- wrap_elements(
@@ -287,7 +287,7 @@ replication_label <- wrap_elements(
                  rot = 90,
                  #hjust = 0.5,
                  #vjust = 1,  
-                 gp = grid::gpar(fontsize = 22, fontface = "bold"))
+                 gp = grid::gpar(fontsize = 20, fontface = "bold"))
 )
 
 
@@ -301,7 +301,7 @@ plotFixPropDifAll <-
     axis_title = "collect"
   ) &
   theme(legend.position = 'bottom',
-        plot.margin = margin(t = 7, r = 7, b = 7, l = 7))
+        plot.margin = margin(t = 2, r = 2, b = 2, l = 2))
 
 
 
@@ -309,8 +309,11 @@ plotFixPropDifAll <-
 ggsave("figures/figureProporitonalDwellTimeDifferences.png", 
        plotFixPropDifAll, 
        width = 10,
-       height = 7,
+       height = 5,
        units = "in")
+
+save(plotFixPropDifAll,
+     file = "figures/figureProporitonalDwellTimeDifferences.RData")
  
 
 
