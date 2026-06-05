@@ -73,7 +73,7 @@ original_label <- wrap_elements(
                  rot = 90,
                  #hjust = 0.5,
                  #vjust = 1,  
-                 gp = grid::gpar(fontsize = 18, fontface = "bold"))
+                 gp = grid::gpar(fontsize = 20, fontface = "bold"))
 )
 
 replication_label <- wrap_elements(
@@ -81,7 +81,7 @@ replication_label <- wrap_elements(
                  rot = 90, 
                  #hjust = 0.5,
                  #vjust = 1,  
-                 gp = grid::gpar(fontsize = 18, fontface = "bold"))
+                 gp = grid::gpar(fontsize = 20, fontface = "bold"))
 )
 
 # Stack labels vertically as a narrow column
