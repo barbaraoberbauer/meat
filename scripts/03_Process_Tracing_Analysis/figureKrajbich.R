@@ -150,8 +150,11 @@ plotChooseEcoProbabilityNorm <-
 ggsave("figures/figureKrajbich.png", 
        plotChooseEcoProbabilityNorm, 
        width = 10,
-       height = 7,
+       height = 6,
        units = "in")
+
+save(plotChooseEcoProbabilityNorm,
+     file = "figures/figureKrajbich.RData")
 
 
 
