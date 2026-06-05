@@ -290,7 +290,7 @@ original_label <- wrap_elements(
                  rot = 90,
                  #hjust = 0.5,
                  #vjust = 1,  
-                 gp = grid::gpar(fontsize = 22, fontface = "bold"))
+                 gp = grid::gpar(fontsize = 20, fontface = "bold"))
 )
 
 replication_label <- wrap_elements(
@@ -298,7 +298,7 @@ replication_label <- wrap_elements(
                  rot = 90,
                  #hjust = 0.5,
                  #vjust = 1,  
-                 gp = grid::gpar(fontsize = 22, fontface = "bold"))
+                 gp = grid::gpar(fontsize = 20, fontface = "bold"))
 )
 
 
@@ -308,19 +308,12 @@ pps <- original_label + ppOriginalSession1 + ppOriginalSession2 +
   replication_label + ppReplicationSession1 + ppReplicationSession2 +
   plot_layout(ncol = 3,
               widths = c(0.15, 1, 1),
-              guides = 'collect') +
-  plot_annotation(
-    tag_levels = list(c("a", "", "",
-                        "b", "", ""))
-    ) &
+              guides = 'collect') &
   theme(legend.position = 'bottom',
         plot.margin = margin(t = 7, r = 7, b = 7, l = 7),
-        panel.border = element_rect(color = "black", fill = NA),
-        #panel.grid.major = element_line(color = "grey80"),
-        #panel.grid.minor = element_line(color = "grey90"),
-        plot.tag = element_text(size = 20, face = "bold"))
+        panel.border = element_rect(color = "black", fill = NA))
 
 
 # Save plot
 filename <- paste0("figures/posteriorPredictivesBothStudies", "_", translation_of_interest, ".png")
-ggsave(filename, pps, width = 11, height = 8)
+ggsave(filename, pps, width = 10, height = 7)
