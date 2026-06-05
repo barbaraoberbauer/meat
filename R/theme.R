@@ -11,7 +11,7 @@ themeMEAT <- function(base_size = 12) {
     theme(
       # title
       plot.title = element_text(hjust = 0.5,
-                                size = base_size + 6,
+                                size = base_size + 8,
                                 face = "bold",
                                 margin = margin(t = 0,
                                                 r = 0,
