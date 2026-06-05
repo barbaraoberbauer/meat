@@ -64,11 +64,11 @@ rm(package, packages, is_package_installed)
 # specify subset of data 
 
 # translations of interest: control, emissions, environmental_friendliness (these conditions are identical across studies)
-translation_of_interest <- "emissions"
+translation_of_interest <- "environmental_friendliness"
 
 # time stamp of data generation
-time_original <- "20260521_1418"
-time_replication <- "20260521_1608"
+time_original <- "20260519_0532"
+time_replication <- "20260518_2319"
 
 
 # get runJagsOut and HDI

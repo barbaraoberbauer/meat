@@ -233,14 +233,14 @@ original_label <- wrap_elements(
   grid::textGrob("Study 1", 
                  #hjust = 0.5,
                  #vjust = 1,  
-                 gp = grid::gpar(fontsize = 18, fontface = "bold"))
+                 gp = grid::gpar(fontsize = 20, fontface = "bold"))
 )
 
 replication_label <- wrap_elements(
   grid::textGrob("Study 2", 
                  #hjust = 0.5,
                  #vjust = 1,  
-                 gp = grid::gpar(fontsize = 18, fontface = "bold"))
+                 gp = grid::gpar(fontsize = 20, fontface = "bold"))
 )
 
 header <- original_label + replication_label
