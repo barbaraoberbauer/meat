@@ -510,15 +510,18 @@ emm_proportional_dt <- function(fixed_effects_list, choice_model){
     price = list(emm = emm_price, 
                  session = emm_price_session,
                  vs_control = emm_price_vs_control,
-                 confint = confint(emm_price_session)),
+                 confint = confint(emm_price_session),
+                 vs_control_conf = confint(emm_price_vs_control)),
     consumption = list(emm = emm_consumption,
                        session = emm_consumption_session,
                        vs_control = emm_consumption_vs_control,
-                       confint = confint(emm_consumption_session)),
+                       confint = confint(emm_consumption_session),
+                       vs_control_conf = confint(emm_consumption_vs_control)),
     popularity = list(emm = emm_popularity,
                       session = emm_popularity_session,
                       vs_control = emm_popularity_vs_control,
-                      confint = confint(emm_popularity_session))
+                      confint = confint(emm_popularity_session),
+                      vs_control_conf = (confint(emm_popularity_vs_control)))
   ))
 }
 
