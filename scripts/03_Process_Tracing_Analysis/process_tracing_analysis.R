@@ -440,8 +440,8 @@ fixPropsReplication$popularity_all <- (fixPropsReplication$popularity_0 + fixPro
 fixed_effects_proportional_dwelltimes <- function(dat){
   
   # use control as reference level
-  contrasts(data$consumption_translation) <- 
-    contr.treatment(levels(data$consumption_translation), base = 1)
+  contrasts(dat$consumption_translation) <- 
+    contr.treatment(levels(dat$consumption_translation), base = 1)
 
   fixed_effects_price <- afex::mixed(price_all ~ (1 | task) + (1 | id) + consumption_translation * session,
                                       data = dat,
