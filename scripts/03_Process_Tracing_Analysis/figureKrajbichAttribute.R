@@ -158,6 +158,6 @@ plotChooseEcoProbabilityConsumptionNorm <-
 ggsave("figures/figureKrajbichAttribute.png", 
        plotChooseEcoProbabilityConsumptionNorm, 
        width = 10,
-       height = 7,
+       height = 6,
        units = "in")
 
