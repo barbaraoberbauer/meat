@@ -21,7 +21,8 @@ packages <- c("tidyverse",
               "dplyr",
               "ggplot2",
               "patchwork",
-              "ggpubr")
+              "ggpubr",
+              "cocor")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -42,6 +43,7 @@ library(dplyr)
 library(ggplot2)
 library(patchwork)
 library(ggpubr)
+library(cocor)
 
 # Load theme
 source("R/theme.R")
@@ -82,8 +84,9 @@ distMode <- function(x){
   as.numeric(names(sort(-table(round(x,3))))[1])
 }
 
+# Create data frames with weights and SM index ---------
 
-# Loop over conditions -------
+# Loop over conditions 
 
 SMIndexAttributeWeights <- list()
 
@@ -273,6 +276,52 @@ for (con in seq_along(conditions)) {
   
 }
 
+# Calculate correlations ------
+
+correlationResults <- list()
+
+for (con in seq_along(conditions)) {
+  
+  # set translation of interest
+  translation_of_interest <- conditions[con]
+  
+  # set data
+  df_subset <- SMIndexAttributeWeights[[translation_of_interest]]
+  
+  # transform to wide format
+  df_subset_wide <- df_subset %>%
+    pivot_wider(
+      id_cols = id_new,
+      names_from = session,
+      values_from = c(weight1, weight2, weight3, meanSM)
+    )
+  
+  # omit NA
+  df_subset_wide <- na.omit(df_subset_wide)
+  
+  # calculate correlation differences
+  results_cocor <- list()
+  
+  for (weight in c("weight1", "weight2", "weight3")) {
+    
+    r.jk <- cor(df_subset_wide[[paste0(weight, "_1")]], df_subset_wide$meanSM_1)
+    r.hm <- cor(df_subset_wide[[paste0(weight, "_2")]], df_subset_wide$meanSM_2)
+    r.jh <- cor(df_subset_wide[[paste0(weight, "_1")]], df_subset_wide[[paste0(weight, "_2")]])
+    r.jm <- cor(df_subset_wide[[paste0(weight, "_1")]], df_subset_wide$meanSM_2)
+    r.kh <- cor(df_subset_wide$meanSM_1, df_subset_wide[[paste0(weight, "_2")]])
+    r.km <- cor(df_subset_wide$meanSM_1, df_subset_wide$meanSM_2)
+    
+    results_cocor[[weight]] <- cocor.dep.groups.nonoverlap(
+      r.jk = r.jk, r.hm = r.hm,
+      r.jh = r.jh, r.jm = r.jm,
+      r.kh = r.kh, r.km = r.km,
+      n = nrow(testDf_wide)
+    )
+  }
+  
+  correlationResults[[translation_of_interest]] <- results_cocor
+  
+}
 
 # Plot correlations ---------
 
