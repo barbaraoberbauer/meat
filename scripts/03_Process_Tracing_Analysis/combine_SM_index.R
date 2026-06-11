@@ -71,5 +71,5 @@ plot <- (free(upper_plot) / wrap_elements(finalPlot)) +
 ggsave("figures/figureSMIndexCorrelations.png", 
        plot, 
        width = 10,
-       height = 10,
+       height = 12,
        units = "in")
