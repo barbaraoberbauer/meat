@@ -67,10 +67,10 @@ load("data/preprocessedDataReplication.RData")
 
 ### Specify subset of data ----
 
-dataset <- "replication"
+dataset <- "original"
 # datasets: "original", "replication"
 
-translation_of_interest <- "rating_add"
+translation_of_interest <- "environmental_friendliness"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace", "rating_replace"
 
@@ -241,8 +241,8 @@ GenInits <- function() {
 nchains <- 6
 nAdaptSteps <- 5000
 nBurninSteps <- 30000
-nUseSteps = nchains * 8000 # total number of used steps
-nThinSteps <- 30
+nUseSteps = nchains * 10000 # total number of used steps
+nThinSteps <- 35
 
 ### Set model (text file) -----
 
