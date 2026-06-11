@@ -208,6 +208,8 @@ ggsave("figures/figureSMIndexChoice.png",
        height = 4,
        units = "in")
 
+save(figureSMIndexChoice,
+     file = "figures/figureSMIndexChoice.RData")
 
 
 
