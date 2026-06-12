@@ -46,9 +46,9 @@ library(parallel)
 
 # Load functions written by John Kruschke
 # https://github.com/boboppie/kruschke-doing_bayesian_data_analysis/blob/master/2e/DBDA2E-utilities.R
-source("functions/DBDA2E-utilities.R")
-source("functions/fun_parameter_recovery_hdis.R")
-source("functions/fun_parameter_recovery_subjectParameters.R")
+source("R/functions/DBDA2E-utilities.R")
+source("R/functions/fun_parameter_recovery_hdis.R")
+source("R/functions/fun_parameter_recovery_subjectParameters.R")
 
 # Load required modules
 load.module("wiener")
@@ -58,65 +58,39 @@ rm(package, packages, is_package_installed)
 
 ### Load data ------
 
-runJagsOut <- readRDS("data/runJagsOut_environmental_friendliness_nobounds.rds")
-runJagsOut_recovery1 <- readRDS("data/runJagsOut_recovery1_environmental_friendliness_nobounds.rds")
-runJagsOut_recovery2 <- readRDS("data/runJagsOut_recovery2_environmental_friendliness_nobounds.rds")
-runJagsOut_recovery3 <- readRDS("data/runJagsOut_recovery3_environmental_friendliness_nobounds.rds")
-runJagsOut_recovery4 <- readRDS("data/runJagsOut_recovery4_environmental_friendliness_nobounds.rds")
-runJagsOut_recovery5 <- readRDS("data/runJagsOut_recovery5_environmental_friendliness_nobounds.rds")
-runJagsOut_recovery6 <- readRDS("data/runJagsOut_recovery6_environmental_friendliness_nobounds.rds")
-runJagsOut_recovery7 <- readRDS("data/runJagsOut_recovery7_environmental_friendliness_nobounds.rds")
-runJagsOut_recovery8 <- readRDS("data/runJagsOut_recovery8_environmental_friendliness_nobounds.rds")
-runJagsOut_recovery9 <- readRDS("data/runJagsOut_recovery9_environmental_friendliness_nobounds.rds")
-runJagsOut_recovery10 <- readRDS("data/runJagsOut_recovery10_environmental_friendliness_nobounds.rds")
+# specify subset of data 
+
+# datasets: "original", "replication"
+dataset <- "replication"
+
+# translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
+# translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
+translation_of_interest <- "rating_add"
+
+# time stamp of data generation
+time <- "20260518_2319"
+
+# load data
+
+filename <- paste0("data/modeling/runJagsOutmaaDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
+runJagsOut <- readRDS(filename)
+
+runJagsOut_recovery <- lapply(1:10, function(i) {
+  readRDS(paste0("data/recovery/runJagsOutmaaDDM_recovery", i, "_",
+                 dataset, "_", translation_of_interest, "_", time, ".rds"))
+})
 
 ### Store as MCMC objects and combine chains --------
 
 mcmcfin = as.mcmc.list(runJagsOut)
-mcmcfin_recovery1 = as.mcmc.list(runJagsOut_recovery1)
-mcmcfin_recovery2 = as.mcmc.list(runJagsOut_recovery2)
-mcmcfin_recovery3 = as.mcmc.list(runJagsOut_recovery3)
-mcmcfin_recovery4 = as.mcmc.list(runJagsOut_recovery4)
-mcmcfin_recovery5 = as.mcmc.list(runJagsOut_recovery5)
-mcmcfin_recovery6 = as.mcmc.list(runJagsOut_recovery6)
-mcmcfin_recovery7 = as.mcmc.list(runJagsOut_recovery7)
-mcmcfin_recovery8 = as.mcmc.list(runJagsOut_recovery8)
-mcmcfin_recovery9 = as.mcmc.list(runJagsOut_recovery9)
-mcmcfin_recovery10 = as.mcmc.list(runJagsOut_recovery10)
-
 combined_mcmcfin <- as.data.frame(do.call(rbind, mcmcfin))
-combined_mcmcfin_recovery1 <- as.data.frame(do.call(rbind, mcmcfin_recovery1))
-combined_mcmcfin_recovery2 <- as.data.frame(do.call(rbind, mcmcfin_recovery2))
-combined_mcmcfin_recovery3 <- as.data.frame(do.call(rbind, mcmcfin_recovery3))
-combined_mcmcfin_recovery4 <- as.data.frame(do.call(rbind, mcmcfin_recovery4))
-combined_mcmcfin_recovery5 <- as.data.frame(do.call(rbind, mcmcfin_recovery5))
-combined_mcmcfin_recovery6 <- as.data.frame(do.call(rbind, mcmcfin_recovery6))
-combined_mcmcfin_recovery7 <- as.data.frame(do.call(rbind, mcmcfin_recovery7))
-combined_mcmcfin_recovery8 <- as.data.frame(do.call(rbind, mcmcfin_recovery8))
-combined_mcmcfin_recovery9 <- as.data.frame(do.call(rbind, mcmcfin_recovery9))
-combined_mcmcfin_recovery10 <- as.data.frame(do.call(rbind, mcmcfin_recovery10))
 
-rm(runJagsOut_recovery1,
-   runJagsOut_recovery2,
-   runJagsOut_recovery3,
-   runJagsOut_recovery4,
-   runJagsOut_recovery5,
-   runJagsOut_recovery6,
-   runJagsOut_recovery7,
-   runJagsOut_recovery8,
-   runJagsOut_recovery9,
-   runJagsOut_recovery10,
-   mcmcfin_recovery1,
-   mcmcfin_recovery2,
-   mcmcfin_recovery3,
-   mcmcfin_recovery4,
-   mcmcfin_recovery5,
-   mcmcfin_recovery6,
-   mcmcfin_recovery7,
-   mcmcfin_recovery8,
-   mcmcfin_recovery9,
-   mcmcfin_recovery10)
+# recoveries
+mcmcfin_recovery <- lapply(runJagsOut_recovery, as.mcmc.list)
 
+combined_mcmcfin_recovery <- lapply(mcmcfin_recovery, function(x) {
+  as.data.frame(do.call(rbind, x))
+})
 
 # 1 - Ability to correctly infer group mean -----------
 
@@ -135,8 +109,8 @@ idx <- sapply(loglik_sorted[1:10],
               function(val) which(loglik == val))
 
 # Define relevant columns
-cols_to_keep <- c("mu_w1", "mu_dw1",
-                  "mu_w2", "mu_dw2",
+cols_to_keep <- c("mu_w[1]", "mu_w[2]", "mu_w[3]",
+                  "mu_dalr1", "mu_dalr2",
                   "mu_theta", "mu_dtheta",
                   "mu_phi", "mu_dphi",
                   "mu_alpha", "mu_dalpha",
@@ -159,44 +133,11 @@ true_parent_parameters <- as.data.frame(true_parent_parameters)
 
 ### Get HDIs of recoveries -------
 
-hdi_recovery1 <- parameter_recovery_hdis(combined_mcmcfin_recovery1, 1)
-hdi_recovery2 <- parameter_recovery_hdis(combined_mcmcfin_recovery2, 2)
-hdi_recovery3 <- parameter_recovery_hdis(combined_mcmcfin_recovery3, 3)
-hdi_recovery4 <- parameter_recovery_hdis(combined_mcmcfin_recovery4, 4)
-hdi_recovery5 <- parameter_recovery_hdis(combined_mcmcfin_recovery5, 5)
-hdi_recovery6 <- parameter_recovery_hdis(combined_mcmcfin_recovery6, 6)
-hdi_recovery7 <- parameter_recovery_hdis(combined_mcmcfin_recovery7, 7)
-hdi_recovery8 <- parameter_recovery_hdis(combined_mcmcfin_recovery8, 8)
-hdi_recovery9 <- parameter_recovery_hdis(combined_mcmcfin_recovery9, 9)
-hdi_recovery10 <- parameter_recovery_hdis(combined_mcmcfin_recovery10, 10)
+hdi_recovery <- lapply(seq_along(combined_mcmcfin_recovery), function(i) {
+  parameter_recovery_hdis(combined_mcmcfin_recovery[[i]], i)
+})
 
-hdi_recoveries <- rbind(hdi_recovery1,
-                        hdi_recovery2,
-                        hdi_recovery3,
-                        hdi_recovery4,
-                        hdi_recovery5,
-                        hdi_recovery6,
-                        hdi_recovery7,
-                        hdi_recovery8,
-                        hdi_recovery9,
-                        hdi_recovery10)
-
-
-# save data
-saveRDS(true_parent_parameters, file = "data/true_parent_parameters.rds")
-saveRDS(hdi_recoveries, file = "data/hdi_recoveries.rds")
-
-
-rm(hdi_recovery1,
-   hdi_recovery2,
-   hdi_recovery3,
-   hdi_recovery4,
-   hdi_recovery5,
-   hdi_recovery6,
-   hdi_recovery7,
-   hdi_recovery8,
-   hdi_recovery9,
-   hdi_recovery10)
+hdi_recoveries <- do.call(rbind, hdi_recovery)
 
 
 # 2 - Ability to correctly infer individual parameters -------
@@ -205,8 +146,7 @@ rm(hdi_recovery1,
 
 # Define the prefixes
 pattern <- c(
-  "^w1\\[", "^dw1\\[",
-  "^w2\\[", "^dw2\\[",
+  "^wT\\[",
   "^theta\\[", "^dtheta\\[",
   "^phi\\[", "^dphi\\[",
   "^alpha\\[", "^dalpha\\[",
@@ -235,51 +175,30 @@ true_subject_parameters <- true_subject_parameters %>%
 
 true_subject_parameters <- true_subject_parameters %>%
   mutate(
-    parameter = str_extract(parameter_subject, "^\\w+"),
-    subject = str_extract(parameter_subject, "\\d+(?=\\])") %>% 
-      as.integer()
+    parameter = case_when(
+      str_detect(parameter_subject, "^d?wT\\[") ~
+        paste0(str_extract(parameter_subject, "^d?wT"),
+               str_extract(str_extract(parameter_subject, ",\\s*(\\d+)\\]"), "\\d+")),
+      TRUE ~ str_extract(parameter_subject, "^\\w+")
+    ),
+    subject = as.integer(case_when(
+      str_detect(parameter_subject, "^d?wT\\[") ~
+        str_extract(parameter_subject, "(?<=\\[)\\d+"),
+      TRUE ~
+        str_extract(parameter_subject, "\\d+(?=\\])")
+    ))
   ) %>%
-  select(-parameter_subject)
+  dplyr::select(-parameter_subject)
 
 ### Get subject parameters of recoveries -------
 
 # Get subject parameters
-subjParameters_recovery1 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery1, pattern, 1)
-subjParameters_recovery2 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery2, pattern, 2)
-subjParameters_recovery3 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery3, pattern, 3)
-subjParameters_recovery4 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery4, pattern, 4)
-subjParameters_recovery5 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery5, pattern, 5)
-subjParameters_recovery6 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery6, pattern, 6)
-subjParameters_recovery7 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery7, pattern, 7)
-subjParameters_recovery8 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery8, pattern, 8)
-subjParameters_recovery9 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery9, pattern, 9)
-subjParameters_recovery10 <- parameter_recovery_subjectParameters(combined_mcmcfin_recovery10, pattern, 10)
 
-subjParameters_recoveries <- rbind(subjParameters_recovery1,
-                                  subjParameters_recovery2,
-                                  subjParameters_recovery3,
-                                  subjParameters_recovery4,
-                                  subjParameters_recovery5,
-                                  subjParameters_recovery6,
-                                  subjParameters_recovery7,
-                                  subjParameters_recovery8,
-                                  subjParameters_recovery9,
-                                  subjParameters_recovery10)
+subjParameters_recovery <- lapply(seq_along(combined_mcmcfin_recovery), function(i) {
+  parameter_recovery_subjectParameters(combined_mcmcfin_recovery[[i]], pattern, i)
+})
 
-rm(subjParameters_recovery1,
-   subjParameters_recovery2,
-   subjParameters_recovery3,
-   subjParameters_recovery4,
-   subjParameters_recovery5,
-   subjParameters_recovery6,
-   subjParameters_recovery7,
-   subjParameters_recovery8,
-   subjParameters_recovery9,
-   subjParameters_recovery10)
-
-# save data
-saveRDS(subjParameters_recoveries, file = "data/subjParameters_recoveries.rds")
-saveRDS(true_subject_parameters, file = "data/true_subject_parameters.rds")
+subjParameters_recoveries <- do.call(rbind, subjParameters_recovery)
 
 # 3 - Correlations between Parent Parameters ---------
 
@@ -288,10 +207,11 @@ saveRDS(true_subject_parameters, file = "data/true_subject_parameters.rds")
 # Write function that gets parent parameters
 getParents <- function(combined_mcmcfin, sim){
   # keep only parent parameters
-  cols_to_keep <- c("mu_w1",
-                    "mu_dw1",
-                    "mu_w2",
-                    "mu_dw2",
+  cols_to_keep <- c("mu_w[1]",
+                    "mu_w[2]",
+                    "mu_w[3]",
+                    "mu_dalr1",
+                    "mu_dalr2",
                     "mu_theta",
                     "mu_dtheta",
                     "mu_phi",
@@ -307,80 +227,49 @@ getParents <- function(combined_mcmcfin, sim){
   parent_parameters <- combined_mcmcfin[, cols_to_keep]
   # remove row names
   rownames(parent_parameters) <- NULL
-  # # shape into long format
-  # parent_parameters <- parent_parameters %>%
-  #   pivot_longer(everything(),
-  #                names_to = "parameter",
-  #                values_to = "estimate")
-  # # add sim number to data frame
-  # parent_parameters$sim <- 1
   return(parent_parameters)
 }
 
-parents_recovery1 <- getParents(combined_mcmcfin_recovery1, 1)
-parents_recovery2 <- getParents(combined_mcmcfin_recovery2, 2)
-parents_recovery3 <- getParents(combined_mcmcfin_recovery3, 3)
-parents_recovery4 <- getParents(combined_mcmcfin_recovery4, 4)
-parents_recovery5 <- getParents(combined_mcmcfin_recovery5, 5)
-parents_recovery6 <- getParents(combined_mcmcfin_recovery6, 6)
-parents_recovery7 <- getParents(combined_mcmcfin_recovery7, 7)
-parents_recovery8 <- getParents(combined_mcmcfin_recovery8, 8)
-parents_recovery9 <- getParents(combined_mcmcfin_recovery9, 9)
-parents_recovery10 <- getParents(combined_mcmcfin_recovery10, 10)
-
+parents_recovery <- lapply(seq_along(combined_mcmcfin_recovery), function(i) {
+  getParents(combined_mcmcfin_recovery[[i]], i)
+})
 
 ### Calculate correlations -------
 
-cor_recovery1 <- cor(parents_recovery1, use = "pairwise.complete.obs")
-cor_recovery2 <- cor(parents_recovery2, use = "pairwise.complete.obs")
-cor_recovery3 <- cor(parents_recovery3, use = "pairwise.complete.obs")
-cor_recovery4 <- cor(parents_recovery4, use = "pairwise.complete.obs")
-cor_recovery5 <- cor(parents_recovery5, use = "pairwise.complete.obs")
-cor_recovery6 <- cor(parents_recovery6, use = "pairwise.complete.obs")
-cor_recovery7 <- cor(parents_recovery7, use = "pairwise.complete.obs")
-cor_recovery8 <- cor(parents_recovery8, use = "pairwise.complete.obs")
-cor_recovery9 <- cor(parents_recovery9, use = "pairwise.complete.obs")
-cor_recovery10 <- cor(parents_recovery10, use = "pairwise.complete.obs")
+cor_recovery <- lapply(parents_recovery, function(x) {
+  cor(x, use = "pairwise.complete.obs")
+})
 
-# put into a list
-cors_list <- list(cor_recovery1,
-                  cor_recovery2,
-                  cor_recovery3,
-                  cor_recovery4,
-                  cor_recovery5,
-                  cor_recovery6,
-                  cor_recovery7,
-                  cor_recovery8,
-                  cor_recovery9,
-                  cor_recovery10)
-
-rm(cor_recovery1,
-   cor_recovery2,
-   cor_recovery3,
-   cor_recovery4,
-   cor_recovery5,
-   cor_recovery6,
-   cor_recovery7,
-   cor_recovery8,
-   cor_recovery9,
-   cor_recovery10)
 
 ### Calculate mean and sd across simulations -----
-params <- colnames(cors_list[[1]]) # parameter names
+params <- colnames(cor_recovery[[1]]) # parameter names
 n_params <- length(params)
 
-cor_recoveries <- array(NA, dim = c(n_params, n_params, length(cors_list)),
+cor_recoveries <- array(NA, dim = c(n_params, n_params, length(cor_recovery)),
                         dimnames = list(params, params, NULL))
 
 # Fill array
-for (i in seq_along(cors_list)) {
-  cor_recoveries[, , i] <- cors_list[[i]]
+for (i in seq_along(cor_recovery)) {
+  cor_recoveries[, , i] <- cor_recovery[[i]]
 }
 
 # Compute mean and sd across third dimension (simulations)
 mean_cor <- apply(cor_recoveries, c(1,2), mean)
 sd_cor <- apply(cor_recoveries, c(1,2), sd)
 
-# Save data
 correlation_parents <- list(mean_cor, sd_cor)
-saveRDS(correlation_parents, file = "data/correlation_parents.rds")
+
+
+# Save data -------
+
+filename <- paste0("data/recovery/recoveryResults", "_", dataset, "_", translation_of_interest, ".RData")
+
+save(true_parent_parameters,
+     hdi_recoveries,
+     true_subject_parameters,
+     subjParameters_recoveries,
+     correlation_parents,
+     file = filename
+)
+
+

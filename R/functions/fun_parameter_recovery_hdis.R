@@ -12,10 +12,11 @@ parameter_recovery_hdis <- function(combined_mcmcfin, sim){
   combined_mcmcfin <- combined_mcmcfin
   
   # Initialize data frame containing all relevant parameters
-  parameters <- c("mu_w1", 
-                  "mu_dw1", 
-                  "mu_w2", 
-                  "mu_dw2", 
+  parameters <- c("mu_w[1]", 
+                  "mu_w[2]", 
+                  "mu_w[3]",
+                  "mu_dalr1", 
+                  "mu_dalr2", 
                   "mu_theta", 
                   "mu_dtheta", 
                   "mu_phi", 

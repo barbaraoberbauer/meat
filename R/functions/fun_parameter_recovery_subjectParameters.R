@@ -31,11 +31,20 @@ parameter_recovery_subjectParameters <- function(combined_mcmcfin, pattern, sim)
   
   subj_parameters <- subj_parameters %>%
     mutate(
-      parameter = str_extract(parameter_subject, "^\\w+"),
-      subject = str_extract(parameter_subject, "\\d+(?=\\])") %>% 
-        as.integer()
+      parameter = case_when(
+        str_detect(parameter_subject, "^d?wT\\[") ~
+          paste0(str_extract(parameter_subject, "^d?wT"),
+                 str_extract(str_extract(parameter_subject, ",\\s*(\\d+)\\]"), "\\d+")),
+        TRUE ~ str_extract(parameter_subject, "^\\w+")
+      ),
+      subject = as.integer(case_when(
+        str_detect(parameter_subject, "^d?wT\\[") ~
+          str_extract(parameter_subject, "(?<=\\[)\\d+"),
+        TRUE ~
+          str_extract(parameter_subject, "\\d+(?=\\])")
+      ))
     ) %>%
-    select(-parameter_subject)
+    dplyr::select(-parameter_subject)
 
   # Add sim num
   subj_parameters$sim <- sim

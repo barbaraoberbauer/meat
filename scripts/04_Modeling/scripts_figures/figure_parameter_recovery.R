@@ -49,22 +49,33 @@ library(runjags)
 library(reshape2)
 
 # Load required functions
-source("functions/fun_plot_group_means_hdis.R")
-source("functions/fun_plot_subject_parameter_recovery.R")
+source("R/functions/fun_plot_group_means_hdis.R")
+source("R/functions/fun_plot_subject_parameter_recovery.R")
 
 rm(package, packages, is_package_installed)
 
 
 ### Load data ------
 
-runJagsOut <- readRDS("data/runJagsOut_environmental_friendliness_nobounds.rds")
-mcmcfin = as.mcmc.list(runJagsOut)
-combined_mcmcfin <- as.data.frame(do.call(rbind, mcmcfin))
-hdi_recoveries <- readRDS("data/hdi_recoveries.rds")
-subjParameters_recoveries <- readRDS("data/subjParameters_recoveries.rds")
-true_parent_parameters <- readRDS("data/true_parent_parameters.rds")
-true_subject_parameters <- readRDS("data/true_subject_parameters.rds")
-correlation_parents <- readRDS("data/correlation_parents.rds")
+# specify subset of data 
+
+# datasets: "original", "replication"
+dataset <- "replication"
+
+# translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
+# translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
+translation_of_interest <- "rating_add"
+
+# time stamp of data generation
+time <- "20260518_2319"
+
+# load data
+
+filename <- paste0("data/modeling/runJagsOutmaaDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
+runJagsOut <- readRDS(filename)
+
+filename <- paste0("data/recovery/recoveryResults", "_", dataset, "_", translation_of_interest, ".RData")
+load(filename)
 
 # 1 - Ability to correctly infer group mean -----------
 
@@ -76,11 +87,14 @@ infer_group_means <- left_join(hdi_recoveries,
 
 ### Create plots ---------
 
-plot_price <- plot_group_means_hdis(infer_group_means, "mu_w1", "Weight Price") 
-plot_dprice <- plot_group_means_hdis(infer_group_means, "mu_dw1", "Weight Price\nChange")
+plot_price <- plot_group_means_hdis(infer_group_means, "mu_w[1]", "Weight Price") 
 
-plot_consumption <- plot_group_means_hdis(infer_group_means, "mu_w2", "Weight Consumption")
-plot_dconsumption <- plot_group_means_hdis(infer_group_means, "mu_dw2", "Weight Consumption\nChange")
+plot_consumption <- plot_group_means_hdis(infer_group_means, "mu_w[2]", "Weight Consumption")
+
+plot_popularity <- plot_group_means_hdis(infer_group_means, "mu_w[3]", "Weight Popularity")
+
+plot_dalr1 <- plot_group_means_hdis(infer_group_means, "mu_dalr1", "Weight Ratio 1 \nChange")
+plot_dalr2 <- plot_group_means_hdis(infer_group_means, "mu_dalr2", "Weight Ratio 2 \nChange")
 
 plot_theta <- plot_group_means_hdis(infer_group_means, "mu_theta", "Theta")
 plot_dtheta <- plot_group_means_hdis(infer_group_means, "mu_dtheta", "Theta\nChange")
@@ -102,30 +116,25 @@ plot_dsp <- plot_group_means_hdis(infer_group_means, "mu_dsp", "Starting Point B
 
 ### Combine plots ------
 
-plot_recovery_hdi <- plot_grid(plot_price, plot_dprice,
-                                       plot_consumption, plot_dconsumption,
-                                       plot_theta, plot_dtheta,
-                                       plot_phi, plot_dphi,
-                                       plot_alpha, plot_dalpha,
-                                       plot_scaling, plot_dscaling,
-                                       plot_tau, plot_dtau,
-                                       plot_sp, plot_dsp,
-                                       ncol = 2)
-                                       # labels = c("a", "",
-                                       #            "b", "",
-                                       #            "c", "",
-                                       #            "d", "",
-                                       #            "e", "",
-                                       #            "f", "",
-                                       #            "g", "",
-                                       #            "h", ""),
-                                       # label_size = 20)
+plot_recovery_hdi <- plot_grid(plot_price, plot_consumption,
+                               plot_popularity, ggplot() + theme_void(),
+                               plot_dalr1, plot_dalr2,
+                               plot_theta, plot_dtheta,
+                               plot_phi, plot_dphi,
+                               plot_alpha, plot_dalpha,
+                               plot_scaling, plot_dscaling,
+                               plot_tau, plot_dtau,
+                               plot_sp, plot_dsp,
+                               ncol = 2)
+                                       
 
 # Save plot 
-ggsave("figures/plot_recovery_hdi.png", plot_recovery_hdi, width = 12, height = 17)
+filename <- paste0("figures/figure_recovery_hdi", "_", dataset, "_", translation_of_interest, ".png")
+ggsave(filename, plot_recovery_hdi, width = 12, height = 18)
 
-rm(plot_price, plot_dprice,
-   plot_consumption, plot_dconsumption,
+rm(plot_price, plot_consumption,
+   plot_popularity,
+   plot_dalr1, plot_dalr2,
    plot_theta, plot_dtheta,
    plot_phi, plot_dphi,
    plot_alpha, plot_dalpha,
@@ -154,28 +163,22 @@ subject_parameter_correlations <- infer_subject_parameter %>%
 ### Create plots ---------
 
 plot_subject_price <- plot_subject_parameter_recovery(infer_subject_parameter, 
-                                                      "w1", 
+                                                      "wT1", 
                                                       "Generating Weight Price", 
                                                       "Estimated Weight Price",
                                                       subject_parameter_correlations)
 
-plot_subject_dprice <- plot_subject_parameter_recovery(infer_subject_parameter, 
-                                                       "dw1", 
-                                                       "Generating Weight\nPrice Change", 
-                                                       "Estimated Weight\nPrice Change",
-                                                       subject_parameter_correlations)
-
 plot_subject_consumption <- plot_subject_parameter_recovery(infer_subject_parameter, 
-                                                            "w2", 
+                                                            "wT2", 
                                                             "Generating Weight Consumption", 
                                                             "Estimated Weight Consumption",
                                                             subject_parameter_correlations)
 
-plot_subject_dconsumption <- plot_subject_parameter_recovery(infer_subject_parameter, 
-                                                             "dw2", 
-                                                             "Generating Weight\nConsumption Change", 
-                                                             "Estimated Weight\nConsumption Change",
-                                                             subject_parameter_correlations)
+plot_subject_popularity <- plot_subject_parameter_recovery(infer_subject_parameter, 
+                                                       "wT3", 
+                                                       "Generating Weight Popularity", 
+                                                       "Estimated Weight Popularity",
+                                                       subject_parameter_correlations)
 
 plot_subject_theta <- plot_subject_parameter_recovery(infer_subject_parameter, 
                                                       "theta", 
@@ -251,8 +254,8 @@ plot_subject_dsp <- plot_subject_parameter_recovery(infer_subject_parameter,
 
 ### Combine plots ------
 
-plot_recovery_subject_parameter <- plot_grid(plot_subject_price, plot_subject_dprice,
-                               plot_subject_consumption, plot_subject_dconsumption,
+plot_recovery_subject_parameter <- plot_grid(plot_subject_price, plot_subject_consumption,
+                               plot_subject_popularity, ggplot() + theme_void(),
                                plot_subject_theta, plot_subject_dtheta,
                                plot_subject_phi, plot_subject_dphi,
                                plot_subject_alpha, plot_subject_dalpha,
@@ -263,11 +266,12 @@ plot_recovery_subject_parameter <- plot_grid(plot_subject_price, plot_subject_dp
 
 
 
-# Save plot 
-ggsave("figures/plot_recovery_subject_parameter.png", plot_recovery_subject_parameter, width = 12, height = 17)
+# Save plot
+filename <- paste0("figures/figure_recovery_subject_parameter", "_", dataset, "_", translation_of_interest, ".png")
+ggsave(filename, plot_recovery_subject_parameter, width = 12, height = 17)
 
-rm(plot_subject_price, plot_subject_dprice,
-   plot_subject_consumption, plot_subject_dconsumption,
+rm(plot_subject_price, plot_subject_consumption,
+   plot_subject_popularity,
    plot_subject_theta, plot_subject_dtheta,
    plot_subject_phi, plot_subject_dphi,
    plot_subject_alpha, plot_subject_dalpha,
@@ -280,26 +284,6 @@ rm(plot_subject_price, plot_subject_dprice,
 
 mean_cor <- correlation_parents[[1]]
 sd_cor <- correlation_parents[[2]]
-
-# ggcorrplot(mean_cor,
-#            type = "upper",
-#            ggtheme = ggplot2::theme_bw,
-#            colors = c("#6D9EC1", "white", "#E46726"),
-#            lab = TRUE)
-# 
-# 
-# 
-# ggplot(test, aes(x = Var1, y = Var2, fill = value)) +
-#   geom_tile(color = "white") +
-#   scale_fill_gradient2(low = "#6D9EC1", high = "#E46726", mid = "white",
-#                        midpoint = 0, limit = c(-1, 1), name = "Correlation") +
-#   theme_bw() +
-#   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1)) +
-#   labs(x = NULL, y = NULL) +
-#   geom_text(aes(label = round(value, 2)), color = "black", size=3) +
-#   coord_fixed()
-# 
-# # Alternative solution
 
 cor_df <- melt(mean_cor)
 sd_df <- melt(sd_cor)
@@ -324,10 +308,10 @@ plot_parent_correlations <-
 ggplot(cor_sd_df, aes(x = Var2, y = Var1, fill = value)) +
   geom_tile(color = "white") +
   scale_fill_gradient2(low = "#6D9EC1", mid = "white", high = "#E46726", midpoint = 0, limits = c(-1, 1)) +
-  geom_text(aes(label = label), size = 3) +
-  scale_x_discrete(labels = c("mu_dw1" = "Weight Price\nChange",
-                              "mu_w2" = "Weight\nConsumption",
-                              "mu_dw2" = "Weight \nConsumption \nChange",
+  geom_text(aes(label = label), size = 2) +
+  scale_x_discrete(labels = c("mu_w[2]" = "Weight \n Consumption",
+                              "mu_w[3]" = "Weight\n Popularity",
+                              "mu_dalr2" = "Weight \n Ratio 1 \nChange",
                               "mu_theta" = "Theta",
                               "mu_dtheta" = "Theta Change",
                               "mu_phi" = "Phi", 
@@ -340,10 +324,11 @@ ggplot(cor_sd_df, aes(x = Var2, y = Var1, fill = value)) +
                               "mu_dtau" = "Non-decision\ntime\nChange",
                               "mu_sp" = "Starting point\nbias",
                               "mu_dsp" = "Starting point\nbias Change")) +
-  scale_y_discrete(labels = c("mu_w1" = "Weight Price",
-                              "mu_dw1" = "Weight Price\nChange",
-                              "mu_w2" = "Weight\nConsumption",
-                              "mu_dw2" = "Weight \nConsumption \nChange",
+  scale_y_discrete(labels = c("mu_w[1]" = "Weight Price",
+                              "mu_w[2]" = "Weight \nConsumption",
+                              "mu_w[3]" = "Weight\nPopularity",
+                              "mu_dalr1" = "Weight \n Ratio 1 \nChange",
+                              "mu_dalr2" = "Weight \n Ratio 2 \nChange",
                               "mu_theta" = "Theta",
                               "mu_dtheta" = "Theta Change",
                               "mu_phi" = "Phi", 
@@ -360,5 +345,6 @@ ggplot(cor_sd_df, aes(x = Var2, y = Var1, fill = value)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 # Save plot
-ggsave("figures/plot_parent_correlations.png", plot_parent_correlations)
+filename <- paste0("figures/figure_parent_correlations", "_", dataset, "_", translation_of_interest, ".png")
+ggsave(filename, plot_parent_correlations)
 
