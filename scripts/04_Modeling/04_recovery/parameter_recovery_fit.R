@@ -61,14 +61,14 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-dataset <- "original"
+dataset <- "replication"
 # datasets: "original", "replication"
 
-translation_of_interest <- "environmental_friendliness"
+translation_of_interest <- "rating_add"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
 
-time <- "20260519_0532"
+time <- "20260518_2319"
 # time stamp of data generation
 
 filename <- paste0("data/modeling/simResultsmaaDDMDirichlet_recovery", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
@@ -148,7 +148,7 @@ fixProps <- fixProps/rowSums(fixProps)
 # Estimate Parameters for Simulated Data ------
 
 # recover parameters for the data set simulated using the parameter set with rank likelihood (1-10)
-rank_likelihood <- 10 # 1 = most likely parameter set was used for simulating the data
+rank_likelihood <- 4 # 1 = most likely parameter set was used for simulating the data
 
 ### Put data in list ------
 
