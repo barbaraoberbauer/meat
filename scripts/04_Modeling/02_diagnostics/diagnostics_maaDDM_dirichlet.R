@@ -58,10 +58,10 @@ rm(package, packages, is_package_installed)
 
 # specify subset of data 
 
-dataset <- "original"
+dataset <- "replication"
 # datasets: "original", "replication"
 
-translation_of_interest <- "environmental_friendliness"
+translation_of_interest <- "rating_add"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
 
@@ -73,7 +73,7 @@ group_of_interest <- "price_translation_present"
 # groups: "price_translation_absent", "price_translation_present"
 # only applicable to original data
 
-time <- "20260506_1403"
+time <- "20260518_2319"
 # time stamp of data generation
 
 
@@ -182,9 +182,6 @@ plotRhats <- ggplot(rhat_df, aes(y = reorder(parameter,
                   size = 0.8) +
   scale_y_discrete(labels = param_labels) + 
   labs(x = "Rhat", y = NULL, title = "Gelman-Rubin Statistic")
-
-filenameRDS <- paste0("figures/RhatsDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
-saveRDS(plotRhats, filenameRDS)
 
 
 # Monte Carlo Standard Error --------
