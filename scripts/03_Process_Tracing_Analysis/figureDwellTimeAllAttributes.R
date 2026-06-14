@@ -170,33 +170,46 @@ attribute_labels <- c(
   "popularity0_diff" = "Popularity \nOther",
   "popularity1_diff" = "Popularity \nEco")
 
-ggplot(fixPropsDifOriginal, 
-       aes(x = attribute, 
-           y = propDwellTimeDiff)) +
-  geom_hline(yintercept = 0, 
-             color = "darkred", 
-             linewidth = 2, 
-             linetype = "dashed") +
-  stat_summary(fun = "mean", 
-               size = 0.5,
-               position = position_dodge(width = 0.3)) +
-  stat_summary(fun.data = mean_se, 
-               geom = "errorbar", 
-               position = position_dodge(width = 0.3),
-               linewidth = 1.2,
-               width = 0.15) +
-  facet_grid(~ consumption_translation, 
-             labeller = labeller(consumption_translation = labelsOriginal)) +
-  scale_x_discrete(labels = attribute_labels) +
-  labs(x = "Attributes", 
-       y = "Normalized Dwell Time \n Differences \n(Session 2 - Session 1)") +
-  theme(axis.text.x = element_text(angle = 90, 
-                                   vjust = 0.5, 
-                                   hjust=1),
-        strip.background = element_blank(),
-        strip.text = element_text(size = 12,
-                                  face = "bold"),  # style for facet labels
-        panel.border = element_rect(color = "black", fill = NA))
+
+plotDwellTimes <- function(df, title, labels){
+  
+  plotDwellTime <- 
+    ggplot(df, 
+           aes(x = attribute, 
+               y = propDwellTimeDiff)) +
+    geom_hline(yintercept = 0, 
+               color = "darkred", 
+               linewidth = 2, 
+               linetype = "dashed") +
+    stat_summary(fun = "mean", 
+                 size = 0.5,
+                 position = position_dodge(width = 0.3)) +
+    stat_summary(fun.data = mean_se, 
+                 geom = "errorbar", 
+                 position = position_dodge(width = 0.3),
+                 linewidth = 1.2,
+                 width = 0.15) +
+    facet_grid(~ consumption_translation, 
+               labeller = labeller(consumption_translation = labels)) +
+    scale_x_discrete(labels = attribute_labels) +
+    labs(x = "Attributes", 
+         y = "Dwell Time Differences \n(Session 2 - Session 1)",
+         title = title) +
+    theme(axis.text.x = element_text(angle = 90, 
+                                     vjust = 0.5, 
+                                     hjust=1),
+          strip.background = element_blank(),
+          strip.text = element_text(size = 12,
+                                    face = "bold"),  # style for facet labels
+          panel.border = element_rect(color = "black", fill = NA))
+  
+  return(plotDwellTime)
+  
+}
+
+plotOriginal <- plotDwellTimes(fixPropsDifOriginal, "Study 1", labelsOriginal)
+
+plotReplication <- plotDwellTimes(fixPropsDifReplication, "Study 2", labelsReplication)
 
 
 
