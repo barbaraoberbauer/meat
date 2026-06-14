@@ -21,7 +21,8 @@ packages <- c("tidyverse",
               "dplyr",
               "ggplot2",
               "patchwork",
-              "ggpubr")
+              "ggpubr",
+              "effectsize")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -42,6 +43,7 @@ library(dplyr)
 library(ggplot2)
 library(patchwork)
 library(ggpubr)
+library(effectsize)
 
 # Load theme
 source("R/theme.R")
@@ -56,7 +58,7 @@ load("data/preprocessedDataOriginal.RData")
 load("data/preprocessedDataReplication.RData")
 
 
-# Calculate proportional dwell time between original attribute and translation + change in choice probability ------
+# Calculate relative dwell time between original attribute and translation + change in choice probability ------
 
 createDf <- function(df){
   
@@ -127,7 +129,7 @@ plotDtChoice <- function(dfRatio, labels, title){
              y = averageRatio)) +
     geom_point() +
     labs(x = "Change in Ecological Choice Probability \n(Session 2 - Session 1)" , 
-         y = "Proportional Dwell Time \non Original Attribute",
+         y = "Relative Dwell Time \non Original Attribute",
          title = title) +
     coord_cartesian(ylim = c(0, 1.2)) +
     scale_y_continuous(breaks = seq(0, 1, by = 0.25),
@@ -161,7 +163,7 @@ plotDtChoiceReplication <-
                labelsReplication,
                "Study 2")
 
-# Plot proportional dwell times ------
+# Plot relative dwell times ------
 
 # Combine data
 
@@ -215,7 +217,7 @@ ggplot(data = dtRatioOriginalTranslationAll,
                      labels = c("original" = "1", 
                                 "replication" = "2")) +
   labs(x = "Experimental Condition", 
-       y = "Proportional Dwell Time \n on Original Attribute",
+       y = "Relative Dwell Time \n on Original Attribute",
        color = "Study") +
   guides(color = guide_legend(override.aes = list(size = 4))) +
   theme(legend.position="bottom")
@@ -238,5 +240,96 @@ ggsave("figures/figureDTOriginalTranslation.png",
        units = "in")
 
 
+# Statistical analysis ------
+
+# Calculate descriptives
+
+descriptives <- dtRatioOriginalTranslationAll %>%
+  group_by(sample, consumption_translation) %>%
+  summarize(meanRatio = mean(averageRatio),
+            sd = sd(averageRatio))
 
 
+# Test whether dwell time ratio is significantly different from 0.5
+
+# do some checks up front to see if t-test is valid
+
+# histogram
+dtRatioOriginalTranslationAll %>%
+  ggplot(aes(x = averageRatio)) +
+  geom_histogram(bins = 30) +
+  geom_vline(xintercept = 0.5, linetype = "dashed") +
+  theme_minimal()
+
+# Q-Q plot
+dtRatioOriginalTranslationAll %>%
+  ggplot(aes(sample = averageRatio)) +
+  stat_qq() +
+  stat_qq_line() +
+  theme_minimal()
+
+# Shapiro-Wilk 
+shapiro.test(dtRatioOriginalTranslationAll$averageRatio)
+
+# run non-parametric test
+wilcoxResults <- dtRatioOriginalTranslationAll %>%
+  group_by(sample, consumption_translation) %>%
+  summarize(
+    wilcox_test = list(wilcox.test(averageRatio, mu = 0.5, conf.int = TRUE)),
+    rank_biserial = list(rank_biserial(averageRatio, mu = 0.5))
+  ) %>%
+  mutate(
+    estimate = sapply(wilcox_test, function(x) x$estimate),
+    V = sapply(wilcox_test, function(x) x$statistic),
+    p_value = sapply(wilcox_test, function(x) x$p.value),
+    conf_low = sapply(wilcox_test, function(x) x$conf.int[1]),
+    conf_high = sapply(wilcox_test, function(x) x$conf.int[2]),
+    r_rb = sapply(rank_biserial, function(x) x$r_rank_biserial),
+    r_conf_low = sapply(rank_biserial, function(x) x$CI_low),
+    r_conf_high = sapply(rank_biserial, function(x) x$CI_high)
+  ) %>%
+  select(-wilcox_test, -rank_biserial)
+
+# Contrast samples
+
+r_rb_from_wilcox <- function(w, n1, n2) {
+  W <- unname(w$statistic)
+  2 * W / (n1 * n2) - 1
+}
+
+wilcoxResults_sampleDiff <- dtRatioOriginalTranslationAll %>%
+  filter(consumption_translation != "operating_costs") %>%
+  group_by(consumption_translation) %>%
+  summarize(
+    n1 = sum(sample == "original"),
+    n2 = sum(sample == "replication"),
+    x1 = list(averageRatio[sample == "original"]),
+    x2 = list(averageRatio[sample == "replication"]),
+    wilcox_test = list(
+      wilcox.test(
+        x1[[1]],
+        x2[[1]],
+        conf.int = TRUE,
+        exact = FALSE
+      )
+    ),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    V = map_dbl(wilcox_test, ~ unname(.x$statistic)),
+    p_value = map_dbl(wilcox_test, ~ .x$p.value),
+    conf_low = map_dbl(wilcox_test, ~ .x$conf.int[1]),
+    conf_high = map_dbl(wilcox_test, ~ .x$conf.int[2]),
+    r_rb = pmap_dbl(
+      list(wilcox_test, n1, n2),
+      \(w, n1, n2) r_rb_from_wilcox(w, n1, n2)
+    )
+  ) %>%
+  select(
+    consumption_translation,
+    V,
+    p_value,
+    conf_low,
+    conf_high,
+    r_rb
+  )
