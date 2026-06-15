@@ -60,14 +60,14 @@ rm(package, packages, is_package_installed)
 # specify subset of data 
 
 # datasets: "original", "replication"
-dataset <- "replication"
+dataset <- "original"
 
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
-translation_of_interest <- "rating_add"
+translation_of_interest <- "environmental_friendliness"
 
 # time stamp of data generation
-time <- "20260518_2319"
+time <- "20260519_0532"
 
 # load data
 
@@ -311,10 +311,11 @@ ggplot(cor_sd_df, aes(x = Var2, y = Var1, fill = value)) +
   geom_text(aes(label = label), size = 2) +
   scale_x_discrete(labels = c("mu_w[2]" = "Weight \n Consumption",
                               "mu_w[3]" = "Weight\n Popularity",
-                              "mu_dalr2" = "Weight \n Ratio 1 \nChange",
+                              "mu_dalr1" = "Weight \n Ratio 1 \nChange",
+                              "mu_dalr2" = "Weight \n Ratio 2 \nChange",
                               "mu_theta" = "Theta",
                               "mu_dtheta" = "Theta Change",
-                              "mu_phi" = "Phi", 
+                              "mu_phi" = "Phi",
                               "mu_dphi" = "Phi Change",
                               "mu_alpha" = "Boundary\nSeparation",
                               "mu_dalpha" = "Boundary\nSeparation\nChange",
@@ -331,7 +332,7 @@ ggplot(cor_sd_df, aes(x = Var2, y = Var1, fill = value)) +
                               "mu_dalr2" = "Weight \n Ratio 2 \nChange",
                               "mu_theta" = "Theta",
                               "mu_dtheta" = "Theta Change",
-                              "mu_phi" = "Phi", 
+                              "mu_phi" = "Phi",
                               "mu_dphi" = "Phi Change",
                               "mu_alpha" = "Boundary\nSeparation",
                               "mu_dalpha" = "Boundary\nSeparation\nChange",
@@ -346,5 +347,5 @@ ggplot(cor_sd_df, aes(x = Var2, y = Var1, fill = value)) +
 
 # Save plot
 filename <- paste0("figures/figure_parent_correlations", "_", dataset, "_", translation_of_interest, ".png")
-ggsave(filename, plot_parent_correlations, width = 10, height = 6)
+ggsave(filename, plot_parent_correlations, width = 10, height = 7)
 
