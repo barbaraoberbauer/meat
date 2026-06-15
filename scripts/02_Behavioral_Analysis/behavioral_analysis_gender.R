@@ -254,12 +254,12 @@ plotGenderDifferences <- function(data, labels, title){
 genderDifferencesOriginal <-
   plotGenderDifferences(aggOriginal[["df_agg_id_wide"]],
                         labelsOriginal,
-                        "Original")
+                        "Study 1")
 
 genderDifferencesReplication <-
   plotGenderDifferences(aggReplication[["df_agg_id_wide"]],
                         labelsReplication,
-                        "Replication")
+                        "Study 2")
 
 # Combine plots
 
