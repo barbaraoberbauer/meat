@@ -109,7 +109,7 @@ rm(dfOriginal_subset,
    common_conditions,
    common_cols)
 
-# Product Choice -----
+# Product Choice & Gender -----
 
 ### Descriptives  ---------
 
@@ -272,16 +272,7 @@ fixed_effects_combined_function <- function(data_combined){
 
 fixedEffectsCombined <- fixed_effects_combined_function(dfBothSamples)
 
-
-
-
-
-
-
-
-
-
-# Plot gender effects -----
+### Plot gender effects -----
 
 aggregate_function <- function(data){
   
@@ -377,5 +368,55 @@ ggsave("figures/figureGenderDifferences.pdf",
        height = 6,
        units = "in",
        device = cairo_pdf)
+
+
+# Product choice & age -------
+
+dfOriginal$age <- drop(scale(as.numeric(dfOriginal$age)))
+dfReplication$age <- drop(scale(as.numeric(dfReplication$age)))
+
+
+baseline_choice_age <- function(data){
+  
+  # Subset the data for session 1
+  data_session1 <- subset(data, session == 1)
+  
+  # Fit a model without the session interaction
+  choice_model_session1 <- glmer(choice ~ age + consumption_translation + (1 | id) + (1 | task), 
+                                 data = data_session1, 
+                                 family = binomial(link = "logit"),
+                                 control = glmerControl(optimizer="bobyqa", 
+                                                        optCtrl = list(maxfun=2e5))
+  )
+  
+  return(choice_model_session1)
+  
+}
+
+baselineChoiceAgeOriginal <- baseline_choice_age(dfOriginal)
+baselineChoiceAgeReplication <- baseline_choice_age(dfReplication)
+
+# Perform an ANOVA to see if consumption translation has a significant effect
+Anova(baselineChoiceAgeOriginal)
+Anova(baselineChoiceAgeReplication)
+
+### Check for Significant Fixed Effects -------
+
+fixed_effects_function <- function(data){
+  
+  fixed_effects_choice <- afex::mixed(choice ~ (session | id) + (1 | task) + session * consumption_translation * age, 
+                                      data = data, 
+                                      family = binomial(link = "logit"), 
+                                      control = glmerControl(optimizer="bobyqa", 
+                                                             optCtrl = list(maxfun=2e5)),
+                                      method = 'LRT')
+  
+  return(fixed_effects_choice)
+  
+}
+
+fixedEffectsAgeOriginal <- fixed_effects_function(dfOriginal)
+fixedEffectsAgeReplication <- fixed_effects_function(dfReplication)
+
 
 
