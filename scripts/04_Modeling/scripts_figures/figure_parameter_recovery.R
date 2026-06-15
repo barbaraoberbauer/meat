@@ -346,5 +346,5 @@ ggplot(cor_sd_df, aes(x = Var2, y = Var1, fill = value)) +
 
 # Save plot
 filename <- paste0("figures/figure_parent_correlations", "_", dataset, "_", translation_of_interest, ".png")
-ggsave(filename, plot_parent_correlations)
+ggsave(filename, plot_parent_correlations, width = 10, height = 8)
 
