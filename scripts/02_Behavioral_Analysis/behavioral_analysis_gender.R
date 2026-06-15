@@ -67,6 +67,48 @@ rm(package, packages, is_package_installed)
 load("data/preprocessedDataOriginal.RData")
 load("data/preprocessedDataReplication.RData")
 
+# Combine datasets for comparisons ------
+
+# find common columns
+common_cols <- intersect(colnames(dfOriginal), colnames(dfReplication))
+
+# subset datasets for these columns
+dfOriginal_subset <- dfOriginal[, common_cols]
+dfReplication_subset <- dfReplication[, common_cols]
+
+# add information about sample
+dfOriginal_subset$sample <- "original"
+dfReplication_subset$sample <- "replication"
+
+# combine samples
+dfBothSamples <- rbind(dfOriginal_subset, dfReplication_subset)
+
+# turn variable sample into factor
+dfBothSamples$sample <- as.factor(dfBothSamples$sample)
+
+# filter for conditions that are equivalent across samples
+common_conditions <- c("control", "emissions", "environmental_friendliness",
+                       "emission_add", "rating_add")
+
+dfBothSamples <- dfBothSamples %>%
+  filter(consumption_translation %in% common_conditions)
+
+# rename conditions
+dfBothSamples$consumption_translation[dfBothSamples$consumption_translation == "emissions"] <- 
+  "emission_add"
+
+dfBothSamples$consumption_translation[dfBothSamples$consumption_translation == "environmental_friendliness"] <- 
+  "rating_add"
+
+# drop unused levels
+dfBothSamples$consumption_translation <- droplevels(dfBothSamples$consumption_translation)
+
+# remove unnecessary variables
+rm(dfOriginal_subset,
+   dfReplication_subset,
+   common_conditions,
+   common_cols)
+
 # Product Choice -----
 
 ### Descriptives  ---------
@@ -180,6 +222,63 @@ choiceModelReplication <- choice_model_function(dfReplicationGender)
 
 summary(choiceModelOriginal)
 summary(choiceModelReplication)
+
+
+### Compare studies -------
+
+# Baseline model 
+
+baseline_compare_studies <- function(data_combined){
+  
+  contrasts(data_combined$consumption_translation) <- 
+    contr.treatment(levels(data_combined$consumption_translation), base = 1)
+  
+  data_combined_s1 <- subset(data_combined, session == 1)
+  
+  # Fit a model without the session interaction
+  choice_model_session1 <- afex::mixed(choice ~ (gender + consumption_translation) * sample + (1 | id) + (1 | task), 
+                                 data = data_combined_s1, 
+                                 family = binomial(link = "logit"),
+                                 control = glmerControl(optimizer="bobyqa", 
+                                                        optCtrl = list(maxfun=2e5)),
+                                 method = "LRT"
+  )
+  
+  return(choice_model_session1)
+}
+
+baselineChoiceCombined <- baseline_compare_studies(dfBothSamples)
+
+# Fixed effects
+
+fixed_effects_combined_function <- function(data_combined){
+  
+  contrasts(data_combined$consumption_translation) <- 
+    contr.treatment(levels(data_combined$consumption_translation), base = 1)
+  
+  # Fit combined model
+  combined_model <- afex::mixed(
+    choice ~ (session | id) + (1 | task) + gender * session * consumption_translation * sample,
+    data = data_combined,
+    family = binomial(link = "logit"),
+    control = glmerControl(optimizer = "bobyqa",
+                           optCtrl = list(maxfun = 2e5)),
+    method = "LRT"
+  )
+  
+  return(combined_model)
+  
+}
+
+fixedEffectsCombined <- fixed_effects_combined_function(dfBothSamples)
+
+
+
+
+
+
+
+
 
 
 # Plot gender effects -----
