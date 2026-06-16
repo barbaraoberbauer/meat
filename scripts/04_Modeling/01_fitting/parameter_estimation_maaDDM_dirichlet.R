@@ -67,21 +67,10 @@ dataset <- "replication"
 # datasets: "original", "replication"
 
 translation_of_interest <- "emission_replace"
-
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace", "rating_replace"
 
-run_subgroups_separately <- FALSE
-# if set to TRUE, estimates parameters separately for participants that did receive an additional price translation at t2 and those who did not
-# only applicable to original data
-
-group_of_interest <- "price_translation_present"
-# groups: "price_translation_absent", "price_translation_present"
-# only applicable to original data
-
-
 # set data
-
 if (dataset == "original") {
   
   df <- dfOriginal
@@ -92,35 +81,12 @@ if (dataset == "original") {
     
 }
 
-# set subset depending on condition
-
-if (dataset == "original" & run_subgroups_separately == TRUE) {
-  
-  if (group_of_interest == "price_translation_absent") {
-    
-    df_subset <- df %>%
-      filter(consumption_translation == translation_of_interest & price_translation == 0)
-    
-  } else if (group_of_interest == "price_translation_present") {
-    
-    df_subset <- df %>%
-      filter(consumption_translation == translation_of_interest & price_translation == 1)
-    
-  }
-  
-} else {
-  
-  df_subset <- df %>%
-    filter(consumption_translation == translation_of_interest)
-  
-}
-
 # assign new ids that are starting from 1 and increment by 1
-df_subset <- df_subset %>%
+df <- df %>%
   mutate(id_new = dense_rank(id))
 
 # sort data frame according to id_new (starting from 1 to last participant)
-df_subset <- df_subset[order(df_subset$id_new),]
+df <- df[order(df$id_new),]
 
 
 # Prepare data for modelling ------
@@ -134,7 +100,7 @@ df_subset <- df_subset[order(df_subset$id_new),]
 # choice = selection of energy-efficient option (0 = no, 1 = yes)
 # lower boundary will code selection of less energy_efficient option (former 0)
 
-df_subset <- df_subset %>%
+df <- df %>%
   mutate(t_decision = case_when(choice == 0 ~ t_decision * -1/1000,
                                 choice == 1 ~ t_decision * 1/1000))
 
@@ -142,41 +108,41 @@ df_subset <- df_subset %>%
 ### Calculate fixation proportions (fixprops) ------
 
 # fixProps -> acquistion time for each attribute proportional to the total duration of the trial (vector containing six elements in our case)
-fixProps <- data.frame(price0 = rep(NA, nrow(df_subset)),
-                       consumption0 = rep(NA, nrow(df_subset)),
-                       popularity0 = rep(NA, nrow(df_subset)),
-                       price1 = rep(NA, nrow(df_subset)),
-                       consumption1 = rep(NA, nrow(df_subset)),
-                       popularity1 = rep(NA, nrow(df_subset))) 
+fixProps <- data.frame(price0 = rep(NA, nrow(df)),
+                       consumption0 = rep(NA, nrow(df)),
+                       popularity0 = rep(NA, nrow(df)),
+                       price1 = rep(NA, nrow(df)),
+                       consumption1 = rep(NA, nrow(df)),
+                       popularity1 = rep(NA, nrow(df))) 
 
 # attributes and their translation are treated as one attribute for simplicity
 # depending on dataset, summarize price and price translation
 if (dataset == "original") {
   
-  fixProps$price0 <- rowSums(df_subset[, c("t_price0", "t_price_translation0")], na.rm = TRUE)/1000
-  fixProps$price1 <- rowSums(df_subset[, c("t_price1", "t_price_translation1")], na.rm = TRUE)/1000
+  fixProps$price0 <- rowSums(df[, c("t_price0", "t_price_translation0")], na.rm = TRUE)/1000
+  fixProps$price1 <- rowSums(df[, c("t_price1", "t_price_translation1")], na.rm = TRUE)/1000
   
 } else if (dataset == "replication") {
   
-  fixProps$price0 <- df_subset$t_price0/1000
-  fixProps$price1 <- df_subset$t_price1/1000
+  fixProps$price0 <- df$t_price0/1000
+  fixProps$price1 <- df$t_price1/1000
   
 }
 
-fixProps$consumption0 <- rowSums(df_subset[, c("t_consumption0", "t_consumption_translation0")], na.rm = TRUE)/1000
-fixProps$popularity0 <- df_subset$t_popularity0/1000
-fixProps$consumption1 <- rowSums(df_subset[, c("t_consumption1", "t_consumption_translation1")], na.rm = TRUE)/1000
-fixProps$popularity1 <- df_subset$t_popularity1/1000
+fixProps$consumption0 <- rowSums(df[, c("t_consumption0", "t_consumption_translation0")], na.rm = TRUE)/1000
+fixProps$popularity0 <- df$t_popularity0/1000
+fixProps$consumption1 <- rowSums(df[, c("t_consumption1", "t_consumption_translation1")], na.rm = TRUE)/1000
+fixProps$popularity1 <- df$t_popularity1/1000
 
 # divide by total duration of the trial
-#fixProps <- fixProps/abs(df_subset$t_decision) #take absolute value instead of +/- coded RT
-fixProps <- fixProps/df_subset$t_total # divide by total dwell time
+#fixProps <- fixProps/abs(df$t_decision) #take absolute value instead of +/- coded RT
+fixProps <- fixProps/df$t_total # divide by total dwell time
 
 # normalize each trial to 1
 fixProps <- fixProps/rowSums(fixProps) 
 
 # sample size
-SampleSize <- length(unique(df_subset$id_new))
+SampleSize <- length(unique(df$id_new))
 
 # Specify model ------
 
@@ -185,17 +151,17 @@ SampleSize <- length(unique(df_subset$id_new))
 # put data in a list for simple use in the run.jags() command
 # this was recommended in the example code of dwiener 
 
-dat <- list(N=nrow(df_subset),
-            x=df_subset$t_decision,
-            Subject=df_subset$id_new,
-            Session=df_subset$session,
+dat <- list(N=nrow(df),
+            x=df$t_decision,
+            Subject=df$id_new,
+            Session=df$session,
             SampleSize=SampleSize,
-            Price_Eco=df_subset$priceEco,
-            Energy_Eco=df_subset$energyEco,
-            Popularity_Eco=df_subset$popularityEco,
-            Price_NonEco=df_subset$priceNonEco,
-            Energy_NonEco=df_subset$energyNonEco,
-            Popularity_NonEco=df_subset$popularityNonEco,
+            Price_Eco=df$priceEco,
+            Energy_Eco=df$energyEco,
+            Popularity_Eco=df$popularityEco,
+            Price_NonEco=df$priceNonEco,
+            Energy_NonEco=df$energyNonEco,
+            Popularity_NonEco=df$popularityNonEco,
             fixProps_Price_Eco=fixProps$price1,
             fixProps_Energy_Eco=fixProps$consumption1,
             fixProps_Popularity_Eco=fixProps$popularity1,
@@ -387,24 +353,8 @@ runJagsOut <- run.jags(method = "parallel",
 
 time <- format(Sys.time(), "%Y%m%d_%H%M")
 
-if (dataset == "replication") {
+filename <- paste0("data/modeling/runJagsOutmaaDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
   
-  filename <- paste0("data/modeling/runJagsOutmaaDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
-  
-} else if (dataset == "original") {
-  
-  if (run_subgroups_separately == FALSE) {
-    
-    filename <- paste0("data/modeling/runJagsOutmaaDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
-
-  } else if (run_subgroups_separately == TRUE) {
-    
-    filename <- paste0("data/modeling/runJagsOutmaaDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", time, ".rds")
-
-  }
-  
-}
-
 saveRDS(runJagsOut, file = filename)
 
 
@@ -503,22 +453,6 @@ hdi$sp <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_sp),
 
 # Store the results
 
-if (dataset == "replication") {
-  
-  filename <- paste0("data/modeling/hdimaaDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
-  
-} else if (dataset == "original") {
-  
-  if (run_subgroups_separately == FALSE) {
-    
-    filename <- paste0("data/modeling/hdimaaDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
-    
-  } else if (run_subgroups_separately == TRUE) {
-    
-    filename <- paste0("data/modeling/hdimaaDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", time, ".rds")
-    
-  }
-  
-}
+filename <- paste0("data/modeling/hdimaaDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
 
 saveRDS(hdi, file = filename)
