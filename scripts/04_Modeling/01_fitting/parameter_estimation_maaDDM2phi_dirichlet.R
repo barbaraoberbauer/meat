@@ -76,11 +76,11 @@ translation_of_interest <- "environmental_friendliness"
 
 if (dataset == "original") {
   
-  df_subset <- dfOriginal
+  df <- dfOriginal
   
 } else if (dataset == "replication") {
   
-  df_subset <- dfReplication
+  df <- dfReplication
     
 }
 
