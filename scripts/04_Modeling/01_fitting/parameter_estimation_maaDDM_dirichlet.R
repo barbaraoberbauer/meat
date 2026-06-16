@@ -63,12 +63,15 @@ load("data/preprocessedDataReplication.RData")
 
 ### Specify subset of data ----
 
-dataset <- "replication"
+dataset <- "original"
 # datasets: "original", "replication"
 
-translation_of_interest <- "emission_replace"
+translation_of_interest <- "environmental_friendliness"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace", "rating_replace"
+
+bound_attention_params <- TRUE
+# set to true if parameter estimates for theta and phi are supposed to be bound between 0 and 1
 
 # set data
 if (dataset == "original") {
@@ -318,8 +321,15 @@ nThinSteps <- 25
 
 ### Select model (text file) -----
 
-model_file <- "scripts/04_Modeling/bayes_models/hierarchical_bayesian_maaDDM_dirichlet.txt"
-
+if (bound_attention_params == TRUE) {
+  
+  model_file <- "scripts/04_Modeling/bayes_models/hierarchical_bayesian_maaDDM_dirichlet_bounded_attention_params.txt"
+  
+} else {
+  
+  model_file <- "scripts/04_Modeling/bayes_models/hierarchical_bayesian_maaDDM_dirichlet.txt"
+  
+}
 
 # Run model ------
 
