@@ -187,8 +187,8 @@ monitor <- c(
   "sigma_theta",
   "mu_phi",
   "sigma_phi",
-  "mu_2phi",
-  "sigma_2phi",
+  "mu_phi2",
+  "sigma_phi2",
   "mu_w", 
   "kappa",
   "mu_dalr1",
@@ -220,10 +220,11 @@ monitor <- c(
   "phi",
   "phiT",
   "dphi",
-  "2phi",
-  "2phiT",
-  "d2phi",
   "phiT_AT",
+  "phi2",
+  "phi2T",
+  "dphi2",
+  "phi2T_AT",
   "alpha",
   "dalpha",
   "alpha_AT",
@@ -258,8 +259,8 @@ GenInits = function() {
   sigma_theta = rtruncnorm(1, a = 0, b = Inf, 1, sd)
   mu_phi = rnorm(1, 0.5, sd)
   sigma_phi = rtruncnorm(1, a = 0, b = Inf, 1, sd)
-  mu_2phi = rnorm(1, 0.5, sd)
-  sigma_2phi = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+  mu_phi2 = rnorm(1, 0.5, sd)
+  sigma_phi2 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
   mu_sp = rnorm(1, 0.5, sd)
   sigma_sp = rtruncnorm(1, a = 0, b = Inf, 1, sd)
   mu_dtheta = rnorm(1, 0, sd)
@@ -289,8 +290,8 @@ GenInits = function() {
     sigma_theta = sigma_theta,
     mu_phi = mu_phi,
     sigma_phi = sigma_phi,
-    mu_2phi = mu_2phi,
-    sigma_2phi = sigma_2phi,
+    mu_phi2 = mu_phi2,
+    sigma_phi2 = sigma_phi2,
     mu_sp = mu_sp,
     sigma_sp = sigma_sp,
     mu_dtheta = mu_dtheta,
