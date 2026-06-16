@@ -65,13 +65,6 @@ translation_of_interest <- "environmental_friendliness"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
 
-run_subgroups_separately <- FALSE
-# if set to TRUE, estimates parameters separately for participants that did receive an additional price translation at t2 and those who did not
-# only applicable to original data
-
-group_of_interest <- "price_translation_present"
-# groups: "price_translation_absent", "price_translation_present"
-# only applicable to original data
 
 time <- "20260517_1131"
 # time stamp of data generation
@@ -79,23 +72,7 @@ time <- "20260517_1131"
 
 # create filename
 
-if (dataset == "replication") {
-  
-  filename <- paste0("data/modeling/runJagsOutDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
-  
-} else if (dataset == "original") {
-  
-  if (run_subgroups_separately == FALSE) {
-    
-    filename <- paste0("data/modeling/runJagsOutDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
-    
-  } else if (run_subgroups_separately == TRUE) {
-    
-    filename <- paste0("data/modeling/runJagsOutDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", time, ".rds")
-    
-  }
-  
-}
+filename <- paste0("data/modeling/runJagsOutDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
 
 # read data
 runJagsOut <- readRDS(filename)
