@@ -76,11 +76,11 @@ bound_attention_params <- TRUE
 # set data
 if (dataset == "original") {
   
-  df <- df_subsetOriginal
+  df <- dfOriginal
   
 } else if (dataset == "replication") {
   
-  df <- df_subsetReplication
+  df <- dfReplication
     
 }
 
