@@ -50,8 +50,8 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-load("data/preprocessedDataOriginal.RData")
-load("data/preprocessedDataReplication.RData")
+load("data/behavior/preprocessedDataOriginal.RData")
+load("data/behavior/preprocessedDataReplication.RData")
 
 
 # Calculate proportional dwell time -----

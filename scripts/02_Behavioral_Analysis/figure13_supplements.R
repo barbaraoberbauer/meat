@@ -56,7 +56,7 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-load("data/behavioralResultsOriginalSupplements.RData")
+load("data/behavior/behavioralResultsOriginalSupplements.RData")
 
 results_att <- as.data.frame(results_att_rt$results_att)
 results_att_red <- as.data.frame(results_att_rt$results_att_red)

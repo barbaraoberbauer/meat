@@ -54,8 +54,8 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-load("data/preprocessedDataOriginal.RData")
-load("data/preprocessedDataReplication.RData")
+load("data/behavior/preprocessedDataOriginal.RData")
+load("data/behavior/preprocessedDataReplication.RData")
 
 
 # Calculate relative dwell time between original attribute and translation + change in choice probability ------

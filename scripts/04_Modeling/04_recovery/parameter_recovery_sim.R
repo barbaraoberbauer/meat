@@ -76,8 +76,8 @@ rm(filename)
 
 # load behavioral data
 
-load("data/preprocessedDataOriginal.RData")
-load("data/preprocessedDataReplication.RData")
+load("data/behavior/preprocessedDataOriginal.RData")
+load("data/behavior/preprocessedDataReplication.RData")
 
 if (dataset == "original") {
   

@@ -51,7 +51,7 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-load("data/preprocessedDataOriginal.RData")
+load("data/behavior/preprocessedDataOriginal.RData")
 
 df <- dfOriginal
 

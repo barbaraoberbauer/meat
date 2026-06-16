@@ -49,7 +49,7 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-load("data/behavioralResults.RData")
+load("data/behavior/behavioralResults.RData")
 
 # Reverse factor levels for plot
 behavioralResultsOriginal[["att"]]$consumption_translation <- 

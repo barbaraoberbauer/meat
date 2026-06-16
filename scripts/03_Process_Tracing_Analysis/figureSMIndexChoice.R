@@ -52,7 +52,7 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-load("data/preprocessedDataReplication.RData")
+load("data/behavior/preprocessedDataReplication.RData")
 
 # SM Index --------
 

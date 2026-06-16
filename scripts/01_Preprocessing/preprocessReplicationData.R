@@ -44,7 +44,7 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-df_process <- read_csv("data/process_data_replication.csv",
+df_process <- read_csv("data/behavior/process_data_replication.csv",
                        col_types = (cols('id' = col_integer(),
                                          'session' = col_factor(levels = c('1', '2')),
                                          'condition' = col_factor(levels = c('1', '2', '3')),
@@ -384,7 +384,7 @@ df_process$consumption_translation <- factor(df_process$consumption_translation,
 dfReplication <- df
 dfReplicationProcess <- df_process
 
-save(dfReplication, dfReplicationProcess, file = "data/preprocessedDataReplication.RData")
+save(dfReplication, dfReplicationProcess, file = "data/behavior/preprocessedDataReplication.RData")
 
 
 

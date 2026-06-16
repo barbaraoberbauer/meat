@@ -52,7 +52,7 @@ rm(package, packages, is_package_installed)
 
 # Data are available here: https://osf.io/fqdra/ (Study 2)
 
-df <- read_csv("data/mhb_dfx_data_exp2.csv", 
+df <- read_csv("data/behavior/mhb_dfx_data_exp2.csv", 
                col_types = (cols('id' = col_character(), 
                                  'submitted' = col_datetime(),
                                  'session' = col_factor(levels = c('1', '2')),
@@ -310,4 +310,4 @@ dfOriginal <- filter(df, task != 5 & task != 8 & task != 10)
 
 # Save data ----------
 
-save(dfAllTrialsOriginal, dfOriginal, file = "data/preprocessedDataOriginal.RData")
+save(dfAllTrialsOriginal, dfOriginal, file = "data/behavior/preprocessedDataOriginal.RData")

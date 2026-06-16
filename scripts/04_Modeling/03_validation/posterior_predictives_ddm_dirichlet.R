@@ -59,37 +59,15 @@ translation_of_interest <- "environmental_friendliness"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
 
-run_subgroups_separately <- FALSE
-# if set to TRUE, estimates parameters separately for participants that did receive an additional price translation at t2 and those who did not
-# only applicable to original data
-
-group_of_interest <- "price_translation_present"
-# groups: "price_translation_absent", "price_translation_present"
-# only applicable to original data
-
 time <- "20260424_0727"
 # time stamp of data generation
 
 
 # create filename
 
-if (dataset == "replication") {
-  
-  filename <- paste0("data/modeling/runJagsOutDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
-  
-} else if (dataset == "original") {
-  
-  if (run_subgroups_separately == FALSE) {
-    
-    filename <- paste0("data/modeling/runJagsOutDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
-    
-  } else if (run_subgroups_separately == TRUE) {
-    
-    filename <- paste0("data/modeling/runJagsOutDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", group_of_interest, "_", time, ".rds")
-    
-  }
-  
-}
+
+filename <- paste0("data/modeling/runJagsOutDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
+
 
 # Load modeling data
 runJagsOut <- readRDS(filename)
@@ -97,8 +75,8 @@ runJagsOut <- readRDS(filename)
 rm(filename)
 
 # Load behavioral data
-load("data/preprocessedDataOriginal.RData")
-load("data/preprocessedDataReplication.RData")
+load("data/behavior/preprocessedDataOriginal.RData")
+load("data/behavior/preprocessedDataReplication.RData")
 
 if (dataset == "original") {
   
@@ -112,26 +90,9 @@ if (dataset == "original") {
 
 # set subset depending on condition
 
-if (dataset == "original" & run_subgroups_separately == TRUE) {
+df_subset <- df %>%
+  filter(consumption_translation == translation_of_interest)
   
-  if (group_of_interest == "price_translation_absent") {
-    
-    df_subset <- df %>%
-      filter(consumption_translation == translation_of_interest & price_translation == 0)
-    
-  } else if (group_of_interest == "price_translation_present") {
-    
-    df_subset <- df %>%
-      filter(consumption_translation == translation_of_interest & price_translation == 1)
-    
-  }
-  
-} else {
-  
-  df_subset <- df %>%
-    filter(consumption_translation == translation_of_interest)
-  
-}
 
 # assign new ids that are starting from 1 and increment by 1
 df_subset <- df_subset %>%

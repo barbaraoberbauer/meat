@@ -57,7 +57,7 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-load("data/preprocessedDataOriginal.RData")
+load("data/behavior/preprocessedDataOriginal.RData")
 
 df <- dfOriginal
 
@@ -370,4 +370,4 @@ results_att_rt <- list(results_att = results_att,
 
 results_att_rt$readme <- "att = effects on dwell time; rt = effects on attention; red = reduced model (without price translation as fixed effect)"
 
-save(results_att_rt, file = "data/behavioralResultsOriginalSupplements.RData")
+save(results_att_rt, file = "data/behavior/behavioralResultsOriginalSupplements.RData")

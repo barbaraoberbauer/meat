@@ -60,8 +60,8 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-load("data/preprocessedDataOriginal.RData")
-load("data/preprocessedDataReplication.RData")
+load("data/behavior/preprocessedDataOriginal.RData")
+load("data/behavior/preprocessedDataReplication.RData")
 
 
 # Combine datasets for comparisons ------
@@ -766,7 +766,7 @@ behavioralResultsReplication <- list(att = emmAttReplication[["results_att"]],
 
 save(behavioralResultsOriginal, 
      behavioralResultsReplication,
-     file = "data/behavioralResults.RData")
+     file = "data/behavior/behavioralResults.RData")
 
 
 

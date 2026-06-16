@@ -50,7 +50,7 @@ rm(package, packages, is_package_installed)
 
 ### Load data ---------
 
-load("data/preprocessedDataReplication.RData")
+load("data/behavior/preprocessedDataReplication.RData")
 
 # Calculate within alternative and within attribute transitions ------
 
