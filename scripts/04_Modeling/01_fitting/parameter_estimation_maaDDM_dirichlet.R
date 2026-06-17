@@ -454,7 +454,7 @@ if (bound_attention_params == TRUE) {
   hdi$theta <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_theta)),
                     hdi_manipulation = HDIofMCMC(pnorm(map_input_theta + map_input_dtheta)),
                     hdi_change = HDIofMCMC(pnorm(map_input_theta + map_input_dtheta) -
-                                             pnorm(map_input_dtheta)))
+                                             pnorm(map_input_theta)))
   
   map_input_phi <- combined_mcmcfin$mu_phi/sqrt(1 + combined_mcmcfin$sigma_phi^2)
   map_input_dphi <- combined_mcmcfin$mu_dphi/sqrt(1 + combined_mcmcfin$sigma_dphi^2)
@@ -462,7 +462,7 @@ if (bound_attention_params == TRUE) {
   hdi$phi <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_phi)),
                   hdi_manipulation = HDIofMCMC(pnorm(map_input_phi + map_input_dphi)),
                   hdi_change = HDIofMCMC(pnorm(map_input_phi + map_input_dphi) -
-                                           pnorm(map_input_dphi)))
+                                           pnorm(map_input_phi)))
   
   
 } else {
@@ -527,7 +527,5 @@ if (bound_attention_params == TRUE) {
   
   
 }
-
-
 
 saveRDS(hdi, file = filename)
