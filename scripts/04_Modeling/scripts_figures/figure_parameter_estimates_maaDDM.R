@@ -63,29 +63,55 @@ rm(package, packages, is_package_installed)
 
 # Specify subset of data 
 
-dataset <- "replication"
+dataset <- "original"
 # datasets: "original", "replication"
 
-translation_of_interest <- "emission_replace"
+translation_of_interest <- "environmental_friendliness"
 
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace", "rating_replace"
 
-time <- "20260522_2028"
+bound_attention_params <- TRUE
+# set to true if parameter estimates for theta and phi are supposed to be bound between 0 and 1
+
+time <- "20260617_1338"
 # time stamp of data generation
 
 
 # get runJagsOut and HDI
-
 # create filename
-filenameRunJagsOut <- paste0("data/modeling/runJagsOutmaaDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
 
-filenameHDI <- paste0("data/modeling/hdimaaDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
+if (bound_attention_params == TRUE) {
+  
+  filenameRunJagsOut <- paste0("data/modeling/runJagsOutmaaDDMDirichlet", "_", 
+                               dataset, "_", 
+                               translation_of_interest, "_", 
+                               "bounded", "_",
+                               time, ".rds")
+  
+  filenameHDI <- paste0("data/modeling/hdimaaDDMDirichlet", "_", 
+                        dataset, "_", 
+                        translation_of_interest, "_", 
+                        "bounded", "_",
+                        time, ".rds")
+  
+} else {
+  
+  filenameRunJagsOut <- paste0("data/modeling/runJagsOutmaaDDMDirichlet", "_", 
+                               dataset, "_", 
+                               translation_of_interest, "_", 
+                               time, ".rds")
+  
+  filenameHDI <- paste0("data/modeling/hdimaaDDMDirichlet", "_", 
+                        dataset, "_", 
+                        translation_of_interest, "_", 
+                        time, ".rds")
+  
+}
 
 # load files
 runJagsOut <- readRDS(filenameRunJagsOut)
 hdi <- readRDS(filenameHDI)
-
 
 rm(filenameRunJagsOut, filenameHDI)
 
@@ -103,7 +129,7 @@ if (translation_of_interest == "control") {
 } 
 
 # generate function
-generate_all_plots <- function(runJagsOut, hdi) {
+generate_all_plots <- function(runJagsOut, hdi, bound_attention_params) {
   
   # Combine Chains in Data 
   
@@ -138,85 +164,123 @@ generate_all_plots <- function(runJagsOut, hdi) {
   mu_w_AT_3 <- 1       / denom_AT   # group mean popularity weight, Session 2
   
   
+  # Extract theta and phi 
+  # Depending on bound_attention_params, theta/phi are either on the
+  # probit scale (need average-derivative correction + pnorm back-transform)
+  # or directly usable as-is.
+  
+  if (bound_attention_params == TRUE) {
+    
+    print("if clause works")
+    
+    # Theta: probit-scale -> [0,1] scale
+    map_input_theta  <- combined_mcmcfin$mu_theta  / sqrt(1 + combined_mcmcfin$sigma_theta^2)
+    map_input_dtheta <- combined_mcmcfin$mu_dtheta / sqrt(1 + combined_mcmcfin$sigma_dtheta^2)
+    
+    theta_baseline    <- pnorm(map_input_theta)
+    theta_manipulation <- pnorm(map_input_theta + map_input_dtheta)
+    
+    # Phi: probit-scale -> [0,1] scale
+    map_input_phi  <- combined_mcmcfin$mu_phi  / sqrt(1 + combined_mcmcfin$sigma_phi^2)
+    map_input_dphi <- combined_mcmcfin$mu_dphi / sqrt(1 + combined_mcmcfin$sigma_dphi^2)
+    
+    phi_baseline    <- pnorm(map_input_phi)
+    phi_manipulation <- pnorm(map_input_phi + map_input_dphi)
+    
+  } else {
+    
+    print("if clause does not work")
+    
+    theta_baseline    <- combined_mcmcfin$mu_theta
+    theta_manipulation <- combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta
+    
+    phi_baseline    <- combined_mcmcfin$mu_phi
+    phi_manipulation <- combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi
+    
+  }
+  
+  
   # Group mean density plots
   plots_density <- list(
     price = plot_group_means_densities(combined_mcmcfin,
-                                        combined_mcmcfin$`mu_w[1]`,
-                                        mu_w_AT_1,
-                                        "Weight Price"),
+                                       combined_mcmcfin$`mu_w[1]`,
+                                       mu_w_AT_1,
+                                       "Weight Price"),
     consumption = plot_group_means_densities(combined_mcmcfin,
-                                              combined_mcmcfin$`mu_w[2]`,
-                                              mu_w_AT_2,
-                                              "Weight Consumption"),
+                                             combined_mcmcfin$`mu_w[2]`,
+                                             mu_w_AT_2,
+                                             "Weight Consumption"),
     popularity = plot_group_means_densities(combined_mcmcfin,
-                                             combined_mcmcfin$`mu_w[3]`,
-                                             mu_w_AT_3,
-                                             "Weight Popularity"),
+                                            combined_mcmcfin$`mu_w[3]`,
+                                            mu_w_AT_3,
+                                            "Weight Popularity"),
     boundary = plot_group_means_densities(combined_mcmcfin, 
-                                           combined_mcmcfin$mu_alpha, 
-                                           combined_mcmcfin$mu_alpha + combined_mcmcfin$mu_dalpha, 
-                                           "Boundary Separation"),
+                                          combined_mcmcfin$mu_alpha, 
+                                          combined_mcmcfin$mu_alpha + combined_mcmcfin$mu_dalpha, 
+                                          "Boundary Separation"),
     theta = plot_group_means_densities(combined_mcmcfin,
-                                        combined_mcmcfin$mu_theta,
-                                        combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta,
-                                        "Discounting Unattended \nOption (theta)"),
+                                       theta_baseline,
+                                       theta_manipulation,
+                                       "Discounting Unattended \nOption (theta)"),
     phi = plot_group_means_densities(combined_mcmcfin,
-                                      combined_mcmcfin$mu_phi,
-                                      combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi,
-                                      "Discounting Unattended \nAttribute (phi)"),
+                                     phi_baseline,
+                                     phi_manipulation,
+                                     "Discounting Unattended \nAttribute (phi)"),
     sp = plot_group_means_densities(combined_mcmcfin,
-                                     combined_mcmcfin$mu_sp,
-                                     combined_mcmcfin$mu_sp + combined_mcmcfin$mu_dsp,
-                                     "Starting Point Bias"),
+                                    combined_mcmcfin$mu_sp,
+                                    combined_mcmcfin$mu_sp + combined_mcmcfin$mu_dsp,
+                                    "Starting Point Bias"),
     ndt = plot_group_means_densities(combined_mcmcfin,
-                                      combined_mcmcfin$mu_tau,
-                                      combined_mcmcfin$mu_tau + combined_mcmcfin$mu_dtau,
-                                      "Non-Decision Time"),
+                                     combined_mcmcfin$mu_tau,
+                                     combined_mcmcfin$mu_tau + combined_mcmcfin$mu_dtau,
+                                     "Non-Decision Time"),
     scaling = plot_group_means_densities(combined_mcmcfin,
-                                          combined_mcmcfin$mu_scaling,
-                                          combined_mcmcfin$mu_scaling + combined_mcmcfin$mu_dscaling,
-                                          "Drift Scaling")
+                                         combined_mcmcfin$mu_scaling,
+                                         combined_mcmcfin$mu_scaling + combined_mcmcfin$mu_dscaling,
+                                         "Drift Scaling")
   ) # density plots
   
   
   # Change parameter plots
   plots_change <- list(
     dPrice = plot_change_param(mu_w_AT_1 - combined_mcmcfin$`mu_w[1]`,
-                                hdi$w_price$hdi_change,
-                                xtitleChangePlot),
+                               hdi$w_price$hdi_change,
+                               xtitleChangePlot),
     dConsumption = plot_change_param(mu_w_AT_2 - combined_mcmcfin$`mu_w[2]`,
-                                      hdi$w_consumption$hdi_change,
-                                      xtitleChangePlot),
-    dPopularity = plot_change_param(mu_w_AT_3 - combined_mcmcfin$`mu_w[3]`,
-                                     hdi$w_popularity$hdi_change,
+                                     hdi$w_consumption$hdi_change,
                                      xtitleChangePlot),
+    dPopularity = plot_change_param(mu_w_AT_3 - combined_mcmcfin$`mu_w[3]`,
+                                    hdi$w_popularity$hdi_change,
+                                    xtitleChangePlot),
     dBoundary = plot_change_param(combined_mcmcfin$mu_dalpha,
-                                   hdi$alpha$hdi_change,
-                                   xtitleChangePlot),
-    dTheta = plot_change_param(combined_mcmcfin$mu_dtheta,
-                                hdi$theta$hdi_change,
-                                xtitleChangePlot),
-    dPhi = plot_change_param(combined_mcmcfin$mu_dphi,
-                              hdi$phi$hdi_change,
-                              xtitleChangePlot),
-    dSp = plot_change_param(combined_mcmcfin$mu_dsp,
-                             hdi$sp$hdi_change,
+                                  hdi$alpha$hdi_change,
+                                  xtitleChangePlot),
+    dTheta = plot_change_param(theta_manipulation - theta_baseline,
+                               hdi$theta$hdi_change,
+                               xtitleChangePlot),
+    dPhi = plot_change_param(phi_manipulation - phi_baseline,
+                             hdi$phi$hdi_change,
                              xtitleChangePlot),
+    dSp = plot_change_param(combined_mcmcfin$mu_dsp,
+                            hdi$sp$hdi_change,
+                            xtitleChangePlot),
     dNdt = plot_change_param(combined_mcmcfin$mu_dtau,
-                              hdi$tau$hdi_change,
-                              xtitleChangePlot),
+                             hdi$tau$hdi_change,
+                             xtitleChangePlot),
     dScaling = plot_change_param(combined_mcmcfin$mu_dscaling,
-                                  hdi$scaling$hdi_change,
-                                  xtitleChangePlot)
+                                 hdi$scaling$hdi_change,
+                                 xtitleChangePlot)
   ) # change plots
   
   list(density = plots_density,
-       change = plots_change)
+       change = plots_change,
+       theta_baseline = theta_baseline,
+       theta_manipulation = theta_manipulation)
   
 }
 
 # Run for condition
-plots <- generate_all_plots(runJagsOut, hdi)
+plots <- generate_all_plots(runJagsOut, hdi, bound_attention_params)
 
 
 # Combine plots -------
@@ -264,7 +328,23 @@ all_plots <-
 # Save plots --------
 
 # save all parameters
-filename <- paste0("figures/groupParamEstimates", "_", dataset, "_", translation_of_interest, ".png")
+if (bound_attention_params == TRUE) {
+  
+  filename <- paste0("figures/groupParamEstimates", "_", 
+                     dataset, "_", 
+                     translation_of_interest, "_",
+                     "bounded", ".png")
+  
+} else {
+  
+  filename <- paste0("figures/groupParamEstimates", "_", 
+                     dataset, "_", 
+                     translation_of_interest, ".png")
+  
+  
+  
+}
+
 ggsave(filename, all_plots, width = 13, height = 7, units = "in")
 
 
