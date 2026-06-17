@@ -367,6 +367,22 @@ runJagsOut <- run.jags(method = "parallel",
 
 time <- format(Sys.time(), "%Y%m%d_%H%M")
 
+if (bound_attention_params == TRUE) {
+  
+  filename <- paste0("data/modeling/runJagsOutmaaDDMDirichlet", "_", 
+                     dataset, "_", 
+                     translation_of_interest, "_", 
+                     "bounded", "_",
+                     time, ".rds")  
+} else {
+  
+  filename <- paste0("data/modeling/runJagsOutmaaDDMDirichlet", "_", 
+                     dataset, "_", 
+                     translation_of_interest, "_", 
+                     time, ".rds")
+  
+}
+
 filename <- paste0("data/modeling/runJagsOutmaaDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
   
 saveRDS(runJagsOut, file = filename)
@@ -467,6 +483,23 @@ hdi$sp <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_sp),
 
 # Store the results
 
-filename <- paste0("data/modeling/hdimaaDDMDirichlet", "_", dataset, "_", translation_of_interest, "_", time, ".rds")
+if (bound_attention_params == TRUE) {
+  
+  filename <- paste0("data/modeling/hdimaaDDMDirichlet", "_", 
+                     dataset, "_", 
+                     translation_of_interest, "_", 
+                     "bounded", "_",
+                     time, ".rds") 
+} else {
+  
+  filename <- paste0("data/modeling/hdimaaDDMDirichlet", "_", 
+                     dataset, "_", 
+                     translation_of_interest, "_", 
+                     time, ".rds")
+  
+  
+}
+
+
 
 saveRDS(hdi, file = filename)
