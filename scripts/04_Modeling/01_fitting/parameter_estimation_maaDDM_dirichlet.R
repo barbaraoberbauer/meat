@@ -443,13 +443,41 @@ hdi$w_popularity <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$`mu_w[3]`),
 
 ### HDIs attentional parameters -------
 
-hdi$theta <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_theta),
-                  hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta),
-                  hdi_change = HDIofMCMC(combined_mcmcfin$mu_dtheta))
+# see Hellmann, S., Busch, N., Hof, L., & Pachur, T. (2025). Bias by Variance: How Common Parameter Transformations in Hierarchical Models Distort Group-Level Estimates.
+# for correct mapping of group-level means onto the parameter scale
+
+if (bound_attention_params == TRUE) {
   
-hdi$phi <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_phi),
-                hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi),
-                hdi_change = HDIofMCMC(combined_mcmcfin$mu_dphi))
+  map_input_theta <- combined_mcmcfin$mu_theta/sqrt(1 + combined_mcmcfin$sigma_theta^2)
+  map_input_dtheta <- combined_mcmcfin$mu_dtheta/sqrt(1 + combined_mcmcfin$sigma_dtheta^2)
+  
+  hdi$theta <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_theta)),
+                    hdi_manipulation = HDIofMCMC(pnorm(map_input_theta + map_input_dtheta)),
+                    hdi_change = HDIofMCMC(pnorm(map_input_theta + map_input_dtheta) -
+                                             pnorm(map_input_dtheta)))
+  
+  map_input_phi <- combined_mcmcfin$mu_phi/sqrt(1 + combined_mcmcfin$sigma_phi^2)
+  map_input_dphi <- combined_mcmcfin$mu_dphi/sqrt(1 + combined_mcmcfin$sigma_dphi^2)
+  
+  hdi$phi <- list(hdi_baseline = HDIofMCMC(pnorm(map_input_phi)),
+                  hdi_manipulation = HDIofMCMC(pnorm(map_input_phi + map_input_dphi)),
+                  hdi_change = HDIofMCMC(pnorm(map_input_phi + map_input_dphi) -
+                                           pnorm(map_input_dphi)))
+  
+  
+} else {
+  
+  hdi$theta <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_theta),
+                    hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta),
+                    hdi_change = HDIofMCMC(combined_mcmcfin$mu_dtheta))
+  
+  hdi$phi <- list(hdi_baseline = HDIofMCMC(combined_mcmcfin$mu_phi),
+                  hdi_manipulation = HDIofMCMC(combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi),
+                  hdi_change = HDIofMCMC(combined_mcmcfin$mu_dphi))
+  
+}
+
+
   
 
 ### HDIs other parameters -------
