@@ -171,8 +171,6 @@ generate_all_plots <- function(runJagsOut, hdi, bound_attention_params) {
   
   if (bound_attention_params == TRUE) {
     
-    print("if clause works")
-    
     # Theta: probit-scale -> [0,1] scale
     map_input_theta  <- combined_mcmcfin$mu_theta  / sqrt(1 + combined_mcmcfin$sigma_theta^2)
     map_input_dtheta <- combined_mcmcfin$mu_dtheta / sqrt(1 + combined_mcmcfin$sigma_dtheta^2)
@@ -188,8 +186,6 @@ generate_all_plots <- function(runJagsOut, hdi, bound_attention_params) {
     phi_manipulation <- pnorm(map_input_phi + map_input_dphi)
     
   } else {
-    
-    print("if clause does not work")
     
     theta_baseline    <- combined_mcmcfin$mu_theta
     theta_manipulation <- combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta
