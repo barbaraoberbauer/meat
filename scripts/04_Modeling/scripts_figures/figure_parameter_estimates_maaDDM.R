@@ -71,10 +71,10 @@ translation_of_interest <- "environmental_friendliness"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace", "rating_replace"
 
-bound_attention_params <- TRUE
+bound_attention_params <- FALSE
 # set to true if parameter estimates for theta and phi are supposed to be bound between 0 and 1
 
-time <- "20260617_1338"
+time <- "20260519_0532"
 # time stamp of data generation
 
 
