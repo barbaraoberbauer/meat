@@ -203,6 +203,8 @@ monitor <- c(
   "sigma_dtheta",
   "mu_dphi",
   "sigma_dphi",
+  "mu_dphi2",
+  "sigma_dphi2",
   "mu_dalpha",
   "sigma_dalpha",
   "mu_dscaling",
@@ -271,6 +273,8 @@ GenInits = function() {
   sigma_dtheta = rtruncnorm(1, a = 0, b = Inf, 1, sd)
   mu_dphi = rnorm(1, 0, sd)
   sigma_dphi = rtruncnorm(1, a = 0, b = Inf, 1, sd)
+  mu_dphi2 = rnorm(1, 0, sd)
+  sigma_dphi2 = rtruncnorm(1, a = 0, b = Inf, 1, sd)
   mu_dalpha = rnorm(1, 0, sd)
   sigma_dalpha = rtruncnorm(1, a = 0, b = Inf, 1, sd)
   mu_dscaling = rnorm(1, 0, sd)
@@ -302,6 +306,8 @@ GenInits = function() {
     sigma_dtheta = sigma_dtheta,
     mu_dphi = mu_dphi,
     sigma_dphi = sigma_dphi,
+    mu_dphi2 = mu_dphi2,
+    sigma_dphi2 = sigma_dphi2,
     mu_dalpha = mu_dalpha,
     sigma_dalpha = sigma_dalpha,
     mu_dscaling = mu_dscaling,
