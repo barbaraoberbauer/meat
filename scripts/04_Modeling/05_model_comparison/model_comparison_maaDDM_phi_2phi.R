@@ -53,7 +53,7 @@ rm(package, packages, is_package_installed)
 # unbounded model
 filename1Phi <- paste0("data/modeling/runJagsOutmaaDDMDirichlet", "_", "original", "_", "environmental_friendliness", "_", "20260519_0532", ".rds")
 
-filename2Phi <- paste0("data/modeling/runJagsOutmaaDDM2phiDirichlet_original_environmental_friendliness_20260618_0023.rds")
+filename2Phi <- paste0("data/modeling/runJagsOutmaaDDM2phiDirichlet_original_environmental_friendliness_20260619_0816.rds")
 
 runJagsOut1Phi <- readRDS(filename1Phi)
 runJagsOut2Phi <- readRDS(filename2Phi)
