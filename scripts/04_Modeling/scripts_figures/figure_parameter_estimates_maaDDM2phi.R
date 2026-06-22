@@ -63,15 +63,15 @@ rm(package, packages, is_package_installed)
 
 # Specify subset of data 
 
-dataset <- "original"
+dataset <- "replication"
 # datasets: "original", "replication"
 
-translation_of_interest <- "environmental_friendliness"
+translation_of_interest <- "rating_add"
 
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace", "rating_replace"
 
-time <- "20260619_0816"
+time <- "20260620_0540"
 # time stamp of data generation
 
 
