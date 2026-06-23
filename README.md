@@ -7,7 +7,7 @@ The osf-project and preregistration of Study 2 can be found here: https://doi.or
 
 The task code of Study 2 can be found here: https://github.com/barbaraoberbauer/meat_task. 
 
-The dataset of Study 1 was collected by Mertens et al. (2020) and results on choice behavior and information acquisition are reported in their [publication](https://doi.org/10.1017/S1930297500006896). The raw data set was publicly made available on the Open Science Framework (https://osf.io/fqdra/). The raw data from Study 2, all preprocessed behavioral data, all parameter estimation results as well as simulated behavioral data of both studies reported are available at https://doi.org/10.5281/zenodo.16942102. These data allow reproducing all results figures provided with this paper.
+The dataset of Study 1 was collected by Mertens et al. (2020) and results on choice behavior and information acquisition are reported in their [publication](https://doi.org/10.1017/S1930297500006896). The raw data set was publicly made available on the Open Science Framework (https://osf.io/fqdra/). The raw data from Study 2, all preprocessed behavioral data, all parameter estimation results as well as simulated behavioral data of both studies reported are available at https://doi.org/10.5281/zenodo.20792856. These data allow reproducing all results figures provided with this paper.
 
 Up until publication, this repository will be frequently updated.
 
