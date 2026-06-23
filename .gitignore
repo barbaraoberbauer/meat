@@ -5,5 +5,5 @@
 MEAT.Rproj
 data
 figures
-functions/DBDA2E-utilities.R
+R/functions/DBDA2E-utilities.R
 misc
