@@ -185,7 +185,7 @@ figureSMIndexChoice <- ggplot(data = SMIndexAgWide,
            y = choiceProbDifference)) +
   geom_point() +
   labs(x = "SM Index Difference (Session 2 - Session 1)" , 
-       y = "Change in Ecological \nChoice Probability \n(Session 2 - Session 1)") +
+       y = "Change in Pro-Environmental \nChoice Probability \n(Session 2 - Session 1)") +
   coord_cartesian(ylim = c(-1, 1.2)) +
   geom_smooth(method='lm') +
   facet_grid(~consumption_translation,

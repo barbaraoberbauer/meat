@@ -111,7 +111,7 @@ fun_plot_choice_prob <- function(data, condition_labels, title){
     scale_color_manual(values = color_sessions) +
     scale_x_discrete(labels = condition_labels) +
     labs(x = "Experimental Condition", 
-         y = "Probability of Choosing \nMore Ecological Option",
+         y = "Probability of Choosing \nPro-Environmental Option",
          title = title,
          fill = "Session") 
   

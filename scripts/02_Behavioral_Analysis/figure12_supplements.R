@@ -100,7 +100,7 @@ df_agg_id %>%
   scale_color_manual(values = color_sessions) +
   scale_x_discrete(labels = labelsOriginal) +
   labs(x = "Experimental Condition", 
-       y = "Probability of Choosing \nMore Ecological Option", 
+       y = "Probability of Choosing \nPro-Environmental Option", 
        fill = "Session") +
   theme(strip.background = element_rect(color = "black",
                                         fill = "white"),

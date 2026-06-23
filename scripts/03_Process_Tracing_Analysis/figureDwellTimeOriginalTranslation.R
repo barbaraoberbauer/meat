@@ -128,7 +128,7 @@ plotDtChoice <- function(dfRatio, labels, title){
          aes(x = choiceProbDifference,
              y = averageRatio)) +
     geom_point() +
-    labs(x = "Change in Ecological Choice Probability \n(Session 2 - Session 1)" , 
+    labs(x = "Change in Pro-Environmental Choice Probability \n(Session 2 - Session 1)" , 
          y = "Relative Dwell Time \non Original Attribute",
          title = title) +
     coord_cartesian(ylim = c(0, 1.2)) +
