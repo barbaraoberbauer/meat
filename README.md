@@ -1,5 +1,5 @@
-# Computational modeling reveals dissociable mechanisms of attribute translations
-This repository contains the code for the project "Computational modeling reveals dissociable mechanisms of attribute translations". 
+# Attribute translations promote pro-environmental choice through distinct cognitive mechanisms
+This repository contains the code for the project "Attribute translations promote pro-environmental choice through distinct cognitive mechanisms". 
 The results are published in the article: **TBA**. 
 Authors are Barbara Oberbauer, Ulf J.J. Hahnel, and Sebastian Gluth.
 
