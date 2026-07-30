@@ -9,9 +9,9 @@
 
 plot_posterior_predictives <- function(frequency, session_value, maxRT, title){
   
-  cols <- c("95% BCI" = scales::alpha(color_error, 0.3),
-            "alternative choice" = scales::alpha(color_choice[1], 0.6),
-            "env. choice" = scales::alpha(color_choice[2], 0.6))
+  cols <- c("95% BCI" = scales::alpha(color_error, 0.4),
+            "Alternative Choice" = scales::alpha(color_choice[1], 0.8),
+            "Env. Choice" = scales::alpha(color_choice[2], 0.6))
   
     # Plot data
     ggplot(frequency, aes(x = mid_bins)) +
