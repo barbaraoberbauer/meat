@@ -11,7 +11,7 @@ themeMEAT <- function(base_size = 12) {
     theme(
       # title
       plot.title = element_text(hjust = 0.5,
-                                size = base_size + 8,
+                                size = base_size + 6,
                                 face = "bold",
                                 margin = margin(t = 0,
                                                 r = 0,
@@ -36,8 +36,8 @@ themeMEAT <- function(base_size = 12) {
       axis.line = element_line(colour = "black"),
       
       # legend
-      legend.text = element_text(size = base_size + 4),
-      legend.title = element_text(size = base_size + 4),
+      legend.text = element_text(size = base_size),
+      legend.title = element_text(size = base_size + 2),
       legend.key.size = unit(0.5, 
                              "cm"),
       legend.position = "top",
@@ -48,10 +48,10 @@ themeMEAT <- function(base_size = 12) {
       panel.grid.minor = element_blank(),
       
       # plot maring
-      plot.margin = margin(t = 15,
-                           r = 15,
-                           b = 15,
-                           l = 15)
+      plot.margin = margin(t = 6,
+                           r = 6,
+                           b = 6,
+                           l = 6)
       
     )
 }
