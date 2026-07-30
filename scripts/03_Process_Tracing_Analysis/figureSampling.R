@@ -73,6 +73,10 @@ dfReplicationProcess$attended_attribute <- dfReplicationProcess$name %>%
   gsub("NonEco", "", .) %>%
   gsub("Eco", "", .)
 
+# rename attribute translations simply to "translation"
+dfReplicationProcess$attended_attribute[dfReplicationProcess$attended_attribute == "rating" |
+                                          dfReplicationProcess$attended_attribute == "emission"] <- "translation"
+
 dfReplicationProcess$attended_attribute <- as.factor(dfReplicationProcess$attended_attribute)
 
 # add info about whether attended option was chosen
@@ -122,8 +126,6 @@ option_level_sampling_plot <- plot_sampling_probability(option_level_sampling[["
                                                  color_choice,
                                                  labelsChoice)
 
-option_level_sampling_plot <- option_level_sampling_plot + ggtitle("Stimulus-Locked")
-
 ### Response locked ------
 
 option_level_sampling_rev <- calculate_sampling_prob(dfReplicationProcess,
@@ -138,8 +140,6 @@ option_level_sampling_plot_rev <- plot_sampling_probability(option_level_samplin
                                                             attended_option,
                                                             color_choice,
                                                             labelsChoice)
-
-option_level_sampling_plot_rev <- option_level_sampling_plot_rev + ggtitle("Response-Locked")
 
 
 # Chosen - Not Chosen Option-level sampling -------
@@ -160,7 +160,6 @@ chosen_option_level_sampling_plot <- plot_sampling_probability(chosen_option_lev
                                                                 color_chosen,
                                                                 labelsChosen)
 
-chosen_option_level_sampling_plot <- chosen_option_level_sampling_plot + ggtitle("Stimulus-Locked")
 
 ### Response locked ------
 
@@ -179,101 +178,104 @@ chosen_option_level_sampling_plot_rev <- plot_sampling_probability(chosen_option
 
 
 
+# Attribute-level sampling -------
+
+### Stimulus-locked -------
+
+labelsAttributes <- c("price" = "Price",
+                      "energy" = "Consumption",
+                      "popularity" = "Popularity",
+                      "translation" = "Translation")
+
+colorAttributes <- c("#B8A0D4", "#D4457A", "#4A2070", "purple")
+
+
+attribute_level_sampling <- calculate_sampling_prob(dfReplicationProcess,
+                                                    attended_attribute,
+                                                    fixNum,
+                                                    valid_combos = valid_attribute_combos,
+                                                    ci_level = 0.95)
+
+
+attribute_level_sampling_plot <- plot_sampling_probability(attribute_level_sampling[["group"]],
+                                                          minRequiredFixations,
+                                                          fixNum,
+                                                          attended_attribute,
+                                                          colorAttributes,
+                                                          labelsAttributes)
+
+#attribute_level_sampling_plot <- attribute_level_sampling_plot + ggtitle("Stimulus-Locked")
+
+### Response-locked -------
+
+attribute_level_sampling_rev <- calculate_sampling_prob(dfReplicationProcess,
+                                                    attended_attribute,
+                                                    fixNumRev,
+                                                    valid_combos = valid_attribute_combos,
+                                                    ci_level = 0.95)
+
+
+attribute_level_sampling_plot_rev <- plot_sampling_probability(attribute_level_sampling_rev[["group"]],
+                                                           minRequiredFixations,
+                                                           fixNumRev,
+                                                           attended_attribute,
+                                                           colorAttributes,
+                                                           labelsAttributes)
+
+#attribute_level_sampling_plot_rev <- attribute_level_sampling_plot_rev + ggtitle("Response-Locked")
+
+
+
+# Combine Sampling Plots -----
+
+setMargin <- margin(5, 5, 5, 5)
+
+remove_y_strip <- theme(strip.text.y = element_blank())
+
+# plots stimulus-locked
+stimulus_locked <- ((option_level_sampling_plot + remove_y_strip) +
+                      (chosen_option_level_sampling_plot + remove_y_strip) +
+                      attribute_level_sampling_plot) +
+  plot_layout(
+    axis_titles = 'collect',
+  ) +
+  plot_annotation(
+    title = "Stimulus-Locked"
+  ) &
+  theme(legend.position = 'top',
+        plot.margin = setMargin)
+
+# plots response-locked
+response_locked <- ((option_level_sampling_plot_rev + remove_y_strip) +
+                      (chosen_option_level_sampling_plot_rev + remove_y_strip) +
+                      attribute_level_sampling_plot_rev) +
+  plot_layout(
+    axis_titles = 'collect',
+  ) +
+  plot_annotation(
+    title = "Response-Locked"
+  ) &
+  theme(legend.position = 'none',
+        plot.margin = setMargin)
+
+
+# combine plots
+
+sampling_plot <- wrap_elements(full = stimulus_locked) / 
+  wrap_elements(full = response_locked)
+
+#  save plot 
+ggsave("figures/optionLevelSampling.png",
+       sampling_plot,
+       width = 13,
+       height = 13,
+       units = "in")
 
 
 
 
 
 
-
-# calculate subject-level option sampling probabilities
-subj_option_sampling_prob <- dfReplicationProcess %>%
-  count(id, session, consumption_translation, fixNum, attended_option, name = "n_fix") %>%
-  complete(nesting(id, session, consumption_translation, fixNum), attended_option,
-           fill = list(n_fix = 0)) %>%
-  group_by(id, session, consumption_translation, fixNum) %>%
-  mutate(prob_fix = n_fix / sum(n_fix)) %>%
-  ungroup()
-
-# aggregate
-group_option_sampling_prob <- subj_option_sampling_prob %>%
-  group_by(session, consumption_translation, fixNum, attended_option) %>%
-  summarize(
-    mean_prob = mean(prob_fix, na.rm = TRUE),
-    sd_prob   = sd(prob_fix, na.rm = TRUE),
-    n         = sum(!is.na(prob_fix)),
-    .groups = "drop"
-  ) %>%
-  mutate(
-    se_prob  = ifelse(n >= 2, sd_prob / sqrt(n), NA_real_),
-    ci_lower = ifelse(n >= 2, mean_prob - qt(0.975, df = pmax(n - 1, 1)) * se_prob, NA_real_),
-    ci_upper = ifelse(n >= 2, mean_prob + qt(0.975, df = pmax(n - 1, 1)) * se_prob, NA_real_)
-  )
-
-group_option_sampling_prob %>%
-  filter(n > 5) %>%
-  ggplot(aes(x = fixNum,
-             y = mean_prob,
-             color = attended_option,
-             group = attended_option)) +
-  geom_ribbon(aes(ymin = ci_lower, ymax = ci_upper), alpha = 0.2, color = NA) +
-  geom_point() +
-  geom_line() +
-  facet_grid(consumption_translation ~ session)
-
-
-
-
-
-
-
-
-
-
-
-# Calculate sampling probabilities --------
-
-
-
-
-
-# calculate subject-level sampling probabilities
-subj_sampling_prob <- dfReplicationProcess %>%
-  count(id, session, consumption_translation, fixNum, attended_attribute, name = "n_fix") %>%
-  complete(nesting(id, session, consumption_translation, fixNum), attended_attribute,
-           fill = list(n_fix = 0)) %>%
-  semi_join(valid_combos, by = c("consumption_translation", "attended_attribute", "session")) %>%
-  group_by(id, session, consumption_translation, fixNum) %>%
-  mutate(prob_fix = n_fix / sum(n_fix)) %>%
-  ungroup()
-  
-# aggregate
-group_sampling_prob <- subj_sampling_prob %>%
-  group_by(session, consumption_translation, fixNum, attended_attribute) %>%
-  summarize(
-    mean_prob = mean(prob_fix, na.rm = TRUE),
-    sd_prob   = sd(prob_fix, na.rm = TRUE),
-    n         = sum(!is.na(prob_fix)),
-    .groups = "drop"
-  ) %>%
-  mutate(
-    se_prob  = ifelse(n >= 2, sd_prob / sqrt(n), NA_real_),
-    ci_lower = ifelse(n >= 2, mean_prob - qt(0.975, df = pmax(n - 1, 1)) * se_prob, NA_real_),
-    ci_upper = ifelse(n >= 2, mean_prob + qt(0.975, df = pmax(n - 1, 1)) * se_prob, NA_real_)
-  )
-
-# Plot -------
-
-group_sampling_prob %>%
-  filter(n > 5) %>%
-  ggplot(aes(x = fixNum,
-             y = mean_prob,
-             color = attended_attribute,
-             group = attended_attribute)) +
-  geom_ribbon(aes(ymin = ci_lower, ymax = ci_upper), alpha = 0.2, color = NA) +
-  geom_point() +
-  geom_line() +
-  facet_grid(consumption_translation ~ session)
 
 
 
