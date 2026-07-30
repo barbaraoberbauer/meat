@@ -4,7 +4,8 @@ plot_sampling_probability <- function(data,
                                       fix_var,
                                       attended_var,
                                       colValues,
-                                      colLabels){
+                                      colLabels,
+                                      ylim){
   
   fix_var <- enquo(fix_var)
   attended_var <- enquo(attended_var)
@@ -26,12 +27,12 @@ plot_sampling_probability <- function(data,
     scale_fill_manual(values = colValues, 
                       labels = colLabels,
                       name = "") +
-    facet_grid(consumption_translation ~ session,
+    facet_grid(session ~ consumption_translation,
                labeller = labeller(
                  consumption_translation = labelsReplication,
                  session = labelsSession
                )) +
-    coord_cartesian(ylim = c(0.1, 0.9)) +
+    coord_cartesian(ylim = ylim) +
     labs(x = "Fixation",
          y = "Sampling Probability") +
     theme(

@@ -99,6 +99,11 @@ labelsReplication <- c("control" = "Control",
                        "emission_add" = "Carbon \nEmissions \nAdd",
                        "rating_add" = "Rating \nAdd")
 
+labelsAttributes <- c("price" = "Price",
+                      "energy" = "Consumption",
+                      "popularity" = "Popularity",
+                      "translation" = "Translation")
+
 labelsAttributesT <- c("t_price0" = "Price\nOther",
                       "t_price1" = "Price\nEco",
                       "t_consumption0" = "Consumption\nOther",
@@ -123,8 +128,8 @@ labelsSession <- c("1" = "Session 1",
 labelsChoice <- c("eco" = "Env. Choice",
                   "other" = "Alternative Choice")
 
-labelsChosen <- c("chosen" = "Chosen",
-                  "not_chosen" = "Other")
+labelsChosen <- c("chosen" = "Chosen Option",
+                  "not_chosen" = "Alternative Option")
 
 
 

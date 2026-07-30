@@ -107,8 +107,9 @@ valid_attribute_combos <- dfReplicationProcess %>%
 
 minRequiredFixations <- 50
 
-
 # Eco - Other Option-level sampling -------
+
+ylim_option <- c(0.2, 0.8)
 
 ### Stimulus locked -----
 
@@ -125,7 +126,8 @@ option_level_sampling_plot <- plot_sampling_probability(option_level_sampling[["
                                                  fixNum,
                                                  attended_option,
                                                  color_choice,
-                                                 labelsChoice)
+                                                 labelsChoice,
+                                                 ylim_option)
 
 ### Response locked ------
 
@@ -140,7 +142,8 @@ option_level_sampling_plot_rev <- plot_sampling_probability(option_level_samplin
                                                             fixNumRev,
                                                             attended_option,
                                                             color_choice,
-                                                            labelsChoice)
+                                                            labelsChoice,
+                                                            ylim_option)
 
 
 # Chosen - Not Chosen Option-level sampling -------
@@ -159,7 +162,8 @@ chosen_option_level_sampling_plot <- plot_sampling_probability(chosen_option_lev
                                                                 fixNum,
                                                                 attended_chosen,
                                                                 color_chosen,
-                                                                labelsChosen)
+                                                                labelsChosen,
+                                                                ylim_option)
 
 
 ### Response locked ------
@@ -175,20 +179,64 @@ chosen_option_level_sampling_plot_rev <- plot_sampling_probability(chosen_option
                                                             fixNumRev,
                                                             attended_chosen,
                                                             color_chosen,
-                                                            labelsChosen)
+                                                            labelsChosen,
+                                                            ylim_option)
+
+# Combine option-level plot -----
+
+setMargin <- margin(5, 5, 5, 5)
+
+remove_y_strip <- theme(strip.text.y = element_blank())
+
+# plots stimulus-locked
+stimulus_locked <- ((option_level_sampling_plot + remove_y_strip) +
+                      chosen_option_level_sampling_plot) +
+  plot_layout(
+    axis_titles = 'collect',
+  ) +
+  plot_annotation(
+    title = "Stimulus-Locked"
+  ) &
+  theme(legend.position = 'top',
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 14),
+        plot.margin = setMargin)
+
+# plots response-locked
+response_locked <- ((option_level_sampling_plot_rev + remove_y_strip) +
+                      chosen_option_level_sampling_plot_rev) +
+  plot_layout(
+    axis_titles = 'collect',
+  ) +
+  plot_annotation(
+    title = "Response-Locked"
+  ) &
+  theme(legend.position = 'none',
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 14),
+        plot.margin = setMargin)
+
+# combine plots
+
+option_level_sampling_plot <- wrap_elements(full = stimulus_locked) / 
+  wrap_elements(full = response_locked)
+
+#  save plot 
+ggsave("figures/optionLevelSampling.png",
+       option_level_sampling_plot,
+       width = 13,
+       height = 12,
+       units = "in")
 
 
 
 # Attribute-level sampling -------
 
+ylim_attribute <- c(0, 0.75)
+
 ### Stimulus-locked -------
 
-labelsAttributes <- c("price" = "Price",
-                      "energy" = "Consumption",
-                      "popularity" = "Popularity",
-                      "translation" = "Translation")
-
-colorAttributes <- c("#B8A0D4", "#D4457A", "#4A2070", "purple")
+colorAttributes <- c(color_attributes, "#D35269")
 
 
 attribute_level_sampling <- calculate_sampling_prob(dfReplicationProcess,
@@ -203,9 +251,10 @@ attribute_level_sampling_plot <- plot_sampling_probability(attribute_level_sampl
                                                           fixNum,
                                                           attended_attribute,
                                                           colorAttributes,
-                                                          labelsAttributes)
+                                                          labelsAttributes,
+                                                          ylim_attribute)
 
-#attribute_level_sampling_plot <- attribute_level_sampling_plot + ggtitle("Stimulus-Locked")
+attribute_level_sampling_plot <- attribute_level_sampling_plot + ggtitle("Stimulus-Locked")
 
 ### Response-locked -------
 
@@ -221,58 +270,36 @@ attribute_level_sampling_plot_rev <- plot_sampling_probability(attribute_level_s
                                                            fixNumRev,
                                                            attended_attribute,
                                                            colorAttributes,
-                                                           labelsAttributes)
+                                                           labelsAttributes,
+                                                           ylim_attribute)
 
-#attribute_level_sampling_plot_rev <- attribute_level_sampling_plot_rev + ggtitle("Response-Locked")
+attribute_level_sampling_plot_rev <- attribute_level_sampling_plot_rev + ggtitle("Response-Locked")
 
 
 
-# Combine Sampling Plots -----
+# Combine attribute-level plot -----
 
 setMargin <- margin(5, 5, 5, 5)
 
 remove_y_strip <- theme(strip.text.y = element_blank())
 
-# plots stimulus-locked
-stimulus_locked <- ((option_level_sampling_plot + remove_y_strip) +
-                      (chosen_option_level_sampling_plot + remove_y_strip) +
-                      attribute_level_sampling_plot) +
+# combine plot
+attribute_level_sampling_plot <- ((attribute_level_sampling_plot + remove_y_strip) +
+                      attribute_level_sampling_plot_rev) +
   plot_layout(
     axis_titles = 'collect',
-  ) +
-  plot_annotation(
-    title = "Stimulus-Locked"
-  ) &
+    guides = 'collect'
+  )  &
   theme(legend.position = 'top',
         legend.text = element_text(size = 12),
         legend.title = element_text(size = 14),
         plot.margin = setMargin)
 
-# plots response-locked
-response_locked <- ((option_level_sampling_plot_rev + remove_y_strip) +
-                      (chosen_option_level_sampling_plot_rev + remove_y_strip) +
-                      attribute_level_sampling_plot_rev) +
-  plot_layout(
-    axis_titles = 'collect',
-  ) +
-  plot_annotation(
-    title = "Response-Locked"
-  ) &
-  theme(legend.position = 'none',
-        legend.text = element_text(size = 12),
-        legend.title = element_text(size = 14),
-        plot.margin = setMargin)
-
-# combine plots
-
-sampling_plot <- wrap_elements(full = stimulus_locked) / 
-  wrap_elements(full = response_locked)
-
 #  save plot 
-ggsave("figures/optionLevelSampling.png",
-       sampling_plot,
+ggsave("figures/attributeLevelSampling.png",
+       attribute_level_sampling_plot,
        width = 12,
-       height = 13,
+       height = 6,
        units = "in")
 
 
