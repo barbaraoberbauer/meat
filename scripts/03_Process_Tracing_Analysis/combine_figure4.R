@@ -71,5 +71,5 @@ final_plot <- (free(upper_plot) / free(lower_plot)) +
 ggsave("figures/figure4.png", 
        final_plot, 
        width = 9,
-       height = 11,
+       height = 10,
        units = "in")
