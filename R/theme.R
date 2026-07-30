@@ -79,21 +79,6 @@ color_gender <- c("#D4CB92", "#395C6B")
 
 color_attributes <- c("#B8A0D4", "#D4457A", "#4A2070")
 
-# Option 1: Light lavender, bright pink, deep purple
-c("#B8A0D4", "#D4457A", "#4A2070")
-
-# Option 2: Soft lilac, hot pink, dark plum
-c("#C4A8E0", "#C42080", "#3D1455")
-
-# Option 3: Periwinkle, magenta, dark berry
-c("#8E82C9", "#D4308A", "#5C1A6B")
-
-# Option 4: Pale lavender, vivid magenta, near-black purple
-c("#C0A8E8", "#C41E8A", "#2D0A45")
-
-# Option 5: Mid purple, hot pink, dark wine
-c("#7B52B8", "#E0208A", "#4A0A3A")
-
 
 # labels
 labelsOriginal <- c("control" = "Control",
@@ -124,6 +109,12 @@ labelsAttributesF <- c("f_price0" = "Price\nOther",
 labelsDwellTimeProportions <- c("difFixPropPrice" = "Price",
                                 "difFixPropConsumption" = "Consumption",
                                 "difFixPropPopularity" = "Popularity")
+
+labelsSession <- c("1" = "Session 1",
+                   "2" = "Session 2")
+
+labelsChoice <- c("eco" = "env. choice",
+                  "other" = "alternative choice")
 
 
 
