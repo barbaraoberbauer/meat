@@ -1,15 +1,17 @@
 
 plot_sampling_probability <- function(data,
-                                        minRequiredFixations,
-                                        attended_var,
-                                        colValues,
-                                        colLabels){
+                                      minRequiredFixations,
+                                      fix_var,
+                                      attended_var,
+                                      colValues,
+                                      colLabels){
   
+  fix_var <- enquo(fix_var)
   attended_var <- enquo(attended_var)
   
   plot <- data %>%
     filter(n >= minRequiredFixations) %>%
-    ggplot(aes(x = fixNum,
+    ggplot(aes(x = !!fix_var,
                y = mean_prob,
                color = !!attended_var,
                group = !!attended_var,
@@ -24,11 +26,12 @@ plot_sampling_probability <- function(data,
     scale_fill_manual(values = colValues, 
                       labels = colLabels,
                       name = "") +
-    facet_grid(consumption_translation ~ session,
+    facet_grid(session ~ consumption_translation,
                labeller = labeller(
                  consumption_translation = labelsReplication,
                  session = labelsSession
                )) +
+    coord_cartesian(ylim = c(0, 1)) +
     labs(x = "Fixation",
          y = "Sampling Probability") +
     theme(
