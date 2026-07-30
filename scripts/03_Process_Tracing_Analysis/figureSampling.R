@@ -77,7 +77,8 @@ dfReplicationProcess$attended_attribute <- dfReplicationProcess$name %>%
 dfReplicationProcess$attended_attribute[dfReplicationProcess$attended_attribute == "rating" |
                                           dfReplicationProcess$attended_attribute == "emission"] <- "translation"
 
-dfReplicationProcess$attended_attribute <- as.factor(dfReplicationProcess$attended_attribute)
+dfReplicationProcess$attended_attribute <- factor(dfReplicationProcess$attended_attribute,
+                                                  levels = c("price", "energy", "popularity", "translation"))
 
 # add info about whether attended option was chosen
 dfReplicationProcess$attended_chosen <- ifelse((dfReplicationProcess$choice == 1 & dfReplicationProcess$attended_option == "eco") |
@@ -104,7 +105,7 @@ valid_chosen_option_combos <- dfReplicationProcess %>%
 valid_attribute_combos <- dfReplicationProcess %>%
   distinct(consumption_translation, attended_attribute, session)
 
-minRequiredFixations <- 100
+minRequiredFixations <- 50
 
 
 # Eco - Other Option-level sampling -------
@@ -243,6 +244,8 @@ stimulus_locked <- ((option_level_sampling_plot + remove_y_strip) +
     title = "Stimulus-Locked"
   ) &
   theme(legend.position = 'top',
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 14),
         plot.margin = setMargin)
 
 # plots response-locked
@@ -256,8 +259,9 @@ response_locked <- ((option_level_sampling_plot_rev + remove_y_strip) +
     title = "Response-Locked"
   ) &
   theme(legend.position = 'none',
+        legend.text = element_text(size = 12),
+        legend.title = element_text(size = 14),
         plot.margin = setMargin)
-
 
 # combine plots
 
@@ -267,7 +271,7 @@ sampling_plot <- wrap_elements(full = stimulus_locked) /
 #  save plot 
 ggsave("figures/optionLevelSampling.png",
        sampling_plot,
-       width = 13,
+       width = 12,
        height = 13,
        units = "in")
 
