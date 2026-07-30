@@ -26,12 +26,12 @@ plot_sampling_probability <- function(data,
     scale_fill_manual(values = colValues, 
                       labels = colLabels,
                       name = "") +
-    facet_grid(session ~ consumption_translation,
+    facet_grid(consumption_translation ~ session,
                labeller = labeller(
                  consumption_translation = labelsReplication,
                  session = labelsSession
                )) +
-    coord_cartesian(ylim = c(0, 1)) +
+    coord_cartesian(ylim = c(0.1, 0.9)) +
     labs(x = "Fixation",
          y = "Sampling Probability") +
     theme(
