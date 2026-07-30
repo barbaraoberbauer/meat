@@ -279,7 +279,7 @@ original_label <- wrap_elements(
                  rot = 90,
                  #hjust = 0.5,
                  #vjust = 1,  
-                 gp = grid::gpar(fontsize = 20, fontface = "bold"))
+                 gp = grid::gpar(fontsize = 18, fontface = "bold"))
 )
 
 replication_label <- wrap_elements(
@@ -287,7 +287,7 @@ replication_label <- wrap_elements(
                  rot = 90,
                  #hjust = 0.5,
                  #vjust = 1,  
-                 gp = grid::gpar(fontsize = 20, fontface = "bold"))
+                 gp = grid::gpar(fontsize = 18, fontface = "bold"))
 )
 
 
