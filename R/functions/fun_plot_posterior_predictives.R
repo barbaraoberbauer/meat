@@ -20,7 +20,7 @@ plot_posterior_predictives <- function(frequency, session_value, maxRT, title){
                stat = "identity",
                color = "black",
                linewidth = 1.2,
-               aes(y = count_emp, fill = "env. choice")) +
+               aes(y = count_emp, fill = "Env. Choice")) +
       # histogram for choice == 0 - non-ecological choice (above the x-axis)
       geom_bar(data = subset(frequency, choice == 0 & session == session_value),
                stat = "identity",
@@ -28,7 +28,7 @@ plot_posterior_predictives <- function(frequency, session_value, maxRT, title){
                linewidth = 1.2,
                #fill = color_choice[1],
                #alpha = 0.6,
-               aes(y = -count_emp, fill = "alternative choice")) +
+               aes(y = -count_emp, fill = "Alternative Choice")) +
       
       # Shaded area for error bounds for choice == 1
       geom_ribbon(data = subset(frequency, choice == 1 & session == session_value),
