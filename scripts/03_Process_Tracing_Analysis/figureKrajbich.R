@@ -109,7 +109,7 @@ plotEcoChoiceDwellTime <- function(data, labels, title){
                nrow = 2,
                labeller = labeller(consumption_translation = labels)) +
     coord_cartesian(ylim = c(0,1)) + 
-    labs(x = "Relative Difference in Dwell Time (Eco - Other)", 
+    labs(x = "Relative Difference in Dwell Time (Env. Option - Alternative)", 
          y = "Probability of Choosing \nPro-Environmental Option",
          title = title,
          color = "Session") +
