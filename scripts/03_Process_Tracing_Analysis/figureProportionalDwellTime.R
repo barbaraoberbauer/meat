@@ -249,7 +249,7 @@ plotFixPropsDif <- function(dat, labels){
     facet_wrap(~consumption_translation, 
                nrow = 1,
                labeller = labeller(consumption_translation = labels)) + 
-    scale_fill_manual(values = scales::alpha(color_attributes, 0.6),
+    scale_fill_manual(values = scales::alpha(color_attributes, 0.7),
                       labels = labelsDwellTimeProportions,
                       breaks = c("difFixPropPrice", 
                                  "difFixPropConsumption", 
