@@ -22,7 +22,8 @@ packages <- c("tidyverse",
               "ggplot2",
               "patchwork",
               "ggpubr",
-              "cocor")
+              "cocor",
+              "coda")
 
 # Function to check if a package is installed
 is_package_installed <- function(package_name) {
@@ -44,6 +45,7 @@ library(ggplot2)
 library(patchwork)
 library(ggpubr)
 library(cocor)
+library(coda)
 
 # Load theme
 source("R/theme.R")
@@ -315,7 +317,7 @@ for (con in seq_along(conditions)) {
       r.jk = r.jk, r.hm = r.hm,
       r.jh = r.jh, r.jm = r.jm,
       r.kh = r.kh, r.km = r.km,
-      n = nrow(testDf_wide)
+      n = nrow(df_subset_wide)
     )
   }
   
