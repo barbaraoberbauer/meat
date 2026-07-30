@@ -65,6 +65,9 @@ color_price <- c("#2D3142", "#BFC0C0") # present, absent
 # colors choice
 color_choice <- c("#CBCBD4", "#556F44") # non-eco, eco choice
 
+# colors for chosen option (regardless of eco or not)
+color_chosen <- c("#D4CB92", "#395C6B")
+
 # colors error
 color_error <- '#cb181d'
 
@@ -113,8 +116,11 @@ labelsDwellTimeProportions <- c("difFixPropPrice" = "Price",
 labelsSession <- c("1" = "Session 1",
                    "2" = "Session 2")
 
-labelsChoice <- c("eco" = "env. choice",
-                  "other" = "alternative choice")
+labelsChoice <- c("eco" = "Env. Choice",
+                  "other" = "Alternative Choice")
+
+labelsChosen <- c("chosen" = "Chosen",
+                  "not_chosen" = "Other")
 
 
 
