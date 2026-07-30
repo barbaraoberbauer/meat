@@ -63,7 +63,9 @@ color_sessions <- c("#225780", "#8CC5E3")
 color_price <- c("#2D3142", "#BFC0C0") # present, absent
 
 # colors choice
-color_choice <- c("#CBCBD4", "#556F44") # non-eco, eco choice
+#color_choice <- c("#CBCBD4", "#556F44") # non-eco, eco choice
+
+color_choice <- c("#bfc0c0", "#066204")
 
 # colors for chosen option (regardless of eco or not)
 color_chosen <- c("#D4CB92", "#395C6B")
