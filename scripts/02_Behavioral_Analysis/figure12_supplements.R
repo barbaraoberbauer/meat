@@ -102,10 +102,10 @@ df_agg_id %>%
   labs(x = "Experimental Condition", 
        y = "Probability of Choosing \nPro-Environmental Option", 
        fill = "Session") +
-  theme(strip.background = element_rect(color = "black",
-                                        fill = "white"),
-        strip.text = element_text(face = "bold",
-                                  size = 12))
+  theme(strip.background = element_blank(),
+        strip.text = element_text(size = 12,
+                                  face = "bold"),  # style for facet labels
+        panel.border = element_rect(color = "black", fill = NA))
 
 # Save plot
 ggsave("figures/choice_probability.png", fig_choice_prob, width = 10, height = 5)
