@@ -147,7 +147,7 @@ plotFixPropsBaseline <- function(dat, labels, title){
                #nrow = 4,
                ncol = 1,
                labeller = labeller(consumption_translation = labels)) +
-    scale_fill_manual(values = scales::alpha(color_attributes, 0.5),
+    scale_fill_manual(values = scales::alpha(color_attributes, 0.8),
                       labels = c("price" = "Price",
                                  "consumption" = "Consumption",
                                  "popularity" = "Popularity"),
@@ -241,7 +241,7 @@ plotFixPropsDif <- function(dat, labels){
     ggplot(aes(x = fixProp,
                fill = attribute)) +
     geom_density(color = "black",
-                 linewidth = 1) +
+                 linewidth = 0.7) +
     geom_vline(xintercept = 0,
                linetype = "dashed",
                linewidth = 1,
@@ -249,7 +249,7 @@ plotFixPropsDif <- function(dat, labels){
     facet_wrap(~consumption_translation, 
                nrow = 1,
                labeller = labeller(consumption_translation = labels)) + 
-    scale_fill_manual(values = scales::alpha(color_attributes, 0.8),
+    scale_fill_manual(values = scales::alpha(color_attributes, 0.9),
                       labels = labelsDwellTimeProportions,
                       breaks = c("difFixPropPrice", 
                                  "difFixPropConsumption", 

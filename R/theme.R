@@ -80,10 +80,6 @@ color_change <-"black"
 color_gender <- c("#D4CB92", "#395C6B")
 
 # colors attribute
-#color_attributes <- c("#B8A0D4", "#D4457A", "#4A2070")
-
-#color_attributes <- c("#413C58", "#99ACA0", "#B287A3")
-
 color_attributes <- c("#ced4da", "#2EA0A8", "#191D32")
 
 
