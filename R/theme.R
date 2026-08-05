@@ -68,7 +68,7 @@ color_price <- c("#2D3142", "#BFC0C0") # present, absent
 color_choice <- c("#bfc0c0", "#066204")
 
 # colors for chosen option (regardless of eco or not)
-color_chosen <- c("#56638A", "#30343F")
+color_chosen <- c("#E4B363", "#584D3D")
 
 # colors error
 color_error <- '#cb181d'
