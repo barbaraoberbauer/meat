@@ -107,11 +107,11 @@ valid_attribute_combos <- dfReplicationProcess %>%
 
 minRequiredFixations <- 50
 
-# Eco - Other Option-level sampling -------
+# Aggregate data -----
 
-ylim_option <- c(0.2, 0.8)
+### Eco - Other Option-level sampling -------
 
-### Stimulus locked -----
+###### Stimulus locked -----
 
 option_level_sampling <- calculate_sampling_prob(dfReplicationProcess,
                                                  attended_option,
@@ -119,7 +119,156 @@ option_level_sampling <- calculate_sampling_prob(dfReplicationProcess,
                                                  valid_combos = valid_option_combos,
                                                  ci_level = 0.95)
 
+###### Response locked ------
+
+option_level_sampling_rev <- calculate_sampling_prob(dfReplicationProcess,
+                                                     attended_option,
+                                                     fixNumRev,
+                                                     valid_combos = valid_option_combos,
+                                                     ci_level = 0.95)
+
+### Chosen - Not Chosen Option-level sampling -------
+
+###### Stimulus locked -----
+
+chosen_option_level_sampling <- calculate_sampling_prob(dfReplicationProcess,
+                                                        attended_chosen,
+                                                        fixNum,
+                                                        valid_combos = valid_chosen_option_combos,
+                                                        ci_level = 0.95)
+
+
+###### Response locked ------
+
+chosen_option_level_sampling_rev <- calculate_sampling_prob(dfReplicationProcess,
+                                                            attended_chosen,
+                                                            fixNumRev,
+                                                            valid_combos = valid_chosen_option_combos,
+                                                            ci_level = 0.95)
+
+### Attribute-level sampling -------
+
+###### Stimulus-locked -------
+
+attribute_level_sampling <- calculate_sampling_prob(dfReplicationProcess,
+                                                    attended_attribute,
+                                                    fixNum,
+                                                    valid_combos = valid_attribute_combos,
+                                                    ci_level = 0.95)
+
+###### Response-locked -------
+
+attribute_level_sampling_rev <- calculate_sampling_prob(dfReplicationProcess,
+                                                        attended_attribute,
+                                                        fixNumRev,
+                                                        valid_combos = valid_attribute_combos,
+                                                        ci_level = 0.95)
+
+
+# Analyze data -----
+
+### Eco - Other Option-level sampling -------
+
+# transform data to wide format
+option_level_subject <- option_level_sampling[["subject"]] %>%
+  select(-n_fix) %>%
+  pivot_wider(names_from = attended_option,
+              values_from = prob_fix) 
+
+# get first and final fixations
+fix_first_final <- option_level_subject %>%
+  group_by(id, session, consumption_translation) %>%
+  mutate(fix_type = case_when(
+    fixNum == 1               ~ "first",
+    fixNum == max(fixNum)     ~ "final",
+    TRUE                      ~ NA_character_
+  )) %>%
+  filter(!is.na(fix_type)) %>%
+  ungroup()
+
+# check that first fixations are at chance level
+first_fix_vs_chance <- fix_first_final %>%
+  filter(fix_type == "first") %>%
+  group_by(session, consumption_translation) %>%
+  summarise(
+    n         = n(),
+    mean_eco  = mean(eco, na.rm = TRUE),
+    sd_eco    = sd(eco, na.rm = TRUE),
+    test      = list(wilcox.test(eco, mu = 0.5)),
+    .groups   = "drop"
+  ) %>%
+  mutate(
+    statistic = map_dbl(test, ~ .x$statistic),
+    p_value   = map_dbl(test, ~ .x$p.value)
+  ) %>%
+  select(-test)
+
+# test eco vs. non eco for first and final fixations
+comparison_results <- fix_first_final %>%
+  group_by(session, consumption_translation, fix_type) %>%
+  summarise(
+    n           = n(),
+    mean_eco    = mean(eco, na.rm = TRUE),
+    mean_other  = mean(other, na.rm = TRUE),
+    test        = list(wilcox.test(eco, other, paired = TRUE)),
+    .groups     = "drop"
+  ) %>%
+  mutate(
+    statistic = map_dbl(test, ~ .x$statistic),
+    p_value   = map_dbl(test, ~ .x$p.value)
+  ) %>%
+  select(-test)
+
+### Chosen - Not Chosen Option-level sampling -------
+
+# transform data to wide format
+chosen_option_level_subject <- chosen_option_level_sampling[["subject"]] %>%
+  select(-n_fix) %>%
+  pivot_wider(names_from = attended_chosen,
+              values_from = prob_fix) 
+
+# get first and final fixations
+chosen_fix_first_final <- chosen_option_level_subject %>%
+  group_by(id, session, consumption_translation) %>%
+  mutate(fix_type = case_when(
+    fixNum == 1               ~ "first",
+    fixNum == max(fixNum)     ~ "final",
+    TRUE                      ~ NA_character_
+  )) %>%
+  filter(!is.na(fix_type)) %>%
+  ungroup()
+
+# test chosen vs. not chosen for first and final fixations
+chosen_comparison_results <- chosen_fix_first_final %>%
+  group_by(session, consumption_translation, fix_type) %>%
+  summarise(
+    n           = n(),
+    mean_eco    = mean(chosen, na.rm = TRUE),
+    mean_other  = mean(not_chosen, na.rm = TRUE),
+    test        = list(wilcox.test(chosen, not_chosen, paired = TRUE)),
+    .groups     = "drop"
+  ) %>%
+  mutate(
+    statistic = map_dbl(test, ~ .x$statistic),
+    p_value   = map_dbl(test, ~ .x$p.value)
+  ) %>%
+  select(-test)
+
+
+### Attribute-level sampling -------
+
+
+
+
+# Plot data -----
+
+ylim_option <- c(0.2, 0.8)
+
 color_choice <- rev(color_choice)
+
+### Eco - Other Option-level sampling -------
+
+###### Stimulus locked -----
 
 option_level_sampling_plot <- plot_sampling_probability(option_level_sampling[["group"]],
                                                  minRequiredFixations,
@@ -129,13 +278,7 @@ option_level_sampling_plot <- plot_sampling_probability(option_level_sampling[["
                                                  labelsChoice,
                                                  ylim_option)
 
-### Response locked ------
-
-option_level_sampling_rev <- calculate_sampling_prob(dfReplicationProcess,
-                                                     attended_option,
-                                                     fixNumRev,
-                                                     valid_combos = valid_option_combos,
-                                                     ci_level = 0.95)
+###### Response locked ------
 
 option_level_sampling_plot_rev <- plot_sampling_probability(option_level_sampling_rev[["group"]],
                                                             minRequiredFixations,
@@ -146,16 +289,9 @@ option_level_sampling_plot_rev <- plot_sampling_probability(option_level_samplin
                                                             ylim_option)
 
 
-# Chosen - Not Chosen Option-level sampling -------
+### Chosen - Not Chosen Option-level sampling -------
 
-### Stimulus locked -----
-
-chosen_option_level_sampling <- calculate_sampling_prob(dfReplicationProcess,
-                                                         attended_chosen,
-                                                         fixNum,
-                                                         valid_combos = valid_chosen_option_combos,
-                                                         ci_level = 0.95)
-
+####### Stimulus locked -----
 
 chosen_option_level_sampling_plot <- plot_sampling_probability(chosen_option_level_sampling[["group"]],
                                                                 minRequiredFixations,
@@ -166,13 +302,7 @@ chosen_option_level_sampling_plot <- plot_sampling_probability(chosen_option_lev
                                                                 ylim_option)
 
 
-### Response locked ------
-
-chosen_option_level_sampling_rev <- calculate_sampling_prob(dfReplicationProcess,
-                                                     attended_chosen,
-                                                     fixNumRev,
-                                                     valid_combos = valid_chosen_option_combos,
-                                                     ci_level = 0.95)
+###### Response locked ------
 
 chosen_option_level_sampling_plot_rev <- plot_sampling_probability(chosen_option_level_sampling_rev[["group"]],
                                                             minRequiredFixations,
@@ -182,7 +312,7 @@ chosen_option_level_sampling_plot_rev <- plot_sampling_probability(chosen_option
                                                             labelsChosen,
                                                             ylim_option)
 
-# Combine option-level plot -----
+### Combine option-level plot -----
 
 setMargin <- margin(5, 5, 5, 5)
 
@@ -230,21 +360,13 @@ ggsave("figures/optionLevelSampling.png",
 
 
 
-# Attribute-level sampling -------
+### Attribute-level sampling -------
 
 ylim_attribute <- c(0, 0.75)
 
-### Stimulus-locked -------
-
 colorAttributes <- c(color_attributes, "#2EA0A8")
 
-
-attribute_level_sampling <- calculate_sampling_prob(dfReplicationProcess,
-                                                    attended_attribute,
-                                                    fixNum,
-                                                    valid_combos = valid_attribute_combos,
-                                                    ci_level = 0.95)
-
+###### Stimulus-locked -------
 
 attribute_level_sampling_plot <- plot_sampling_probability(attribute_level_sampling[["group"]],
                                                           minRequiredFixations,
@@ -258,13 +380,6 @@ attribute_level_sampling_plot <- attribute_level_sampling_plot + ggtitle("Stimul
 
 ### Response-locked -------
 
-attribute_level_sampling_rev <- calculate_sampling_prob(dfReplicationProcess,
-                                                    attended_attribute,
-                                                    fixNumRev,
-                                                    valid_combos = valid_attribute_combos,
-                                                    ci_level = 0.95)
-
-
 attribute_level_sampling_plot_rev <- plot_sampling_probability(attribute_level_sampling_rev[["group"]],
                                                            minRequiredFixations,
                                                            fixNumRev,
@@ -277,7 +392,7 @@ attribute_level_sampling_plot_rev <- attribute_level_sampling_plot_rev + ggtitle
 
 
 
-# Combine attribute-level plot -----
+### Combine attribute-level plot -----
 
 setMargin <- margin(5, 5, 5, 5)
 
