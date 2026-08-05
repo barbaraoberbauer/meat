@@ -236,7 +236,7 @@ ylim_attribute <- c(0, 0.75)
 
 ### Stimulus-locked -------
 
-colorAttributes <- c(color_attributes, "#D35269")
+colorAttributes <- c(color_attributes, "#2EA0A8")
 
 
 attribute_level_sampling <- calculate_sampling_prob(dfReplicationProcess,

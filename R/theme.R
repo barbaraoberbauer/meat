@@ -68,7 +68,7 @@ color_price <- c("#2D3142", "#BFC0C0") # present, absent
 color_choice <- c("#bfc0c0", "#066204")
 
 # colors for chosen option (regardless of eco or not)
-color_chosen <- c("#D4CB92", "#395C6B")
+color_chosen <- c("#56638A", "#30343F")
 
 # colors error
 color_error <- '#cb181d'
@@ -80,7 +80,7 @@ color_change <-"black"
 color_gender <- c("#D4CB92", "#395C6B")
 
 # colors attribute
-color_attributes <- c("#ced4da", "#2EA0A8", "#191D32")
+color_attributes <- c("#ced4da", "#747986", "#191D32")
 
 
 # labels
