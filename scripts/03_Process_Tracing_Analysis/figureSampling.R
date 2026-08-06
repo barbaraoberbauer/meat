@@ -21,7 +21,9 @@ packages <- c("tidyverse",
               "dplyr",
               "ggplot2",
               "patchwork",
-              "rlang"
+              "rlang",
+              "lme4",
+              "mclogit"
               )
 
 # Function to check if a package is installed
@@ -43,6 +45,8 @@ library(dplyr)
 library(ggplot2)
 library(patchwork)
 library(rlang)
+library(lme4)
+library(mclogit)
 
 # Load required function
 source("R/functions/fun_calculate_sampling_probability.R")
@@ -105,6 +109,7 @@ valid_chosen_option_combos <- dfReplicationProcess %>%
 valid_attribute_combos <- dfReplicationProcess %>%
   distinct(consumption_translation, attended_attribute, session)
 
+# for plotting
 minRequiredFixations <- 50
 
 # Aggregate data -----
@@ -255,7 +260,6 @@ chosen_comparison_results <- chosen_fix_first_final %>%
   select(-test)
 
 
-### Attribute-level sampling -------
 
 
 
