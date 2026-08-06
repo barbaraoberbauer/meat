@@ -22,8 +22,7 @@ packages <- c("tidyverse",
               "ggplot2",
               "patchwork",
               "rlang",
-              "lme4",
-              "mclogit"
+              "rstatix"
               )
 
 # Function to check if a package is installed
@@ -45,8 +44,7 @@ library(dplyr)
 library(ggplot2)
 library(patchwork)
 library(rlang)
-library(lme4)
-library(mclogit)
+library(rstatix)
 
 # Load required function
 source("R/functions/fun_calculate_sampling_probability.R")
@@ -174,22 +172,19 @@ attribute_level_sampling_rev <- calculate_sampling_prob(dfReplicationProcess,
 
 ### Eco - Other Option-level sampling -------
 
-# transform data to wide format
-option_level_subject <- option_level_sampling[["subject"]] %>%
+# get first and final fixations and pivot to wide format
+fix_first_final <- bind_rows(
+  option_level_sampling[["subject"]] %>%
+    filter(fixNum == 1) %>%
+    mutate(fix_type = "first"),
+  option_level_sampling_rev[["subject"]] %>%
+    filter(fixNumRev == 1) %>%
+    rename(fixNum = fixNumRev) %>%
+    mutate(fix_type = "final")
+) %>%
   select(-n_fix) %>%
   pivot_wider(names_from = attended_option,
-              values_from = prob_fix) 
-
-# get first and final fixations
-fix_first_final <- option_level_subject %>%
-  group_by(id, session, consumption_translation) %>%
-  mutate(fix_type = case_when(
-    fixNum == 1               ~ "first",
-    fixNum == max(fixNum)     ~ "final",
-    TRUE                      ~ NA_character_
-  )) %>%
-  filter(!is.na(fix_type)) %>%
-  ungroup()
+              values_from = prob_fix)
 
 # check that first fixations are at chance level
 first_fix_vs_chance <- fix_first_final %>%
@@ -226,22 +221,20 @@ comparison_results <- fix_first_final %>%
 
 ### Chosen - Not Chosen Option-level sampling -------
 
-# transform data to wide format
-chosen_option_level_subject <- chosen_option_level_sampling[["subject"]] %>%
+# get first and final fixations and pivot to wide format
+chosen_fix_first_final <- bind_rows(
+  chosen_option_level_sampling[["subject"]] %>%
+    filter(fixNum == 1) %>%
+    mutate(fix_type = "first"),
+  chosen_option_level_sampling_rev[["subject"]] %>%
+    filter(fixNumRev == 1) %>%
+    rename(fixNum = fixNumRev) %>%
+    mutate(fix_type = "final")
+) %>%
   select(-n_fix) %>%
   pivot_wider(names_from = attended_chosen,
-              values_from = prob_fix) 
+              values_from = prob_fix)
 
-# get first and final fixations
-chosen_fix_first_final <- chosen_option_level_subject %>%
-  group_by(id, session, consumption_translation) %>%
-  mutate(fix_type = case_when(
-    fixNum == 1               ~ "first",
-    fixNum == max(fixNum)     ~ "final",
-    TRUE                      ~ NA_character_
-  )) %>%
-  filter(!is.na(fix_type)) %>%
-  ungroup()
 
 # test chosen vs. not chosen for first and final fixations
 chosen_comparison_results <- chosen_fix_first_final %>%
@@ -259,9 +252,69 @@ chosen_comparison_results <- chosen_fix_first_final %>%
   ) %>%
   select(-test)
 
+### Attribute-level sampling -----
 
+# get first and final fixation
+attribute_fix_first_final <- attribute_level_sampling[["subject"]] %>%
+  filter(fixNum == 1) %>%
+  mutate(fix_type = "first") %>%
+  bind_rows(
+    attribute_level_sampling_rev[["subject"]] %>%
+      filter(fixNumRev == 1) %>%
+      mutate(fix_type = "final") %>%
+      rename(fixNum = fixNumRev)   
+  )
 
+# test attributes against each other for first and final fixations
+friedman_results <- attribute_fix_first_final %>%
+  group_by(session, consumption_translation, fix_type) %>%
+  friedman_test(prob_fix ~ attended_attribute | id)
 
+# perform pairwise tests
+pairwise_results <- attribute_fix_first_final %>%
+  group_by(session, consumption_translation, fix_type) %>%
+  pairwise_wilcox_test(
+    prob_fix ~ attended_attribute,
+    paired = TRUE,
+  )
+
+# descriptives
+attribute_means <- attribute_fix_first_final %>%
+  group_by(session, consumption_translation, fix_type, attended_attribute) %>%
+  summarise(
+    mean_prob = mean(prob_fix, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Contrast against chance 
+
+# calculate chance level for each session × condition
+chance_levels <- attribute_fix_first_final %>%
+  group_by(session, consumption_translation) %>%
+  summarise(
+    n_attributes = n_distinct(attended_attribute),
+    chance = 1 / n_attributes,
+    .groups = "drop"
+  )
+
+# test each attribute against its condition-specific chance level
+attribute_vs_chance <- attribute_fix_first_final %>%
+  left_join(chance_levels,
+            by = c("session", "consumption_translation")) %>%
+  group_by(session, consumption_translation, fix_type,
+           attended_attribute, chance) %>%
+  summarise(
+    n = n(),
+    mean_prob = mean(prob_fix, na.rm = TRUE),
+    median_prob = median(prob_fix, na.rm = TRUE),
+    test = list(wilcox.test(prob_fix, mu = first(chance))),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    statistic = map_dbl(test, ~ .x$statistic),
+    p_value = map_dbl(test, ~ .x$p.value)
+  ) %>%
+  select(-test)
 
 
 # Plot data -----
