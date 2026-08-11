@@ -92,7 +92,7 @@ dfReplicationProcess$attended_chosen <- as.factor(dfReplicationProcess$attended_
 dfReplicationProcess <- dfReplicationProcess %>%
   group_by(id, session, consumption_translation, trial) %>%
   arrange(fixNum, .by_group = TRUE) %>%
-  mutate(fixNumRev = n() - row_number() + 1) %>%
+  mutate(fixNumRev = -1 * (n() - row_number() + 1)) %>%
   ungroup()
 
 # define valid combinations of options and consumption translations
@@ -178,7 +178,7 @@ fix_first_final <- bind_rows(
     filter(fixNum == 1) %>%
     mutate(fix_type = "first"),
   option_level_sampling_rev[["subject"]] %>%
-    filter(fixNumRev == 1) %>%
+    filter(fixNumRev == -1) %>%
     rename(fixNum = fixNumRev) %>%
     mutate(fix_type = "final")
 ) %>%
@@ -227,7 +227,7 @@ chosen_fix_first_final <- bind_rows(
     filter(fixNum == 1) %>%
     mutate(fix_type = "first"),
   chosen_option_level_sampling_rev[["subject"]] %>%
-    filter(fixNumRev == 1) %>%
+    filter(fixNumRev == -1) %>%
     rename(fixNum = fixNumRev) %>%
     mutate(fix_type = "final")
 ) %>%
@@ -260,7 +260,7 @@ attribute_fix_first_final <- attribute_level_sampling[["subject"]] %>%
   mutate(fix_type = "first") %>%
   bind_rows(
     attribute_level_sampling_rev[["subject"]] %>%
-      filter(fixNumRev == 1) %>%
+      filter(fixNumRev == -1) %>%
       mutate(fix_type = "final") %>%
       rename(fixNum = fixNumRev)   
   )
@@ -412,7 +412,7 @@ option_level_sampling_plot <- wrap_elements(full = stimulus_locked) /
 ggsave("figures/optionLevelSampling.png",
        option_level_sampling_plot,
        width = 13,
-       height = 12,
+       height = 10,
        units = "in")
 
 
@@ -471,7 +471,7 @@ attribute_level_sampling_plot <- ((attribute_level_sampling_plot + remove_y_stri
 ggsave("figures/attributeLevelSampling.png",
        attribute_level_sampling_plot,
        width = 12,
-       height = 6,
+       height = 5,
        units = "in")
 
 
