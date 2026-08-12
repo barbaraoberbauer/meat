@@ -22,7 +22,9 @@ packages <- c("tidyverse",
               "ggplot2",
               "patchwork",
               "rlang",
-              "rstatix"
+              "rstatix",
+              "ggtext",
+              "lme4"
               )
 
 # Function to check if a package is installed
@@ -45,6 +47,8 @@ library(ggplot2)
 library(patchwork)
 library(rlang)
 library(rstatix)
+library(ggtext)
+library(lme4)
 
 # Load required function
 source("R/functions/fun_calculate_sampling_probability.R")
@@ -276,6 +280,7 @@ pairwise_results <- attribute_fix_first_final %>%
   pairwise_wilcox_test(
     prob_fix ~ attended_attribute,
     paired = TRUE,
+    p.adjust.method = "none"
   )
 
 # descriptives
@@ -315,6 +320,94 @@ attribute_vs_chance <- attribute_fix_first_final %>%
     p_value = map_dbl(test, ~ .x$p.value)
   ) %>%
   select(-test)
+
+# test relationship between first fixation and choice
+# lmer
+
+# get initial fixations
+initial_fixations <- dfReplicationProcess %>%
+  filter(fixNum == 1)
+
+# add info about valid attribute combination
+initial_fixations <- initial_fixations %>%
+  mutate(
+    attr_family = case_when(
+      consumption_translation %in% c("control") & session == 1 ~ "price_energy_popularity",
+      consumption_translation %in% c("control") & session == 2 ~ "price_energy_popularity",
+      consumption_translation %in% c("emission_replace", "rating_replace") & session == 1 ~ "price_energy_popularity",
+      consumption_translation %in% c("emission_replace", "rating_replace") & session == 2 ~ "price_popularity_translation",
+      consumption_translation %in% c("emission_add", "rating_add") & session == 1 ~ "price_energy_popularity",
+      consumption_translation %in% c("emission_add", "rating_add") & session == 2 ~ "price_energy_popularity_translation"
+    )
+  )
+
+# set up function for fitting
+fit_family_model <- function(df) {
+  df$attended_attribute <- droplevels(factor(df$attended_attribute))
+  df$attended_attribute <- relevel(df$attended_attribute, ref = "price")
+  glmer(
+    choice ~ attended_attribute +
+      (1 | id),
+    data = df,
+    family = binomial(link = "logit"),
+    control = glmerControl(optimizer = "bobyqa")
+  )
+}
+
+# fit models
+models_by_family <- initial_fixations %>%
+  group_by(attr_family) %>%
+  group_split() %>%
+  map(fit_family_model)
+
+summary(models_by_family[[1]])
+summary(models_by_family[[2]])
+summary(models_by_family[[3]])
+
+
+# # test relationship between first fixation and choice
+# initial_fixations <- attribute_fix_first_final %>%
+#   filter(fixNum == 1)
+# 
+# choiceProbability <- dfReplication %>%
+#   group_by(id, session, consumption_translation) %>%
+#   summarize(p_eco = mean(choice))
+# 
+# initial_fixations <- initial_fixations %>%
+#   left_join(choiceProbability,
+#             by = c("id", "session", "consumption_translation"))
+# 
+# initial_fixations %>%
+#   filter(attended_attribute == "translation") %>%
+#   ggplot(aes(x = prob_fix,
+#            y = p_eco)) +
+#   geom_point() +
+#   facet_grid(session ~ consumption_translation)
+
+# test reading direction
+
+initial_fixations <- initial_fixations %>%
+  mutate(
+    # extract the token right after "img_", treating "attr_trnsl" as one unit
+    top_attr_code = str_extract(roword, "(?<=img_)(attr_trnsl|[a-z]+)"),
+    # map code to the same labels used in attended_attribute
+    top_attr = case_when(
+      top_attr_code == "price"      ~ "price",
+      top_attr_code == "cons"       ~ "energy",
+      top_attr_code == "pop"        ~ "popularity",
+      top_attr_code == "attr_trnsl" ~ "translation",
+      TRUE ~ NA_character_
+    ),
+    top_sampled_first = top_attr == as.character(attended_attribute)
+  )
+
+subjTopSampled <- initial_fixations %>%
+  group_by(id, session, consumption_translation) %>%
+  summarize(probSampleTop = mean(top_sampled_first))
+
+aggTopSampled <- subjTopSampled %>%
+  group_by(session, consumption_translation) %>%
+  summarize(probSampleTop = mean(probSampleTop))
 
 
 # Plot data -----
