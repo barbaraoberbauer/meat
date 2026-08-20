@@ -24,8 +24,8 @@ plot_change_param <- function(param, hdi_range, xtitle){
     geom_vline(xintercept = 0, color = "#CB181D", linetype = "dashed", linewidth = 2.5) +
     labs(x = xtitle) +
     theme(axis.title.y = element_blank(),
-          axis.ticks.y = element_blank(),
-          axis.text.y = element_blank(),
+          #axis.ticks.y = element_blank(),
+          #axis.text.y = element_blank(),
           panel.border = element_rect(color = "black", fill = NA))
   
 }

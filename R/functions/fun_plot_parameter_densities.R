@@ -17,8 +17,8 @@ plot_group_means_densities <- function(data, param1, param2, paramName){
                                  "2" = scales::alpha(color_sessions[2], .8))) +
     labs(x = paramName, fill = "Session") + 
     theme(axis.title.y = element_blank(),
-          axis.ticks.y = element_blank(),
-          axis.text.y = element_blank(),
+          #axis.ticks.y = element_blank(),
+          #axis.text.y = element_blank(),
           panel.border = element_rect(color = "black", fill = NA))
   
 }
