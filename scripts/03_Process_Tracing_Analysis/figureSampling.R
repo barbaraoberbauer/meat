@@ -111,8 +111,8 @@ valid_chosen_option_combos <- dfReplicationProcess %>%
 valid_attribute_combos <- dfReplicationProcess %>%
   distinct(consumption_translation, attended_attribute, session)
 
-# for plotting
-minRequiredFixations <- 50
+# plot max fixations
+plotNFix <- 10
 
 # Aggregate data -----
 
@@ -421,17 +421,17 @@ color_choice <- rev(color_choice)
 ###### Stimulus locked -----
 
 option_level_sampling_plot <- plot_sampling_probability(option_level_sampling[["group"]],
-                                                 minRequiredFixations,
-                                                 fixNum,
-                                                 attended_option,
-                                                 color_choice,
-                                                 labelsChoice,
-                                                 ylim_option)
+                                                        plotNFix,
+                                                         fixNum,
+                                                         attended_option,
+                                                         color_choice,
+                                                         labelsChoice,
+                                                         ylim_option)
 
 ###### Response locked ------
 
 option_level_sampling_plot_rev <- plot_sampling_probability(option_level_sampling_rev[["group"]],
-                                                            minRequiredFixations,
+                                                            plotNFix*-1,
                                                             fixNumRev,
                                                             attended_option,
                                                             color_choice,
@@ -444,7 +444,7 @@ option_level_sampling_plot_rev <- plot_sampling_probability(option_level_samplin
 ####### Stimulus locked -----
 
 chosen_option_level_sampling_plot <- plot_sampling_probability(chosen_option_level_sampling[["group"]],
-                                                                minRequiredFixations,
+                                                               plotNFix,
                                                                 fixNum,
                                                                 attended_chosen,
                                                                 color_chosen,
@@ -455,7 +455,7 @@ chosen_option_level_sampling_plot <- plot_sampling_probability(chosen_option_lev
 ###### Response locked ------
 
 chosen_option_level_sampling_plot_rev <- plot_sampling_probability(chosen_option_level_sampling_rev[["group"]],
-                                                            minRequiredFixations,
+                                                                   plotNFix*-1,
                                                             fixNumRev,
                                                             attended_chosen,
                                                             color_chosen,
@@ -519,7 +519,7 @@ colorAttributes <- c(color_attributes, "#2EA0A8")
 ###### Stimulus-locked -------
 
 attribute_level_sampling_plot <- plot_sampling_probability(attribute_level_sampling[["group"]],
-                                                          minRequiredFixations,
+                                                           plotNFix,
                                                           fixNum,
                                                           attended_attribute,
                                                           colorAttributes,
@@ -531,7 +531,7 @@ attribute_level_sampling_plot <- attribute_level_sampling_plot + ggtitle("Stimul
 ### Response-locked -------
 
 attribute_level_sampling_plot_rev <- plot_sampling_probability(attribute_level_sampling_rev[["group"]],
-                                                           minRequiredFixations,
+                                                               plotNFix*-1,
                                                            fixNumRev,
                                                            attended_attribute,
                                                            colorAttributes,

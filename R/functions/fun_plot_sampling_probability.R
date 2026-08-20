@@ -1,6 +1,6 @@
 
 plot_sampling_probability <- function(data,
-                                      minRequiredFixations,
+                                      plotNFix,
                                       fix_var,
                                       attended_var,
                                       colValues,
@@ -10,17 +10,21 @@ plot_sampling_probability <- function(data,
   fix_var <- enquo(fix_var)
   fix_var_name <- as_name(fix_var)
   attended_var <- enquo(attended_var)
-  
-  plot_data <- data %>%
-    filter(n >= minRequiredFixations) 
     
   # Determine marker position + label depending on direction of fix_var
   if (fix_var_name == "fixNum") {
     marker_x     <- 1
     marker_label <- "S"
+    
+    plot_data <- data %>%
+      filter(!!fix_var <= plotNFix) 
+    
   } else if (fix_var_name == "fixNumRev") {
     marker_x     <- -1
     marker_label <- "R"
+    
+    plot_data <- data %>%
+      filter(!!fix_var >= plotNFix) 
   } 
   
   plot <- plot_data %>%
