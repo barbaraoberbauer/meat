@@ -6,7 +6,7 @@
 
 # function for plotting densities of parameter estimates for session 1 and 2
 
-plot_group_means_densities <- function(data, param1, param2, paramName){
+plot_group_means_densities <- function(data, param1, param2, paramName, upper_ylim){
   
   ggplot(data = data) +
     geom_histogram(aes(x = param1, fill = "1"),
@@ -16,6 +16,7 @@ plot_group_means_densities <- function(data, param1, param2, paramName){
     scale_fill_manual(values = c("1" = scales::alpha(color_sessions[1], .8),
                                  "2" = scales::alpha(color_sessions[2], .8))) +
     labs(x = paramName, fill = "Session") + 
+    coord_cartesian(ylim = c(0, upper_ylim)) +
     theme(axis.title.y = element_blank(),
           #axis.ticks.y = element_blank(),
           #axis.text.y = element_blank(),

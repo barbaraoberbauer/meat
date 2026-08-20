@@ -70,6 +70,9 @@ translation_of_interest <- "environmental_friendliness"
 time_original <- "20260517_1131"
 time_replication <- "20260517_0459"
 
+# set upper ylim
+upper_ylim <- 21000
+
 
 # get runJagsOut and HDI
 
@@ -164,31 +167,38 @@ generate_all_plots <- function(runJagsOut, hdi) {
     price = plot_group_means_densities(combined_mcmcfin,
                                         combined_mcmcfin$`mu_w[1]`,
                                         mu_w_AT_1,
-                                        "Weight Price"),
+                                        "Weight Price",
+                                        upper_ylim),
     consumption = plot_group_means_densities(combined_mcmcfin,
                                               combined_mcmcfin$`mu_w[2]`,
                                               mu_w_AT_2,
-                                              "Weight Consumption"),
+                                              "Weight Consumption",
+                                             upper_ylim),
     popularity = plot_group_means_densities(combined_mcmcfin,
                                              combined_mcmcfin$`mu_w[3]`,
                                              mu_w_AT_3,
-                                             "Weight Popularity"),
+                                             "Weight Popularity",
+                                            upper_ylim),
     boundary = plot_group_means_densities(combined_mcmcfin, 
                                            combined_mcmcfin$mu_alpha, 
                                            combined_mcmcfin$mu_alpha + combined_mcmcfin$mu_dalpha, 
-                                           "Boundary Separation"),
+                                           "Boundary Separation",
+                                          upper_ylim),
     sp = plot_group_means_densities(combined_mcmcfin,
                                      combined_mcmcfin$mu_sp,
                                      combined_mcmcfin$mu_sp + combined_mcmcfin$mu_dsp,
-                                     "Starting Point Bias"),
+                                     "Starting Point Bias",
+                                    upper_ylim),
     ndt = plot_group_means_densities(combined_mcmcfin,
                                       combined_mcmcfin$mu_tau,
                                       combined_mcmcfin$mu_tau + combined_mcmcfin$mu_dtau,
-                                      "Non-Decision Time"),
+                                      "Non-Decision Time",
+                                     upper_ylim),
     scaling = plot_group_means_densities(combined_mcmcfin,
                                           combined_mcmcfin$mu_scaling,
                                           combined_mcmcfin$mu_scaling + combined_mcmcfin$mu_dscaling,
-                                          "Drift Scaling")
+                                          "Drift Scaling",
+                                         upper_ylim)
   ) # density plots
   
   
@@ -196,25 +206,32 @@ generate_all_plots <- function(runJagsOut, hdi) {
   plots_change <- list(
     dPrice = plot_change_param(mu_w_AT_1 - combined_mcmcfin$`mu_w[1]`,
                                 hdi$w_price$hdi_change,
-                                xtitleChangePlot),
+                                xtitleChangePlot,
+                               upper_ylim),
     dConsumption = plot_change_param(mu_w_AT_2 - combined_mcmcfin$`mu_w[2]`,
                                       hdi$w_consumption$hdi_change,
-                                      xtitleChangePlot),
+                                      xtitleChangePlot,
+                                     upper_ylim),
     dPopularity = plot_change_param(mu_w_AT_3 - combined_mcmcfin$`mu_w[3]`,
                                      hdi$w_popularity$hdi_change,
-                                     xtitleChangePlot),
+                                     xtitleChangePlot,
+                                    upper_ylim),
     dBoundary = plot_change_param(combined_mcmcfin$mu_dalpha,
                                    hdi$alpha$hdi_change,
-                                   xtitleChangePlot),
+                                   xtitleChangePlot,
+                                  upper_ylim),
     dSp = plot_change_param(combined_mcmcfin$mu_dsp,
                              hdi$sp$hdi_change,
-                             xtitleChangePlot),
+                             xtitleChangePlot,
+                            upper_ylim),
     dNdt = plot_change_param(combined_mcmcfin$mu_dtau,
                               hdi$tau$hdi_change,
-                              xtitleChangePlot),
+                              xtitleChangePlot,
+                             upper_ylim),
     dScaling = plot_change_param(combined_mcmcfin$mu_dscaling,
                                   hdi$scaling$hdi_change,
-                                  xtitleChangePlot)
+                                  xtitleChangePlot,
+                                 upper_ylim)
   ) # change plots
   
   list(density = plots_density,
@@ -354,7 +371,7 @@ ggsave(filename, all_parameters, width = 11, height = 15.4, units = "in")
 
 # save weight parameters
 filename <- paste0("figures/groupParamEstimatesDDMBothStudiesWeightParameters", "_", translation_of_interest, ".png")
-ggsave(filename, weight_parameters, width = 11, height = 6.6, units = "in")
+ggsave(filename, weight_parameters, width = 11, height = 7.6, units = "in")
 
 
 

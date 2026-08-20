@@ -7,7 +7,7 @@
 
 # function for plotting change parameters 
 
-plot_change_param <- function(param, hdi_range, xtitle){
+plot_change_param <- function(param, hdi_range, xtitle, upper_ylim){
   
   h <- hist(param, plot = FALSE)
   hist_df <- data.frame(
@@ -23,6 +23,7 @@ plot_change_param <- function(param, hdi_range, xtitle){
              width = hist_df$width[1]) +
     geom_vline(xintercept = 0, color = "#CB181D", linetype = "dashed", linewidth = 2.5) +
     labs(x = xtitle) +
+    coord_cartesian(ylim = c(0, upper_ylim)) +
     theme(axis.title.y = element_blank(),
           #axis.ticks.y = element_blank(),
           #axis.text.y = element_blank(),

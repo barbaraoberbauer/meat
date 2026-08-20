@@ -64,12 +64,14 @@ rm(package, packages, is_package_installed)
 # specify subset of data 
 
 # translations of interest: control, emissions, environmental_friendliness (these conditions are identical across studies)
-translation_of_interest <- "environmental_friendliness"
+translation_of_interest <- "control"
 
 # time stamp of data generation
-time_original <- "20260519_0532"
-time_replication <- "20260518_2319"
+time_original <- "20260520_1453"
+time_replication <- "20260520_1545"
 
+# set upper ylim
+upper_ylim <- 11000
 
 # get runJagsOut and HDI
 
@@ -164,39 +166,48 @@ generate_all_plots <- function(runJagsOut, hdi) {
     price = plot_group_means_densities(combined_mcmcfin,
                                         combined_mcmcfin$`mu_w[1]`,
                                         mu_w_AT_1,
-                                        "Weight Price"),
+                                        "Weight Price",
+                                       upper_ylim),
     consumption = plot_group_means_densities(combined_mcmcfin,
                                               combined_mcmcfin$`mu_w[2]`,
                                               mu_w_AT_2,
-                                              "Weight Consumption"),
+                                              "Weight Consumption",
+                                             upper_ylim),
     popularity = plot_group_means_densities(combined_mcmcfin,
                                              combined_mcmcfin$`mu_w[3]`,
                                              mu_w_AT_3,
-                                             "Weight Popularity"),
+                                             "Weight Popularity",
+                                            upper_ylim),
     boundary = plot_group_means_densities(combined_mcmcfin, 
                                            combined_mcmcfin$mu_alpha, 
                                            combined_mcmcfin$mu_alpha + combined_mcmcfin$mu_dalpha, 
-                                           "Boundary Separation"),
+                                           "Boundary Separation",
+                                          upper_ylim),
     theta = plot_group_means_densities(combined_mcmcfin,
                                         combined_mcmcfin$mu_theta,
                                         combined_mcmcfin$mu_theta + combined_mcmcfin$mu_dtheta,
-                                        "Discounting Unattended \nOption (theta)"),
+                                        "Discounting Unattended \nOption (theta)",
+                                       upper_ylim),
     phi = plot_group_means_densities(combined_mcmcfin,
                                       combined_mcmcfin$mu_phi,
                                       combined_mcmcfin$mu_phi + combined_mcmcfin$mu_dphi,
-                                      "Discounting Unattended \nAttribute (phi)"),
+                                      "Discounting Unattended \nAttribute (phi)",
+                                     upper_ylim),
     sp = plot_group_means_densities(combined_mcmcfin,
                                      combined_mcmcfin$mu_sp,
                                      combined_mcmcfin$mu_sp + combined_mcmcfin$mu_dsp,
-                                     "Starting Point Bias"),
+                                     "Starting Point Bias",
+                                    upper_ylim),
     ndt = plot_group_means_densities(combined_mcmcfin,
                                       combined_mcmcfin$mu_tau,
                                       combined_mcmcfin$mu_tau + combined_mcmcfin$mu_dtau,
-                                      "Non-Decision Time"),
+                                      "Non-Decision Time",
+                                     upper_ylim),
     scaling = plot_group_means_densities(combined_mcmcfin,
                                           combined_mcmcfin$mu_scaling,
                                           combined_mcmcfin$mu_scaling + combined_mcmcfin$mu_dscaling,
-                                          "Drift Scaling")
+                                          "Drift Scaling",
+                                         upper_ylim)
   ) # density plots
   
   
@@ -204,31 +215,40 @@ generate_all_plots <- function(runJagsOut, hdi) {
   plots_change <- list(
     dPrice = plot_change_param(mu_w_AT_1 - combined_mcmcfin$`mu_w[1]`,
                                 hdi$w_price$hdi_change,
-                                xtitleChangePlot),
+                                xtitleChangePlot,
+                               upper_ylim),
     dConsumption = plot_change_param(mu_w_AT_2 - combined_mcmcfin$`mu_w[2]`,
                                       hdi$w_consumption$hdi_change,
-                                      xtitleChangePlot),
+                                      xtitleChangePlot,
+                                     upper_ylim),
     dPopularity = plot_change_param(mu_w_AT_3 - combined_mcmcfin$`mu_w[3]`,
                                      hdi$w_popularity$hdi_change,
-                                     xtitleChangePlot),
+                                     xtitleChangePlot,
+                                    upper_ylim),
     dBoundary = plot_change_param(combined_mcmcfin$mu_dalpha,
                                    hdi$alpha$hdi_change,
-                                   xtitleChangePlot),
+                                   xtitleChangePlot,
+                                  upper_ylim),
     dTheta = plot_change_param(combined_mcmcfin$mu_dtheta,
                                 hdi$theta$hdi_change,
-                                xtitleChangePlot),
+                                xtitleChangePlot,
+                               upper_ylim),
     dPhi = plot_change_param(combined_mcmcfin$mu_dphi,
                               hdi$phi$hdi_change,
-                              xtitleChangePlot),
+                              xtitleChangePlot,
+                             upper_ylim),
     dSp = plot_change_param(combined_mcmcfin$mu_dsp,
                              hdi$sp$hdi_change,
-                             xtitleChangePlot),
+                             xtitleChangePlot,
+                            upper_ylim),
     dNdt = plot_change_param(combined_mcmcfin$mu_dtau,
                               hdi$tau$hdi_change,
-                              xtitleChangePlot),
+                              xtitleChangePlot,
+                             upper_ylim),
     dScaling = plot_change_param(combined_mcmcfin$mu_dscaling,
                                   hdi$scaling$hdi_change,
-                                  xtitleChangePlot)
+                                  xtitleChangePlot,
+                                 upper_ylim)
   ) # change plots
   
   list(density = plots_density,
@@ -435,19 +455,19 @@ all_parameters <-
 filename <- paste0("figures/groupParamEstimatesBothStudiesWeightsAttention", "_", translation_of_interest, ".png")
 ggsave(filename, 
        weight_attention_parameters, 
-       width = 11, height = 11)
+       width = 11, height = 12)
 
 
 # save speed accuracy plot
 filename <- paste0("figures/groupParamEstimatesBothStudiesSpeedAccuracy", "_", translation_of_interest, ".png")
 ggsave(filename, 
        speed_accuracy_parameters, 
-       width = 11, height = 8.8)
+       width = 11, height = 9.8)
 
 
 # save all parameters
 filename <- paste0("figures/groupParamEstimatesBothStudiesAllParameters", "_", translation_of_interest, ".png")
-ggsave(filename, all_parameters, width = 11, height = 19.8, units = "in")
+ggsave(filename, all_parameters, width = 11, height = 20.8, units = "in")
 
 
 
