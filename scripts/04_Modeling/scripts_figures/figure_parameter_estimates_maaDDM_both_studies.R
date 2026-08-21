@@ -64,11 +64,11 @@ rm(package, packages, is_package_installed)
 # specify subset of data 
 
 # translations of interest: control, emissions, environmental_friendliness (these conditions are identical across studies)
-translation_of_interest <- "control"
+translation_of_interest <- "emissions"
 
 # time stamp of data generation
-time_original <- "20260520_1453"
-time_replication <- "20260520_1545"
+time_original <- "20260521_1418"
+time_replication <- "20260521_1608"
 
 # set upper ylim
 upper_ylim <- 11000
@@ -376,19 +376,19 @@ speed_accuracy_parameters <-
 
 # Combine all -----
 
-all_plots <- 
+all_plots <-
   # price
-  plots_original$density$price + 
+  plots_original$density$price +
   plots_original$change$dPrice +
   plots_replication$density$price +
   plots_replication$change$dPrice +
   # consumption
-  plots_original$density$consumption + 
+  plots_original$density$consumption +
   plots_original$change$dConsumption +
   plots_replication$density$consumption +
   plots_replication$change$dConsumption +
   # popularity
-  plots_original$density$popularity + 
+  plots_original$density$popularity +
   plots_original$change$dPopularity +
   plots_replication$density$popularity +
   plots_replication$change$dPopularity +
@@ -423,12 +423,13 @@ all_plots <-
   plots_replication$density$scaling +
   plots_replication$change$dScaling +
   plot_layout(ncol = 4,
-              guides = 'collect') 
+              guides = 'collect')
 
 
 all_parameters <- 
   (header / all_plots) +
-  plot_layout(heights = c(1, 15), guides = 'collect') +
+  plot_layout(heights = c(0.03, 0.97), 
+              guides = 'collect') +
   plot_annotation(
     tag_levels = list(c('', '',
                         'a', '', 'b', '',
@@ -442,7 +443,7 @@ all_parameters <-
                         'q', '', 'r', ''))
   ) &
   theme(
-    plot.margin = margin(4, 4, 4, 4),
+    plot.margin = margin(2, 2, 2, 2),
     legend.position = "bottom",
     plot.tag = element_text(size = 20, face = "bold")
   )
@@ -467,7 +468,9 @@ ggsave(filename,
 
 # save all parameters
 filename <- paste0("figures/groupParamEstimatesBothStudiesAllParameters", "_", translation_of_interest, ".png")
-ggsave(filename, all_parameters, width = 11, height = 20.8, units = "in")
+#ggsave(filename, all_parameters, width = 11, height = 20.8, units = "in")
+ggsave(filename, all_parameters, width = 11, height = 19, units = "in")
+
 
 
 
