@@ -48,6 +48,7 @@ plot_effects_subgroups <- function(attribute, x_title) {
     labs(x = x_title) +
     theme(
       axis.title.y = element_blank(),
+      axis.text = element_text(size = 12),
       panel.background = element_rect(fill = "white", color = NA),
       panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5),
       panel.grid.major = element_line(color = "grey90", linewidth = 0.3),
