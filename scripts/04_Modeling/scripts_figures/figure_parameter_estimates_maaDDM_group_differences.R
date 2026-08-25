@@ -188,8 +188,8 @@ modes$sp <- list(mode_absent_change = distMode(combined_mcmcfin_absent$mu_dsp),
 
 plots <- list(
   price = plot_effects_subgroups("w_price", "Effects on Weight Price"),
-  consumption = plot_effects_subgroups("w_consumption", "Effects on Consumption"),
-  popularity = plot_effects_subgroups("w_popularity", "Effects on Popularity"),
+  consumption = plot_effects_subgroups("w_consumption", "Effects on Weight Consumption"),
+  popularity = plot_effects_subgroups("w_popularity", "Effects on Weight Popularity"),
   theta = plot_effects_subgroups("theta", "Effects on Theta"),
   phi = plot_effects_subgroups("phi", "Effects on Phi"),
   alpha = plot_effects_subgroups("alpha", "Effects on Boundary Separation"),
@@ -210,14 +210,18 @@ all_plots <-
   plots$sp +
   plots$tau +
   plots$scaling +
-  plot_layout(ncol = 3) &
+  plot_layout(ncol = 3) +
+  plot_annotation(tag_levels = list(c('a', 'b', 'c',  
+                                      'd', 'e', 'f', 
+                                      'g', 'h', 'i'))) &
   theme(
     plot.margin = margin(8, 8, 8, 8),
+    plot.tag = element_text(size = 20, face = "bold")
   )
 
 # save 
 ggsave("figures/groupParamEstimates_original_environmental_friendliness_price_translation_subgroups.png",
        all_plots, 
-       width = 11, 
+       width = 12, 
        height = 7, 
        units = "in")
