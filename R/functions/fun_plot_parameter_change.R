@@ -21,7 +21,7 @@ plot_change_param <- function(param, hdi_range, xtitle, upper_ylim){
     geom_col(data = subset(hist_df, mids >= hdi_range[1] & mids <= hdi_range[2]),
              fill = "darkgrey", color = "black", linewidth = 0.5,
              width = hist_df$width[1]) +
-    geom_vline(xintercept = 0, color = "#CB181D", linetype = "dashed", linewidth = 2.5) +
+    geom_vline(xintercept = 0, color = "#CB181D", linetype = "22", linewidth = 2) +
     labs(x = xtitle) +
     coord_cartesian(ylim = c(0, upper_ylim)) +
     theme(axis.title.y = element_blank(),
