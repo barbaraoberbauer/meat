@@ -337,14 +337,31 @@ orig_cols <- c("priceEco_raw",
           "popularityEco_raw",
           "popularityNonEco_raw")
 
-norm_cols <- sub("_raw$", "", orig_cols)
+# norm_cols <- sub("_raw$", "", orig_cols)
+# 
+# # note: since the smallest price, energy consumption or popularity score is the best, set 10 to minimal value and 1 to maximum
+# df[norm_cols] <- lapply(df[orig_cols], function(x) normalizeValue(x,
+#                                                              min(x),
+#                                                              max(x),
+#                                                              10,
+#                                                              1))
 
-# note: since the smallest price, energy consumption or popularity score is the best, set 10 to minimal value and 1 to maximum
-df[norm_cols] <- lapply(df[orig_cols], function(x) normalizeValue(x,
-                                                             min(x),
-                                                             max(x),
-                                                             10,
-                                                             1))
+energy_cols <- c("energyEco_raw", "energyNonEco_raw")
+other_cols  <- setdiff(orig_cols, energy_cols)
+
+# note: since the smallest price, energy consumption or popularity score is the best,
+# set 10 to minimal value and 1 to maximum
+
+# price and popularity: each column scaled to its own min and max (as before)
+df[sub("_raw$", "", other_cols)] <- lapply(df[other_cols], function(x)
+  normalizeValue(x, min(x), max(x), 10, 1))
+
+# energy: both columns scaled to the pooled min and max of energyEco and energyNonEco
+energy_min <- min(unlist(df[energy_cols]), na.rm = TRUE)
+energy_max <- max(unlist(df[energy_cols]), na.rm = TRUE)
+
+df[sub("_raw$", "", energy_cols)] <- lapply(df[energy_cols], function(x)
+  normalizeValue(x, energy_min, energy_max, 10, 1))
 
 
 ### Exclude participants who have only completed session 1 ------
