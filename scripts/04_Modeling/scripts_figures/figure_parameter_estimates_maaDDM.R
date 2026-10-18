@@ -66,7 +66,7 @@ rm(package, packages, is_package_installed)
 dataset <- "replication"
 # datasets: "original", "replication"
 
-translation_of_interest <- "emission_replace"
+translation_of_interest <- "rating_replace"
 
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace", "rating_replace"
@@ -74,11 +74,11 @@ translation_of_interest <- "emission_replace"
 bound_attention_params <- FALSE
 # set to true if parameter estimates for theta and phi are supposed to be bound between 0 and 1
 
-time <- "20260522_2028"
+time <- "20260522_1441"
 # time stamp of data generation
 
 # set upper ylim
-upper_ylim <- 11000
+upper_ylim <- 12000
 
 
 # get runJagsOut and HDI
