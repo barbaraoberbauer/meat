@@ -68,7 +68,7 @@ translation_of_interest <- "environmental_friendliness"
 
 # time stamp of data generation
 time_original <- "20260519_0532"
-time_replication <- "20260518_2319"
+time_replication <- "20261021_0757"
 
 # set upper ylim
 upper_ylim <- 15000
