@@ -65,7 +65,7 @@ translation_of_interest <- "rating_add"
 # translations for original dataset: "control", "emissions", "operating_costs", "environmental_friendliness"
 # translations for replication dataset: "control", "emission_add", "rating_add", "emission_replace"
 
-time <- "20260518_2319"
+time <- "20261021_0757"
 # time stamp of data generation
 
 
