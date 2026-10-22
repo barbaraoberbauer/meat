@@ -17,7 +17,7 @@ plot_change_param <- function(param, hdi_range, xtitle, upper_ylim){
   )
   
   ggplot(hist_df, aes(x = mids, y = counts)) +
-    geom_col(fill = "black", color = "black", linewidth = 0.5, width = hist_df$width[1]) + 
+    geom_col(fill = "white", color = "black", linewidth = 0.5, width = hist_df$width[1]) + 
     geom_col(data = subset(hist_df, mids >= hdi_range[1] & mids <= hdi_range[2]),
              fill = "darkgrey", color = "black", linewidth = 0.5, 
              width = hist_df$width[1]) +
