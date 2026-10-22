@@ -13,8 +13,8 @@ plot_group_means_densities <- function(data, param1, param2, paramName, upper_yl
                    color = "black", linewidth = 0.5) + 
     geom_histogram(aes(x = param2, fill = "2"),
                    color = "black", linewidth = 0.5) + 
-    scale_fill_manual(values = c("1" = scales::alpha("color_sessions[1]", .8), 
-                                 "2" = scales::alpha("color_sessions[2]", .8))) +  
+    scale_fill_manual(values = c("1" = scales::alpha(color_sessions[1], .8), 
+                                 "2" = scales::alpha(color_sessions[2], .8))) +  
     labs(x = paramName, fill = "Session") + 
     coord_cartesian(ylim = c(0, upper_ylim)) +
     theme(axis.title.y = element_blank(),
